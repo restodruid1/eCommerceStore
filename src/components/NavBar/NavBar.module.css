@@ -1,0 +1,11 @@
+.navBar {
+    display: flex;
+    position: sticky;
+    z-index: 1000;
+    top: 0;
+    margin-bottom: 10px;
+    flex-direction: row;
+    align-items: center;
+    justify-content:space-between;
+    background-color: #fff;
+  }
