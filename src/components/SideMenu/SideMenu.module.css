@@ -16,18 +16,34 @@
   .sideMenu h2:nth-of-type(1) {
     text-align: center;
   }
-  .sideMenu div:nth-of-type(1) {
-    /* display: flex; */
+  .menuHead {
+    display: flex;
     width: 100%;
+    align-items: center;
+    margin-bottom: 50px;
     /* justify-content: space-between; */
   }
-  
+  .menuHead :first-child {
+    flex: 0.5;
+  }
+  .menuHead :nth-child(2) {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
   .sideMenu div {
     text-align: center;
   }
   .sideMenu.mobile {
     width: 100%;
   }
+  
+  /* .menuHead button:nth-of-type(1)  {
+    align-items: left;
+  }
+  .menuHead a:nth-of-type(1)  {
+    flex: 1 1 auto;
+  } */
 
   .homeLink {
     cursor: pointer;
