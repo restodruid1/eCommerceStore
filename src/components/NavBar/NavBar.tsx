@@ -15,9 +15,9 @@ export function NavBar({onClick}: NavBarProps) {
 
     return (
         <nav className={styles.navBar}>
-                <button onClick={onClick}><HamburgerIcon size={40} /></button>
-                <h1>The Anne Elizabeth Boutique</h1>
-                <CartIcon size={40}/>
-            </nav>
+            <button onClick={onClick}><HamburgerIcon size={40} /></button>
+            <h1>The Anne Elizabeth Boutique</h1>
+            <CartIcon size={40}/>
+        </nav>
     )
 }

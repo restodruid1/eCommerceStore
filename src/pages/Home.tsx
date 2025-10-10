@@ -1,25 +1,14 @@
-import { useState, useEffect } from 'react';
-import { useMediaQuery } from '../helper/mediaQuery';
-import { NavBar } from '../components/NavBar/NavBar';
-import { Menu } from '../components/SideMenu/Menu';
 import { Product } from '../components/Products/Product';
+import { useOutletContext } from "react-router-dom";
+import type { LayoutProps } from './Layout';
 
 export function Home(){
-    const [isClicked, setIsClicked] = useState<boolean>(false);
-    const isDesktop = useMediaQuery("(min-width: 768px)");
-
-    useEffect(() => {
-        setIsClicked(isDesktop);
-    }, [isDesktop]);
-
-    function handleClick () {
-        setIsClicked(!isClicked);
-    }
+    const { isClicked, isDesktop } = useOutletContext<LayoutProps>();
 
     return (
         <>
-        <NavBar onClick={handleClick}/>
-        {isClicked && <Menu onClick={handleClick} clicked={isClicked} desktop={isDesktop}/>}
+        {/* <NavBar onClick={handleClick}/>
+        {isClicked && <Menu onClick={handleClick} clicked={isClicked} desktop={isDesktop}/>} */}
         <h2 style={{textAlign:"center"}}>FEATURED ITEMS</h2>
         <div className={`main-body ${isClicked ? 'open' : ''}`}>
             {Array(30).fill(0).map((_) => <Product/>)}

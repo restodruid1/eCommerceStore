@@ -3,6 +3,7 @@ import { BsList } from 'react-icons/bs';
 import { BsCart3 } from 'react-icons/bs';
 import type { IconType } from 'react-icons';
 import styles from './SideMenu.module.css';
+import { Link } from 'react-router-dom';
 
 type MenuProps = {
     onClick: () => void;
@@ -14,6 +15,12 @@ export function Menu({onClick, clicked, desktop}: MenuProps){
     const HeartIcon: IconType = RiPokerHeartsLine;
     const HamburgerIcon: IconType = BsList;
     const CartIcon: IconType = BsCart3;
+
+    function handleClick(){
+      if (!desktop) {
+        onClick();
+      }
+    }
 
     return (
         <aside className={`${styles.sideMenu} ${clicked && !desktop ? `${styles.mobile}`:''} `}>
@@ -29,7 +36,7 @@ export function Menu({onClick, clicked, desktop}: MenuProps){
             {Array(3).fill(0).map((_, i) => <HeartIcon key={i} />)}
           </div>
           <h2>Products</h2>
-          <h4>Custom Nail Products</h4>
+          <h4><Link to={"/CustomNailProducts"} onClick={handleClick} >Custom Nail Products</Link></h4>
           <h4>Art Prints & Stickers</h4>
           <h4>Other Handmade Crafts</h4>
           <h4>YouTube Channel Merch</h4>
@@ -41,7 +48,7 @@ export function Menu({onClick, clicked, desktop}: MenuProps){
           <div>
             {Array(3).fill(0).map((_, i) => <HeartIcon key={i} />)}
           </div>
-          <h4>YouTube Channel</h4>
+          <h4><a href='https://www.youtube.com/@TheAnneElizabeth' target='_blank'>YouTube Channel</a></h4>
         </aside>
     )
 }

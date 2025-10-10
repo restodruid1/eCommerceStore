@@ -1,5 +1,5 @@
 export function Faq(){
     return (
-        <p>FAQ PAGE</p>
+        <h1>FAQ PAGE</h1>
     );
 }
