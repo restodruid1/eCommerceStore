@@ -1,8 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 import './App.css'
-import { Home } from "./pages/Home";
-import { Faq } from "./pages/Faq";
-import { CustNailProd } from "./pages/CustNailProd";
+import { Home } from "./pages/Home/Home";
+import { Faq } from "./pages/Faq/Faq";
+import { CustNailProd } from "./pages/CustNailProd/CustNailProd";
 import { Layout } from "./pages/Layout";
 
 function App() {

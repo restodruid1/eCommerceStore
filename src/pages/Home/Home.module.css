@@ -1,0 +1,14 @@
+.mainBody {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin-bottom: 2%;
+    margin-top: 2%;
+    /* margin-left: 10%; */
+    /* margin-right: 10%; */
+  }
+  
+  .mainBody.open {
+    transform: translateX(250px);
+    margin-right: 250px;
+  }
