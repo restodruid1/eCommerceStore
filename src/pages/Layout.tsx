@@ -29,3 +29,5 @@ export function Layout () {
             </>
         )
 }
+
+// export type { LayoutProps };

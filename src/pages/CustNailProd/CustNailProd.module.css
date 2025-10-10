@@ -1,0 +1,17 @@
+.CustNailBody {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+.open {
+    margin-left: 250px;
+    /* margin-right:250px; */
+}
+.head {
+    margin-right: 0px;
+}
+.head.open {
+    margin-right: 250px;
+}
