@@ -23,7 +23,7 @@ export function Layout () {
     }
     return (
             <>
-            <NavBar onClick={handleClick}/>
+            <NavBar onClick={handleClick} isClicked={isClicked}/>
             {isClicked && <Menu onClick={handleClick} clicked={isClicked} desktop={isDesktop}/>}
             <Outlet context={{ isClicked, isDesktop }}/>
             </>

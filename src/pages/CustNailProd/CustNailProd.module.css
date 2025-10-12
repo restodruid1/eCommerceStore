@@ -2,16 +2,20 @@
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
-    justify-content: flex-start;
+    /* justify-content: flex-start; */
+    justify-content: center;
     align-items: flex-start;
 }
 .open {
     margin-left: 250px;
     /* margin-right:250px; */
 }
-.head {
+.CustNailBody.open.test {
+    overflow-y: hidden;
+}
+/* .head {
     margin-right: 0px;
-}
-.head.open {
+} */
+/* .head.open {
     margin-right: 250px;
-}
+} */

@@ -10,7 +10,7 @@ export function CustNailProd(){
     return (
         <>
             <h1 className={`${styles.head} ${isClicked && isDesktop? styles.open : ''}`} style={{textAlign:"center"}}>Custom Nail Products</h1>
-            <div className={`${styles.CustNailBody} ${ isClicked? styles.open : ''}`}>
+            <div className={`${styles.CustNailBody} ${ isClicked? styles.open : ''} ${isClicked && !isDesktop ? styles.test : ''}`}>
                 {Array(30).fill(0).map((_) => <Product/>)}
             </div>
         </>

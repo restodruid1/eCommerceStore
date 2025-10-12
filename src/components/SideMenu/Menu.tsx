@@ -4,6 +4,7 @@ import { BsCart3 } from 'react-icons/bs';
 import type { IconType } from 'react-icons';
 import styles from './SideMenu.module.css';
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
 
 type MenuProps = {
     onClick: () => void;
@@ -21,6 +22,10 @@ export function Menu({onClick, clicked, desktop}: MenuProps){
         onClick();
       }
     }
+
+    // useEffect(() => {
+    //   document.body.style.overflow = clicked && !desktop ? "hidden" : "auto";
+    // }, [clicked]);
 
     return (
         <aside className={`${styles.sideMenu} ${clicked && !desktop ? `${styles.mobile}`:''} `}>

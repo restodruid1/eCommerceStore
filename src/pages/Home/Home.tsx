@@ -10,11 +10,14 @@ export function Home(){
         <>
         {/* <NavBar onClick={handleClick}/>
         {isClicked && <Menu onClick={handleClick} clicked={isClicked} desktop={isDesktop}/>} */}
-        <h2 style={{textAlign:"center"}}>FEATURED ITEMS</h2>
-        <div className={`${styles.mainBody} ${isClicked ? `${styles.open}` : ''}`}>
+        <h2 style={{textAlign:"center", marginLeft:`${isClicked && isDesktop ? `250px` : '0px'}`}}>FEATURED ITEMS</h2>
+        <div className={`${styles.mainBody} ${isClicked && isDesktop ? `${styles.open}` : ''}`}>
             {Array(30).fill(0).map((_) => <Product/>)}
         </div>
-        <img style={{display: "block", margin: "0 auto", width:`${isDesktop ? "fit-content" : "300px"}`}} src='https://img.youtube.com/vi/kzWhzxuSyRA/sddefault.jpg'/>
+        
+        <div className={`${styles.imageContainer} ${isClicked && isDesktop ? `${styles.open}` : ''}`}>
+            <img className={`${styles.image} ${isClicked ? `${styles.open}` : ''}`} src='https://img.youtube.com/vi/kzWhzxuSyRA/sddefault.jpg'/>
+        </div>
         </>
     )
 }

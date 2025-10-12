@@ -10,11 +10,22 @@
     background-color: #fff;
   }
 
+/* .navBar.open {
+  margin-left: 250px;
+} */
 
-  @media (max-width: 768px) {
-    .navBar h1:nth-of-type(1) {
-      font-size: large;
-      text-align: left;
-      margin: 10px;
-    }
+@media (min-width: 769px) {
+  .navBar.open {
+    margin-left: 250px;
   }
+}
+@media (max-width: 768px) {
+  .navBar h1:nth-of-type(1) {
+    font-size: large;
+    text-align: left;
+    margin: 10px;
+  }
+  /* .navBar {
+    margin-left: 0;
+  } */
+}
