@@ -1,4 +1,4 @@
-import { Product } from '../../components/Products/Product';
+// import { Product } from '../../components/Products/Product';
 import { useOutletContext } from "react-router-dom";
 import type { LayoutProps } from '../Layout';
 import styles from './Home.module.css';

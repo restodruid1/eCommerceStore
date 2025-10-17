@@ -1,7 +1,8 @@
 import express from "express";
 import cors from 'cors';
 import dotenv from "dotenv";
-import pool from "./config/db.js";
+import pool from "./db/index.js";
+import * as db from "./db/index.js";
 // import { Request, Response } from "express";
 
 dotenv.config();
@@ -13,7 +14,7 @@ app.use(cors({
 app.use(express.json()); // middleware to parse JSON
 app.get("/", async (req, res)=>{
     try {
-        const result = await pool.query("SELECT * FROM people2");
+        const result = await db.query("SELECT name FROM people2",[]);
         res.json(result.rows);
       } catch (err) {
         console.error(err);
