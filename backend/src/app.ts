@@ -14,7 +14,7 @@ app.use(cors({
 app.use(express.json()); // middleware to parse JSON
 app.get("/", async (req, res)=>{
     try {
-        const result = await db.query("SELECT name FROM people2",[]);
+        const result = await db.query("SELECT * FROM products",[]);
         res.json(result.rows);
       } catch (err) {
         console.error(err);

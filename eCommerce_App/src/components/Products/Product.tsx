@@ -8,9 +8,17 @@ interface ProductProps {
 
 export function Product ({ data }:ProductProps) {
     return (
-            <>       
+            <div>       
             <FaSackDollar style={{width:"100px", height:"200px", flex:"auto",margin: "5%", cursor:"pointer", backgroundColor:"lightgray", maxWidth:"100px"}}/>
-            <p>{data.name} {data.age}</p>
-            </>
+            <ol>
+                <li>{data.id}</li> 
+                <li>{data.name}</li> 
+                <li>{data.quantity}</li> 
+                <li>{data.weight}</li> 
+                <li>{data.price}</li> 
+                <li>{data.description}</li>
+                <li>{data.created_at}</li>
+            </ol> 
+            </div>
     )
 }

@@ -6,8 +6,13 @@ import { useEffect, useState } from "react";
 import { FaSackDollar } from 'react-icons/fa6';
 
 export interface DataInterface {
+    id: number,
     name: string,
-    age: number
+    quantity: number,
+    weight: number,
+    price: number,
+    description: string,
+    created_at: string
 };
 
 export function CustNailProd(){

@@ -36,18 +36,48 @@ async function initDB() {
 
     // Create tables in db
     await appClient.query(`
-        DROP TABLE IF EXISTS product CASCADE;
+        DROP TABLE IF EXISTS products CASCADE;
+        DROP TABLE IF EXISTS product_images CASCADE;
+        DROP TABLE IF EXISTS orders CASCADE;
+        DROP TABLE IF EXISTS order_items CASCADE;
 
-        CREATE TABLE product (
+        CREATE TABLE products (
             id SERIAL PRIMARY KEY,
             name VARCHAR(50) NOT NULL,
             quantity SMALLINT DEFAULT 0,
-            weight DECIMAL(3,2) DEFAULT 0,
+            weight DECIMAL(5,2) DEFAULT 0,
             price DECIMAL(12,2) DEFAULT 0,
             description VARCHAR(8000) DEFAULT 'COMING SOON',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-    
+
+        CREATE TABLE product_images (
+            id SERIAL PRIMARY KEY,
+            product_id INT,
+            url VARCHAR(1000),
+            main_image BOOLEAN DEFAULT FALSE,
+            FOREIGN KEY (product_id) REFERENCES products(id)
+        );
+        
+        CREATE TABLE orders (
+            id SERIAL PRIMARY KEY,
+            total_price DECIMAL(12,2) NOT NULL,
+            order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            shipping_address VARCHAR(100) NOT NULL,
+            status VARCHAR(30) DEFAULT 'PENDING',
+            total_weight Decimal(5,2) NOT NULL
+        );
+
+        CREATE TABLE order_items (
+            id SERIAL PRIMARY KEY,
+            product_id INT,
+            order_id INT,
+            quantity SMALLINT DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (product_id) REFERENCES products(id),
+            FOREIGN KEY (order_id) REFERENCES orders(id)
+        );
+
     `);
 
     console.log('Tables created or already exist.');

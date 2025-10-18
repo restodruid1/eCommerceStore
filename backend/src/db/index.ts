@@ -25,6 +25,7 @@ try {
   
 }
 
+// Pool releases clients internally automatically
 export const query = async (text:string, params:[]) => {
   const start = Date.now();
   const res = await pool.query(text, params);

@@ -9,7 +9,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "node --loader ts-node/esm src/server.ts",
-    "db_init": "node --loader ts-node/esm src/db/db_init.ts"
+    "db_init": "node --loader ts-node/esm src/db/db_init.ts",
+    "db_seed": "node --loader ts-node/esm src/db/db_seed.ts"
   },
   "author": "",
   "license": "ISC",
