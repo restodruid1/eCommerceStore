@@ -17,9 +17,9 @@ async function seedDB() {
         console.log(`Connected to '${DB_NAME}'.`);
         const queryResult = await appClient.query(`
             INSERT INTO products
-            (name, quantity, weight, price, description)
+            (category, name, quantity, weight, price, description)
             VALUES
-            ('placeholder', 1, 13.2, 101.27, 'This is a placeholder item')
+            (1,'placeholder', 1, 13.2, 101.27, 'This is a placeholder item')
             `);
         console.log(queryResult);
         console.log('Database seeding complete.');

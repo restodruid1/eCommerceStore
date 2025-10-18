@@ -12,7 +12,8 @@ export interface DataInterface {
     weight: number,
     price: number,
     description: string,
-    created_at: string
+    created_at: string,
+    url: string
 };
 
 export function CustNailProd(){
@@ -21,7 +22,7 @@ export function CustNailProd(){
     useEffect(() => {
         async function fetchData(){
             try {
-                const response = await fetch("http://localhost:5000/");
+                const response = await fetch("http://localhost:5000/products/customnail");
                 const data: DataInterface[] = await response.json();
                 console.log(data);
                 setIsData(data); 

@@ -43,6 +43,7 @@ async function initDB() {
 
         CREATE TABLE products (
             id SERIAL PRIMARY KEY,
+            category SMALLINT NOT NULL,
             name VARCHAR(50) NOT NULL,
             quantity SMALLINT DEFAULT 0,
             weight DECIMAL(5,2) DEFAULT 0,

@@ -12,9 +12,24 @@ app.use(cors({
   origin: 'http://localhost:5173'
 }));
 app.use(express.json()); // middleware to parse JSON
-app.get("/", async (req, res)=>{
+app.get("/products/customnail", async (req, res)=>{
     try {
-        const result = await db.query("SELECT * FROM products",[]);
+        // const result = await db.query(
+        //   `SELECT * 
+        //   FROM products
+        //   WHERE CATEGORY = 1`
+        //   ,[]);
+
+        const result = await db.query(
+          `SELECT 
+              p.*, 
+              pi.url
+          FROM products p
+          JOIN product_images pi 
+              ON pi.product_id = p.id
+          WHERE p.category = 1
+            AND pi.main_image = TRUE;`
+          ,[]);
         res.json(result.rows);
       } catch (err) {
         console.error(err);
