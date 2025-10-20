@@ -38,4 +38,27 @@ app.get("/products/customnail", async (req, res)=>{
     // res.send("<h1>HELLO WORLD</h1>");
 })
 
+app.get("/products/:id", async (req, res)=>{
+  try {
+      const { id } = req.params;
+      console.log(id);
+      const result = await db.query(
+        `SELECT 
+            p.*, 
+            pi.product_id,
+            pi.url,
+            pi.main_image
+        FROM products p
+        JOIN product_images pi 
+            ON pi.product_id = p.id
+        WHERE p.id = $1;`
+        ,[id]);
+      res.json(result.rows);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Database error");
+    }
+  // res.send("<h1>HELLO WORLD</h1>");
+})
+
 export default app;

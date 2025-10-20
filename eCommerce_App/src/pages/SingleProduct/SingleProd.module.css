@@ -1,0 +1,45 @@
+.ProductBody {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    /* justify-content: flex-start; */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.open {
+    margin-left: 250px;
+    /* margin-right:250px; */
+}
+
+
+@media (max-width: 769px) {
+    .mainImage {
+        max-width: 200px;
+        max-height: 200px;
+    }
+    .secondaryImage {
+        max-width: 75px;
+        max-height: 75px;
+    }
+
+}
+
+.mainImage {
+    width: 600px;
+    height: 600px;
+}
+.secondaryImage {
+    width: 200px;
+    height: 200px;
+}
+
+.secondaryImageContainer {
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+}
+.priceAndCart {
+    display: flex;
+    justify-content: space-between;
+}

@@ -13,7 +13,9 @@ export interface DataInterface {
     price: number,
     description: string,
     created_at: string,
-    url: string
+    url: string,
+    product_id?: number,
+    main_image?: boolean
 };
 
 export function CustNailProd(){
