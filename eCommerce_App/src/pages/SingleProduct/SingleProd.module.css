@@ -12,6 +12,16 @@
     /* margin-right:250px; */
 }
 
+@media (max-width: 1000px) {        /* Needs to be above media call below it*/
+    .mainImage {
+        max-width: 300px;
+        max-height: 300px;
+    }
+    .secondaryImage {
+        max-width: 75px;
+        max-height: 75px;
+    }
+}
 
 @media (max-width: 769px) {
     .mainImage {

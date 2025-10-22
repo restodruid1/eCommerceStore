@@ -37,7 +37,7 @@ export function SingleProduct(){
     if (!isData) return <p>PRODUCT NOT FOUND</p>;
     return (
         
-        <div className={`${styles.ProductBody} ${ isClicked? styles.open : ''} ${isClicked && !isDesktop ? styles.test : ''}`}>
+        <div className={`${styles.ProductBody} ${ isClicked && !isDesktop ? '' : ''} ${ isClicked && isDesktop ? styles.open : ''}`}>
             <h2>Product Name =  ${isData[0].name}</h2>
             <img className={styles.mainImage} src={`${isData[mainImageIndex].url}`}/>
             <div className={styles.secondaryImageContainer}>
