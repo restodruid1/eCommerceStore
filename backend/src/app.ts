@@ -14,12 +14,6 @@ app.use(cors({
 app.use(express.json()); // middleware to parse JSON
 app.get("/products/customnail", async (req, res)=>{
     try {
-        // const result = await db.query(
-        //   `SELECT * 
-        //   FROM products
-        //   WHERE CATEGORY = 1`
-        //   ,[]);
-
         const result = await db.query(
           `SELECT 
               p.*, 
@@ -46,6 +40,42 @@ app.get("/products/artprintsandstickers", async (req, res)=>{
           JOIN product_images pi 
               ON pi.product_id = p.id
           WHERE p.category = 2
+            AND pi.main_image = TRUE;`
+          ,[]);
+        res.json(result.rows);
+      } catch (err) {
+        console.error(err);
+        res.status(500).send("Database error");
+      }
+})
+app.get("/products/otherhandmadecrafts", async (req, res)=>{
+    try {
+        const result = await db.query(
+          `SELECT 
+              p.*, 
+              pi.url
+          FROM products p
+          JOIN product_images pi 
+              ON pi.product_id = p.id
+          WHERE p.category = 3
+            AND pi.main_image = TRUE;`
+          ,[]);
+        res.json(result.rows);
+      } catch (err) {
+        console.error(err);
+        res.status(500).send("Database error");
+      }
+})
+app.get("/products/channelmerch", async (req, res)=>{
+    try {
+        const result = await db.query(
+          `SELECT 
+              p.*, 
+              pi.url
+          FROM products p
+          JOIN product_images pi 
+              ON pi.product_id = p.id
+          WHERE p.category = 4
             AND pi.main_image = TRUE;`
           ,[]);
         res.json(result.rows);

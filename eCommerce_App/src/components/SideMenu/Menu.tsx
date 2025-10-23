@@ -41,15 +41,15 @@ export function Menu({onClick, clicked, desktop}: MenuProps){
             {Array(3).fill(0).map((_, i) => <HeartIcon key={i} />)}
           </div>
           <h2>Products</h2>
-          <h4><Link to={"/CustomNailProducts"} onClick={handleClick} >Custom Nail Products</Link></h4>
-          <h4><Link to={"/ArtPrintsandStickers"} onClick={handleClick} >Art Prints & Stickers</Link></h4>
-          <h4>Other Handmade Crafts</h4>
-          <h4>YouTube Channel Merch</h4>
+          <h4><Link to={"/CustomNailProducts"} onClick={handleClick}>Custom Nail Products</Link></h4>
+          <h4><Link to={"/ArtPrintsandStickers"} onClick={handleClick}>Art Prints & Stickers</Link></h4>
+          <h4><Link to={"/OtherHandmadeCrafts"} onClick={handleClick}>Other Handmade Crafts</Link></h4>
+          <h4><Link to={"/ChannelMerch"} onClick={handleClick}>YouTube Channel Merch</Link></h4>
           <div>
             {Array(3).fill(0).map((_, i) => <HeartIcon key={i} />)}
           </div>
-          <h4>FAQ</h4>
-          <h4>Contact Me</h4>
+          <h4><Link to={"/Faq"} onClick={handleClick}>FAQ</Link></h4>
+          <h4><Link to={"/ContactMe"} onClick={handleClick}>Contact Me</Link></h4>
           <div>
             {Array(3).fill(0).map((_, i) => <HeartIcon key={i} />)}
           </div>

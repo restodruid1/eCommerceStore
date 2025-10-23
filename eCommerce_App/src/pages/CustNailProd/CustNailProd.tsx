@@ -28,7 +28,7 @@ export function CustNailProd(){
                 const response = await fetch("http://localhost:5000/products/customnail");
                 const data: DataInterface[] = await response.json();
                 console.log(data);
-                setIsData(data); 
+                data.length === 0 ? setIsData(null) : setIsData(data);  
             } catch (err) {
                 console.log("ERROR: " + err);
             }
@@ -36,7 +36,13 @@ export function CustNailProd(){
         fetchData();
     },[]);
 
-    if (!isData) return <ComingSoon />
+    if (!isData)
+        return (
+            <>
+                <h1 className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>Custom Nail Products</h1>
+                <ComingSoon />
+            </>
+        );
 
     return (
         <>
