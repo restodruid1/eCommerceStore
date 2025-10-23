@@ -42,7 +42,7 @@ export function Menu({onClick, clicked, desktop}: MenuProps){
           </div>
           <h2>Products</h2>
           <h4><Link to={"/CustomNailProducts"} onClick={handleClick} >Custom Nail Products</Link></h4>
-          <h4>Art Prints & Stickers</h4>
+          <h4><Link to={"/ArtPrintsandStickers"} onClick={handleClick} >Art Prints & Stickers</Link></h4>
           <h4>Other Handmade Crafts</h4>
           <h4>YouTube Channel Merch</h4>
           <div>

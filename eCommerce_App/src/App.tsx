@@ -5,6 +5,7 @@ import { Faq } from "./pages/Faq/Faq";
 import { CustNailProd } from "./pages/CustNailProd/CustNailProd";
 import { Layout } from "./pages/Layout";
 import { SingleProduct } from "./pages/SingleProduct/SingleProduct";
+import { ArtPrintandStickers } from "./pages/ArtPrints&Stickers/ArtPrintsandStickers";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="CustomNailProducts" element={<CustNailProd />}/> 
           <Route path="CustomNailProducts/:productId/:name" element={<SingleProduct />} />
+          <Route path="ArtPrintsandStickers" element={<ArtPrintandStickers/>}/>
           <Route path="faq" element={<Faq />} />
           <Route path="*" element={<h1>404 Not Found</h1>} />
         </Route >

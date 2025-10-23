@@ -9,6 +9,8 @@ export function SingleProduct(){
     const { productId } = useParams();
     const [ isData, setIsData ] = useState<DataInterface[] | null>(null);
     const [ mainImageIndex, setMainImageIndex ] = useState<number>(0);
+    const [ stockQuantity, setStockQuantity ] = useState<number>(0);
+    const [ cartQuantity, setcartQuantity ] = useState<number>(1);
     const { isClicked, isDesktop } = useOutletContext<LayoutProps>();
 
         useEffect(() => {
@@ -18,7 +20,7 @@ export function SingleProduct(){
                     const data: DataInterface[] = await response.json();
                     console.log(data);
                     setIsData(data);
-                    
+                    setStockQuantity(data[0].quantity);
                     if (isData) {
                         isData.forEach((image, index) => {      // Find the index of the main product photo from array of returned db data
                             if (image.main_image === true) {
@@ -32,11 +34,28 @@ export function SingleProduct(){
             };
             fetchData();
         },[]);
+
+    function handleClickAdd(){
+        if (cartQuantity + 1 > stockQuantity) {
+            alert("Max Quantity Reached");
+        } else {
+            setcartQuantity(cartQuantity + 1);
+        }
+    }
+    function handleClickDelete(){
+        if (cartQuantity > 1) {
+            setcartQuantity(cartQuantity - 1);   
+        } 
+    }
     
-    
+    function handleClickCart(){
+        alert(`added ${cartQuantity} to cart`);
+        setcartQuantity(1);
+    }
+
     if (!isData) return <p>PRODUCT NOT FOUND</p>;
+
     return (
-        
         <div className={`${styles.ProductBody} ${ isClicked && !isDesktop ? '' : ''} ${ isClicked && isDesktop ? styles.open : ''}`}>
             <h2>Product Name =  ${isData[0].name}</h2>
             <img className={styles.mainImage} src={`${isData[mainImageIndex].url}`}/>
@@ -50,7 +69,8 @@ export function SingleProduct(){
             </div>
             <div className={styles.priceAndCart}>
                 <p>${isData[0].price}</p>
-                <button>ADD TO CART</button>
+                <span>Quantity: {stockQuantity === 0 ? 0 : cartQuantity}<button onClick={handleClickAdd}>+</button><button onClick={handleClickDelete}>-</button></span>
+                <button onClick={handleClickCart}>ADD TO CART</button>
             </div>
             
             <h2>DESCRIPTION</h2>

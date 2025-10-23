@@ -35,7 +35,24 @@ app.get("/products/customnail", async (req, res)=>{
         console.error(err);
         res.status(500).send("Database error");
       }
-    // res.send("<h1>HELLO WORLD</h1>");
+})
+app.get("/products/artprintsandstickers", async (req, res)=>{
+    try {
+        const result = await db.query(
+          `SELECT 
+              p.*, 
+              pi.url
+          FROM products p
+          JOIN product_images pi 
+              ON pi.product_id = p.id
+          WHERE p.category = 2
+            AND pi.main_image = TRUE;`
+          ,[]);
+        res.json(result.rows);
+      } catch (err) {
+        console.error(err);
+        res.status(500).send("Database error");
+      }
 })
 
 app.get("/products/:id", async (req, res)=>{
