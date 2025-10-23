@@ -40,3 +40,27 @@
 .test {
   overflow-y: hidden;
 }
+
+.body.column {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  /* justify-content: flex-start; */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.body.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  /* justify-content: flex-start; */
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.open {
+  margin-left: 250px;
+  /* margin-right:250px; */
+}

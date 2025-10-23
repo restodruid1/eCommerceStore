@@ -1,9 +1,10 @@
 import { Product } from "../../components/Products/Product";
-import styles from './CustNailProd.module.css';
+// import styles from './CustNailProd.module.css';
 import type { LayoutProps } from "../Layout";
 import { useOutletContext } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaSackDollar } from 'react-icons/fa6';
+import '../../App.css';
+import { ComingSoon } from "../../components/ComingSoon/ComingSoon";
 
 export interface DataInterface {
     id: number,
@@ -35,14 +36,12 @@ export function CustNailProd(){
         fetchData();
     },[]);
 
-    if (!isData) return <div className={`${styles.CustNailBody} ${ isClicked? styles.open : ''} ${isClicked && !isDesktop ? styles.test : ''}`}>
-            <FaSackDollar style={{width:"100px", height:"200px", flex:"auto",margin: "5%", cursor:"pointer", backgroundColor:"lightgray", maxWidth:"100px"}}/>
-        </div>
+    if (!isData) return <ComingSoon />
 
     return (
         <>
-            <h1 className={`${styles.head} ${isClicked && isDesktop? styles.open : ''}`} style={{textAlign:"center"}}>Custom Nail Products</h1>
-            <div className={`${styles.CustNailBody} ${ isClicked? styles.open : ''} ${isClicked && !isDesktop ? styles.test : ''}`}>
+            <h1 className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>Custom Nail Products</h1>
+            <div className={`body row ${isClicked && isDesktop ? 'open' : ''}`}>
                 {isData.map((dataInterface, index) => <Product key={index} data={dataInterface}/>)}
             </div>
         </>

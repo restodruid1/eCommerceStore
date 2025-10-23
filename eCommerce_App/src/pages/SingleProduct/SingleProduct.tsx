@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import styles from "./SingleProd.module.css";
 import type { LayoutProps } from "../Layout";
 import { useOutletContext } from "react-router-dom";
+import "../../App.css";
 
 export function SingleProduct(){
     const { productId } = useParams();
@@ -56,7 +57,7 @@ export function SingleProduct(){
     if (!isData) return <p>PRODUCT NOT FOUND</p>;
 
     return (
-        <div className={`${styles.ProductBody} ${ isClicked && !isDesktop ? '' : ''} ${ isClicked && isDesktop ? styles.open : ''}`}>
+        <div className={`body column ${ isClicked && isDesktop ? 'open' : ''}`}>
             <h2>Product Name =  ${isData[0].name}</h2>
             <img className={styles.mainImage} src={`${isData[mainImageIndex].url}`}/>
             <div className={styles.secondaryImageContainer}>
