@@ -4,7 +4,6 @@ import { BsCart3 } from 'react-icons/bs';
 import type { IconType } from 'react-icons';
 import styles from './SideMenu.module.css';
 import { Link } from 'react-router-dom';
-import { useEffect } from 'react';
 
 type MenuProps = {
     onClick: () => void;
@@ -34,7 +33,7 @@ export function Menu({onClick, clicked, desktop}: MenuProps){
             <a href='/' className={styles.homeLink}>Anne Elizabeth</a>
           </div>
           <div style={{display:"flex"}}>
-            <CartIcon size={40}/>
+            <Link to={"/Cart"} onClick={handleClick}><CartIcon size={40}/></Link>
             <p>0 items : $0.00</p>
           </div>
           <div>

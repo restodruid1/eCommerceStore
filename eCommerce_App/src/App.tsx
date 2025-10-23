@@ -9,6 +9,7 @@ import { ArtPrintandStickers } from "./pages/ArtPrints&Stickers/ArtPrintsandStic
 import { HandmadeCrafts } from "./pages/OtherHandmadeCrafts/HandmadeCrafts";
 import { ChannelMerch } from "./pages/ChannelMerch/ChannelMerch";
 import { ContactMe } from "./pages/ContactMe/ContactMe";
+import { Cart } from "./pages/Cart/Cart";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="ChannelMerch/:productId/:name" element={<SingleProduct />}/>
           <Route path="Faq" element={<Faq />} />
           <Route path="ContactMe" element={<ContactMe />} />
+          <Route path="Cart" element={<Cart />} />
           <Route path="*" element={<h1>404 Not Found</h1>} />
         </Route >
       </Routes>
