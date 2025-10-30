@@ -27,7 +27,7 @@ export function CustNailProd(){
             try {
                 const response = await fetch("http://localhost:5000/products/customnail");
                 const data: DataInterface[] = await response.json();
-                console.log(data);
+                // console.log(data);
                 data.length === 0 ? setIsData(null) : setIsData(data);  
             } catch (err) {
                 console.log("ERROR: " + err);
@@ -48,7 +48,7 @@ export function CustNailProd(){
         <>
             <h1 className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>Custom Nail Products</h1>
             <div className={`body row ${isClicked && isDesktop ? 'open' : ''}`}>
-                {isData.map((dataInterface, index) => <Product key={index} data={dataInterface}/>)}
+                {isData.map((dataInterface, index) => <Product key={index} pageUrl="CustomNailProducts" data={dataInterface}/>)}
             </div>
         </>
     );

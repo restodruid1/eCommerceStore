@@ -14,7 +14,7 @@ interface CartContextType {
     updateQuantity?: (id: number, quantity: number) => void;
     clearCart?: () => void;
     printCart?: () => void;
-    addToCart?: (item:CartItem) => void;
+    addToCart?: (item:CartItem, stockQuantity:number) => void;
     total?: number;
     updateTotal?: () => void;
 }
@@ -27,8 +27,24 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
     const [total, setTotal] = useState<number>(0);
 
 
-    function addToCart(item:CartItem){
-        setCartData((prevItems) => [...prevItems, item]);
+    function addToCart(item:CartItem, stockQuantity:number){
+        var foundId = false;
+        
+        cartItems.forEach(curCartItem => {      // Update existing quantity else add item to cart
+            if (curCartItem.id === item.id){
+                if (curCartItem.quantity + item.quantity > stockQuantity) {
+                    alert("quantity not in stock");
+                } else {
+                    curCartItem.quantity += item.quantity;
+                    alert(`added ${item.quantity} to cart`);
+                }
+                foundId = true;
+            }
+        });
+        if (!foundId) {
+            setCartData((prevItems) => [...prevItems, item]);
+            alert(`added ${item.quantity} to cart`);
+        }
     }
 
     const printCart = () => {

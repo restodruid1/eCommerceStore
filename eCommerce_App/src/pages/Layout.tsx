@@ -1,6 +1,6 @@
 import { NavBar } from "../components/NavBar/NavBar";
 import { Menu } from "../components/SideMenu/Menu";
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import { useMediaQuery } from '../helper/mediaQuery';
 import { Outlet } from "react-router-dom";
 

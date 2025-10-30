@@ -22,7 +22,7 @@ export function SingleProduct(){
                 try {
                     const response = await fetch(`http://localhost:5000/products/${productId}`);
                     const data: DataInterface[] = await response.json();
-                    console.log(data);
+                    // console.log(data);
                     setIsData(data);
                     setStockQuantity(data[0].quantity);
                     if (isData) {
@@ -56,15 +56,15 @@ export function SingleProduct(){
         try {
             const response = await fetch(`http://localhost:5000/products/${productId}`);
             const data: DataInterface[] = await response.json();
-            console.log(data);
-            if (cartQuantity > data[0].quantity) {
+            // console.log(data);
+            if (cartQuantity > data[0].quantity) {  // Check if item is in stock
                 alert("quantity not in stock");
                 setcartQuantity(data[0].quantity);
             } else {
-                const { id, name, price, quantity } = data[0];
-                const cartItem: CartItem = {id,name,price,quantity}; 
-                alert(`added ${cartQuantity} to cart`);
-                cartDataState.addToCart!(cartItem);
+                const { id, name, price } = data[0];
+                const cartItem: CartItem = {id,name,price,quantity:cartQuantity}; 
+                // alert(`added ${cartQuantity} to cart`);
+                cartDataState.addToCart!(cartItem, data[0].quantity); // Pass stock quantity for valid amount check
             }   
             
         } catch (err) {

@@ -36,7 +36,7 @@ export function HandmadeCrafts(){
             <>
                 <h1 className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>Other Handemade Crafts</h1>
                 <div className={`body row ${isClicked && isDesktop ? 'open' : ''}`}>
-                    {isData.map((dataInterface, index) => <Product key={index} data={dataInterface}/>)}
+                    {isData.map((dataInterface, index) => <Product key={index} pageUrl="OtherHandmadeCrafts" data={dataInterface}/>)}
                 </div>
             </>
         );

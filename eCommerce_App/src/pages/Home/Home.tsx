@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import type { LayoutProps } from '../Layout';
 import styles from './Home.module.css';
 import { FaSackDollar } from 'react-icons/fa6';
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 import { useCart } from "../../CartContext";
 
 export function Home(){
