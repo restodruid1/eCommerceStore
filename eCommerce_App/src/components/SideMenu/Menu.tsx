@@ -30,7 +30,7 @@ export function Menu({onClick, clicked, desktop}: MenuProps){
         <aside className={`${styles.sideMenu} ${clicked && !desktop ? `${styles.mobile}`:''} `}>
           <div className={styles.menuHead}>
             <button onClick={onClick}><HamburgerIcon size={40} /></button>
-            <a href='/' className={styles.homeLink}>Anne Elizabeth</a>
+            <Link to={"/"} className={styles.homeLink}>Anne Elizabeth</Link>
           </div>
           <div style={{display:"flex"}}>
             <Link to={"/Cart"} onClick={handleClick}><CartIcon size={40}/></Link>

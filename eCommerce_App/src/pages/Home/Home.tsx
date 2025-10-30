@@ -3,10 +3,25 @@ import { useOutletContext } from "react-router-dom";
 import type { LayoutProps } from '../Layout';
 import styles from './Home.module.css';
 import { FaSackDollar } from 'react-icons/fa6';
+import { useContext, useEffect } from "react";
+import { useCart } from "../../CartContext";
 
 export function Home(){
     const { isClicked, isDesktop } = useOutletContext<LayoutProps>();
-
+    const data = useCart();
+    useEffect(() => {
+            async function update(){
+                try {
+                    data.updateTotal!();
+                    console.log("Cart: ")
+                    data.printCart!();
+                } catch (err) {
+                    console.log("ERROR: " + err);
+                }
+            };
+            update();
+        },[data.cartItems]);
+    
     return (
         <>
         {/* <NavBar onClick={handleClick}/>

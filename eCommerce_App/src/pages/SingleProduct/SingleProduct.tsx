@@ -5,6 +5,8 @@ import styles from "./SingleProd.module.css";
 import type { LayoutProps } from "../Layout";
 import { useOutletContext } from "react-router-dom";
 import "../../App.css";
+import type { CartItem } from "../../CartContext";
+import { useCart } from "../../CartContext";
 
 export function SingleProduct(){
     const { productId } = useParams();
@@ -13,6 +15,7 @@ export function SingleProduct(){
     const [ stockQuantity, setStockQuantity ] = useState<number>(0);
     const [ cartQuantity, setcartQuantity ] = useState<number>(1);
     const { isClicked, isDesktop } = useOutletContext<LayoutProps>();
+    const cartDataState = useCart();
 
         useEffect(() => {
             async function fetchData(){
@@ -34,7 +37,7 @@ export function SingleProduct(){
                 }
             };
             fetchData();
-        },[]);
+        },[productId]);
 
     function handleClickAdd(){
         if (cartQuantity + 1 > stockQuantity) {
@@ -49,8 +52,24 @@ export function SingleProduct(){
         } 
     }
     
-    function handleClickCart(){
-        alert(`added ${cartQuantity} to cart`);
+    async function handleClickCart(){
+        try {
+            const response = await fetch(`http://localhost:5000/products/${productId}`);
+            const data: DataInterface[] = await response.json();
+            console.log(data);
+            if (cartQuantity > data[0].quantity) {
+                alert("quantity not in stock");
+                setcartQuantity(data[0].quantity);
+            } else {
+                const { id, name, price, quantity } = data[0];
+                const cartItem: CartItem = {id,name,price,quantity}; 
+                alert(`added ${cartQuantity} to cart`);
+                cartDataState.addToCart!(cartItem);
+            }   
+            
+        } catch (err) {
+            console.log("ERROR: " + err);
+        }
         setcartQuantity(1);
     }
 

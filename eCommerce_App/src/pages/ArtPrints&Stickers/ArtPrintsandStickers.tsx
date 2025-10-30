@@ -2,14 +2,15 @@ import { Product } from "../../components/Products/Product";
 // import styles from './APandS.module.css';
 import type { LayoutProps } from "../Layout";
 import { useOutletContext } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import type { DataInterface } from "../CustNailProd/CustNailProd";
 import { ComingSoon } from "../../components/ComingSoon/ComingSoon";
-
+import { useCart } from "../../CartContext";
 
 export function ArtPrintandStickers(){
     const { isClicked, isDesktop } = useOutletContext<LayoutProps>();
     const [ isData, setIsData ] = useState<DataInterface[] | null>(null);
+    const data = useCart();
     useEffect(() => {
         async function fetchData(){
             try {
@@ -24,6 +25,17 @@ export function ArtPrintandStickers(){
         fetchData();
     },[]);
 
+    useEffect(() => {
+        async function update(){
+            try {
+                data.updateTotal!();
+                data.printCart!();
+            } catch (err) {
+                console.log("ERROR: " + err);
+            }
+        };
+        update();
+    },[]);
 
     if (!isData) 
         return (

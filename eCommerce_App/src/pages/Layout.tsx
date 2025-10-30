@@ -1,6 +1,6 @@
 import { NavBar } from "../components/NavBar/NavBar";
 import { Menu } from "../components/SideMenu/Menu";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createContext, useContext } from 'react';
 import { useMediaQuery } from '../helper/mediaQuery';
 import { Outlet } from "react-router-dom";
 
@@ -8,7 +8,8 @@ import { Outlet } from "react-router-dom";
 export interface LayoutProps {
     isClicked: boolean;
     isDesktop: boolean;
-  }
+};
+
 
 export function Layout () {
     const [isClicked, setIsClicked] = useState<boolean>(false);
@@ -23,9 +24,9 @@ export function Layout () {
     }
     return (
             <>
-            <NavBar onClick={handleClick} isClicked={isClicked}/>
-            {isClicked && <Menu onClick={handleClick} clicked={isClicked} desktop={isDesktop}/>}
-            <Outlet context={{ isClicked, isDesktop }}/>
+                <NavBar onClick={handleClick} isClicked={isClicked}/>
+                {isClicked && <Menu onClick={handleClick} clicked={isClicked} desktop={isDesktop}/>}
+                <Outlet context={{ isClicked, isDesktop }}/>
             </>
         )
 }
