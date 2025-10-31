@@ -17,8 +17,10 @@ interface CartContextType {
     addToCart?: (item:CartItem, stockQuantity:number) => void;
     total?: number;
     updateTotal?: () => void;
-    decrementQuantity?:(id: number, amount:number) => void;
-    incrementQuantity?:(id: number, amount:number) => void;
+    decrementQuantity?:(id: number) => void;
+    incrementQuantity?:(id: number) => void;
+    cartTotalPrice?: () => number;
+    cartTotalItems?: () => number;
 }
 
 
@@ -26,7 +28,6 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider ({ children }: { children: React.ReactNode }) {
     const [cartItems, setCartData] = useState<CartItem[]>([]);
-    const [total, setTotal] = useState<number>(0);
 
 
     function addToCart(item:CartItem, stockQuantity:number){
@@ -48,11 +49,27 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
             alert(`added ${item.quantity} to cart`);
         }
     }
-    function incrementQuantity(id:number, amount:number) {
-        alert("Increment hit");
+
+    function incrementQuantity(id:number) {
+        // alert("Increment hit");
+        setCartData(prevItems =>
+            prevItems.map(item =>
+              item.id === id
+                ? { ...item, quantity: item.quantity + 1 }
+                : item
+            )
+          );
     }
-    function decrementQuantity(id:number, amount:number) {
-        alert("Decrement hit");
+
+    function decrementQuantity(id:number) {
+        // alert("Decrement hit");
+        setCartData(prevItems =>
+            prevItems.map(item =>
+              item.id === id
+                ? { ...item, quantity: item.quantity - 1 }
+                : item
+            )
+          );
     }
     function deleteItem(id:number){
         setCartData(cartItems.filter(item => item.id !== id));
@@ -61,8 +78,11 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
     const printCart = () => {
         console.log(cartItems);
     }
-    const updateTotal = () => {
-        setTotal(total + 1);
+    const cartTotalPrice = () => {
+        return Number(cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2));
+    }
+    const cartTotalItems = () => {
+        return cartItems.reduce((sum, item) => sum + item.quantity, 0);
     }
     
     const clearCart = () => {
@@ -70,7 +90,7 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <CartContext.Provider value={{cartItems,total,updateTotal, printCart, addToCart, clearCart,deleteItem, incrementQuantity, decrementQuantity}}>
+        <CartContext.Provider value={{cartItems,cartTotalPrice,cartTotalItems, printCart, addToCart, clearCart,deleteItem, incrementQuantity, decrementQuantity}}>
             {children}
         </CartContext.Provider>
     )

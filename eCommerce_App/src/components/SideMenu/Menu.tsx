@@ -4,6 +4,7 @@ import { BsCart3 } from 'react-icons/bs';
 import type { IconType } from 'react-icons';
 import styles from './SideMenu.module.css';
 import { Link } from 'react-router-dom';
+import { useCart } from '../../CartContext';
 
 type MenuProps = {
     onClick: () => void;
@@ -15,7 +16,8 @@ export function Menu({onClick, clicked, desktop}: MenuProps){
     const HeartIcon: IconType = RiPokerHeartsLine;
     const HamburgerIcon: IconType = BsList;
     const CartIcon: IconType = BsCart3;
-
+    const cartDataState = useCart();
+    
     function handleClick(){
       if (!desktop) {
         onClick();
@@ -34,7 +36,7 @@ export function Menu({onClick, clicked, desktop}: MenuProps){
           </div>
           <div style={{display:"flex"}}>
             <Link to={"/Cart"} onClick={handleClick}><CartIcon size={40}/></Link>
-            <p>0 items : $0.00</p>
+            <p>{cartDataState!.cartTotalItems!()} items : ${cartDataState!.cartTotalPrice!()}</p>
           </div>
           <div>
             {Array(3).fill(0).map((_, i) => <HeartIcon key={i} />)}
