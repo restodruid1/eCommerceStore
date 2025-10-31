@@ -10,13 +10,15 @@ export interface CartItem {
 interface CartContextType {
     cartItems?: CartItem[];
     addItem?: (item: Omit<CartItem, "quantity">) => void;
-    removeItem?: (id: number) => void;
+    deleteItem?: (id: number) => void;
     updateQuantity?: (id: number, quantity: number) => void;
     clearCart?: () => void;
     printCart?: () => void;
     addToCart?: (item:CartItem, stockQuantity:number) => void;
     total?: number;
     updateTotal?: () => void;
+    decrementQuantity?:(id: number, amount:number) => void;
+    incrementQuantity?:(id: number, amount:number) => void;
 }
 
 
@@ -46,6 +48,15 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
             alert(`added ${item.quantity} to cart`);
         }
     }
+    function incrementQuantity(id:number, amount:number) {
+        alert("Increment hit");
+    }
+    function decrementQuantity(id:number, amount:number) {
+        alert("Decrement hit");
+    }
+    function deleteItem(id:number){
+        setCartData(cartItems.filter(item => item.id !== id));
+    }
 
     const printCart = () => {
         console.log(cartItems);
@@ -59,7 +70,7 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <CartContext.Provider value={{cartItems,total,updateTotal, printCart, addToCart, clearCart}}>
+        <CartContext.Provider value={{cartItems,total,updateTotal, printCart, addToCart, clearCart,deleteItem, incrementQuantity, decrementQuantity}}>
             {children}
         </CartContext.Provider>
     )
