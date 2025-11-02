@@ -54,16 +54,27 @@ export function Cart(){
 
     return (
                 <>
-                    <h1 className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>Cart</h1>
-                    <div className={`body row ${isClicked && isDesktop ? 'open' : ''}`}>
-                        <>ITEMS IN CART</>
-                        {true && (<ul>
+                    <h1 className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>Cart ({cartDataState!.cartTotalItems!()} items)</h1>
+                    <div  className={`body row ${isClicked && isDesktop ? 'open' : ''}`}>
+                        <div style={{display:"flex", flexDirection:"column",background:"darkgrey", borderRadius:"5px", borderColor:"black", minWidth:"300px"}}>
+                        <p style={{textAlign:"center"}}>ITEMS IN CART</p>
+                        {true && (<div style={{flex:"1 1 0"}}>
                             {cartItems!.map(item => (
-                                <li key={item.id}>
-                                <strong>{item.name}</strong> — ${item.price} × <button onClick={()=>handleClickDecrement(item.id,item.quantity)}>-</button>{item.quantity}<button onClick={()=>handleClickIncrement(item.id,item.quantity)}>+</button><button onClick={()=>handleDelete(item.id)} ><TrashIcon/></button>
-                                </li>
+                                <div>
+                                    <div key={item.id} style={{display:"flex",flex:"1 1 0", alignContent:"center", gap:"5px"}}>
+                                        <img src={`${item.image}`} style={{width:"100px", height:"100px",objectFit:"fill"}}/>
+                                        <div>
+                                            <h2>${(item.price * item.quantity).toFixed(2)} <span style={{opacity:"50%"}}>({item.price} each)</span></h2>
+                                            <h3>{item.name}</h3>
+                                        </div>
+                                    </div>
+                                    <p style={{textAlign:'center'}}>
+                                    <button style={{margin:"10px"}} onClick={()=>handleClickDecrement(item.id,item.quantity)}>-</button>{item.quantity}<button style={{margin:"10px"}} onClick={()=>handleClickIncrement(item.id,item.quantity)}>+</button><button onClick={()=>handleDelete(item.id)} ><TrashIcon/></button>
+                                    </p>
+                                </div>
                             ))}
-                        </ul>)}
+                        </div>)}
+                        </div>
                     </div>
                 </>
             );

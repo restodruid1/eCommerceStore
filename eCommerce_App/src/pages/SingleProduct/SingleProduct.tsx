@@ -61,8 +61,8 @@ export function SingleProduct(){
                 alert("quantity not in stock");
                 setcartQuantity(data[0].quantity);
             } else {
-                const { id, name, price } = data[0];
-                const cartItem: CartItem = {id,name,price,quantity:cartQuantity}; 
+                const { id, name, price, url } = data[0];
+                const cartItem: CartItem = {id,name,price,quantity:cartQuantity, image:url}; 
                 // alert(`added ${cartQuantity} to cart`);
                 cartDataState.addToCart!(cartItem, data[0].quantity); // Pass stock quantity for valid amount check
             }   

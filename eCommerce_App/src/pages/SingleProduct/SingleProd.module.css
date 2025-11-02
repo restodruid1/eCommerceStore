@@ -38,6 +38,7 @@
 .mainImage {
     width: 600px;
     height: 600px;
+    object-fit: contain
 }
 .secondaryImage {
     width: 200px;
