@@ -54,10 +54,25 @@
 .body.row {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 5rem;
   /* justify-content: flex-start; */
   justify-content: center;
   align-items: flex-start;
+}
+
+.productItems{
+  flex:1 1 0;
+  min-height:400px;
+  max-width: 200px;
+  min-width: 200px;
+  border: 4px solid black;
+}
+
+.productImages {
+  width: 100%;
+  height: 150px;
+  cursor: pointer;
+  background-color:lightgray;
 }
 
 .open {
