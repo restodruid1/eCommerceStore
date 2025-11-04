@@ -1,5 +1,5 @@
 import type { LayoutProps } from "../Layout";
-import { useOutletContext } from "react-router-dom";
+import { Link, useOutletContext } from "react-router-dom";
 import { useCart } from "../../CartContext";
 import { FaTrashAlt } from 'react-icons/fa';
 import type { IconType } from 'react-icons';
@@ -54,7 +54,7 @@ export function Cart(){
 
     return (
                 <>
-                    <h1 className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>Cart ({cartDataState!.cartTotalItems!()} items)</h1>
+                    <h1 className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>Cart ({cartDataState!.cartTotalItems!()} {cartDataState!.cartTotalItems!() === 1  ? 'item' : 'items'})</h1>
                     <div  className={`body row ${isClicked && isDesktop ? 'open' : ''}`}>
                         <div style={{display:"flex", flexDirection:"column",background:"darkgrey", borderRadius:"5px", borderColor:"black", minWidth:"300px"}}>
                         <p style={{textAlign:"center"}}>ITEMS IN CART</p>
@@ -75,6 +75,7 @@ export function Cart(){
                             ))}
                         </div>)}
                         </div>
+                        <Link to={"/Checkout"}></Link>
                     </div>
                 </>
             );

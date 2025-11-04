@@ -1,6 +1,7 @@
 .cartContainer {
     position: relative;
     display: inline-block;
+    margin-right: 25px;
   }
   
 .cartIcon {
@@ -29,9 +30,26 @@ opacity: 1;
 transform: translateY(0);
 }
 
-/* li {
-  width: 100%;
+.cartQuantityIcon {
+  position: absolute;
+  top: -20px;
+  right: 0px; 
+  font-size: large;
+  background: red;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  line-height: 20px;
 }
-ul {
-  width: 100%;
-} */
+.cartPriceIcon {
+  position: absolute;
+  top: 30px;
+  right: 25px; 
+  font-size: medium;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  line-height: 20px;
+}

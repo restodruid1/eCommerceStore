@@ -23,8 +23,20 @@ export function CartDropDown (){
         className={styles.cartContainer}
         onMouseEnter={() => setIsOpen(true)}
         onMouseLeave={() => setIsOpen(false)}
-        >
-        <div className={styles.cartIcon}><Link to={"/Cart"}><CartIcon size={40}/></Link></div>
+        >    
+        
+        
+            <div className={styles.cartIcon}>
+                <Link to={"/Cart"}><CartIcon size={40}/></Link>
+            </div>
+            <p className={styles.cartQuantityIcon}>
+                {cartDataState!.cartTotalItems!()}
+            </p>
+            <p className={styles.cartPriceIcon}>
+                $
+                {cartDataState!.cartTotalItems!() < 1 ? "0.00" : cartDataState!.cartTotalPrice!()}
+            </p>
+        
 
         {isOpen && (
             <div className={styles.cartDropdown}>
