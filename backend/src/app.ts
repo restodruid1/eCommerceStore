@@ -22,7 +22,7 @@ app.use(cors({
   }));
 // app.use(cors());
 app.use(express.json()); 
-const stripe = new Stripe('sk_test_51SPrSR5UVkCvvwZT7ILscTVbtx8mSp0gZQgyLePKg02jdIulsyGRO1e3rRCih5QyBVD2ZbYGMWfWVFxb77bolI3200EHAlU81T');
+const stripe = new Stripe(`${process.env.TEST_STRIPE_API}`);
 
 app.post('/create-checkout-session', async (req, res) => {
   // console.log(req.body.items);
