@@ -1,15 +1,38 @@
 import type { LayoutProps } from "../Layout";
-import { Link, useOutletContext } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 import { useCart } from "../../CartContext";
 import { FaTrashAlt } from 'react-icons/fa';
 import type { IconType } from 'react-icons';
 import type { DataInterface } from "../CustNailProd/CustNailProd";
+import { useState, useEffect } from "react";
 
 export function Cart(){
     const { isClicked, isDesktop } = useOutletContext<LayoutProps>();
     const TrashIcon: IconType = FaTrashAlt;
     const cartDataState = useCart();
     const {cartItems} = cartDataState;
+    const [message, setMessage] = useState("");
+
+    useEffect(() => {
+        // Check to see if this is a redirect back from Checkout
+        const query = new URLSearchParams(window.location.search);
+    
+        if (query.get("success")) {
+          setMessage("Order placed! You will receive an email confirmation.");
+        }
+    
+        if (query.get("canceled")) {
+          setMessage(
+            "Order canceled -- continue to shop around and checkout when you're ready."
+          );
+        }
+      }, []);
+
+    const Message = ({ message }:{ message: string }) => (
+    <section>
+        <p>{message}</p>
+    </section>
+    );
 
     function handleDelete(itemId:number){
         cartDataState!.deleteItem!(itemId);
@@ -52,31 +75,58 @@ export function Cart(){
             </div>
         )
 
-    return (
-                <>
-                    <h1 className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>Cart ({cartDataState!.cartTotalItems!()} {cartDataState!.cartTotalItems!() === 1  ? 'item' : 'items'})</h1>
-                    <div  className={`body column ${isClicked && isDesktop ? 'open' : ''}`}>
-                        <div style={{display:"flex", flexDirection:"column",background:"darkgrey", borderRadius:"5px", borderColor:"black", minWidth:"300px"}}>
-                        <p style={{textAlign:"center"}}>ITEMS IN CART</p>
-                        {true && (<div style={{flex:"1 1 0"}}>
-                            {cartItems!.map(item => (
-                                <div>
-                                    <div key={item.id} style={{display:"flex",flex:"1 1 0", alignContent:"center", gap:"5px"}}>
-                                        <img src={`${item.image}`} style={{width:"100px", height:"100px",objectFit:"fill"}}/>
-                                        <div>
-                                            <h2>${(item.price * item.quantity).toFixed(2)} <span style={{opacity:"50%"}}>({item.price} each)</span></h2>
-                                            <h3>{item.name}</h3>
-                                        </div>
+    return message ? (
+        <Message message={message} />
+    ) : (
+            <>
+                <h1 className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>Cart ({cartDataState!.cartTotalItems!()} {cartDataState!.cartTotalItems!() === 1  ? 'item' : 'items'})</h1>
+                <div  className={`body column ${isClicked && isDesktop ? 'open' : ''}`}>
+                    <div style={{display:"flex", flexDirection:"column",background:"darkgrey", borderRadius:"5px", borderColor:"black", minWidth:"300px"}}>
+                    <p style={{textAlign:"center"}}>ITEMS IN CART</p>
+                    {true && (<div style={{flex:"1 1 0"}}>
+                        {cartItems!.map(item => (
+                            <div>
+                                <div key={item.id} style={{display:"flex",flex:"1 1 0", alignContent:"center", gap:"5px"}}>
+                                    <img src={`${item.image}`} style={{width:"100px", height:"100px",objectFit:"fill"}}/>
+                                    <div>
+                                        <h2>${(item.price * item.quantity).toFixed(2)} <span style={{opacity:"50%"}}>({item.price} each)</span></h2>
+                                        <h3>{item.name}</h3>
                                     </div>
-                                    <p style={{textAlign:'center'}}>
-                                    <button style={{margin:"10px"}} onClick={()=>handleClickDecrement(item.id,item.quantity)}>-</button>{item.quantity}<button style={{margin:"10px"}} onClick={()=>handleClickIncrement(item.id,item.quantity)}>+</button><button onClick={()=>handleDelete(item.id)} ><TrashIcon/></button>
-                                    </p>
                                 </div>
-                            ))}
-                        </div>)}
-                        </div>
-                        <button style={{backgroundColor:"blue"}}><Link to={"/Checkout"}>Checkout</Link></button>
+                                <p style={{textAlign:'center'}}>
+                                <button style={{margin:"10px"}} onClick={()=>handleClickDecrement(item.id,item.quantity)}>-</button>{item.quantity}<button style={{margin:"10px"}} onClick={()=>handleClickIncrement(item.id,item.quantity)}>+</button><button onClick={()=>handleDelete(item.id)} ><TrashIcon/></button>
+                                </p>
+                            </div>
+                        ))}
+                    </div>)}
                     </div>
-                </>
-            );
+                    {/* <Link to={"/Checkout"}>Checkout</Link> */}
+                    <button 
+                    style={{backgroundColor:"blue"}}
+                    onClick={async () => {
+                        try {
+                          const res = await fetch("http://localhost:5000/create-checkout-session", {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                              items: cartItems,     
+                            }),
+                          });
+                    
+                          const session = await res.json();     // Stripe hosted checkout page URL
+                          console.log(session);
+                          
+                          window.location.href = session.url;   // Redirect to Stripe Checkout
+                        } catch (error) {
+                          console.error("Error creating checkout session:", error);
+                        }
+                      }}
+                      >
+                        Checkout
+                    </button>
+                </div>
+            </>
+        );
 }

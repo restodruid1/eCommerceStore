@@ -3,15 +3,59 @@ import cors from 'cors';
 import dotenv from "dotenv";
 import pool from "./db/index.js";
 import * as db from "./db/index.js";
+import Stripe from "stripe";
 // import { Request, Response } from "express";
 
-dotenv.config();
+interface Item {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image:string;
+}
 
+dotenv.config();
 const app = express();
 app.use(cors({
-  origin: 'http://localhost:5173'
-}));
-app.use(express.json()); // middleware to parse JSON
+    origin: 'http://localhost:5173',
+    methods: ["GET", "POST"]
+  }));
+// app.use(cors());
+app.use(express.json()); 
+const stripe = new Stripe('sk_test_51SPrSR5UVkCvvwZT7ILscTVbtx8mSp0gZQgyLePKg02jdIulsyGRO1e3rRCih5QyBVD2ZbYGMWfWVFxb77bolI3200EHAlU81T');
+
+app.post('/create-checkout-session', async (req, res) => {
+  // console.log(req.body.items);
+  const items = req.body.items as Item[];
+  try {
+    const session = await stripe.checkout.sessions.create({
+      line_items: items.map(item =>({
+        price_data: {
+                      currency: 'usd',
+                      product_data: {
+                        name: item.name,
+                        images:[item.image],
+                      },
+                      unit_amount: Math.round(item.price * 100),
+                    },
+                    quantity: item.quantity,
+                    // images:[item.image],
+      })),
+      mode: 'payment',
+      success_url: `http://localhost:5173/Cart?success=true`,
+      cancel_url: `http://localhost:5173?canceled=true`,
+    });
+  
+    res.json({url:session.url!});
+  } catch (e) {
+    console.error("STRIPE ERROR:", e);
+    res.status(400).send("STRIP CALL ERROR");
+  }
+  
+});
+
+
+
 app.get("/products/customnail", async (req, res)=>{
     try {
         const result = await db.query(
