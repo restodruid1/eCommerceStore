@@ -55,7 +55,7 @@ export function Cart(){
     return (
                 <>
                     <h1 className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>Cart ({cartDataState!.cartTotalItems!()} {cartDataState!.cartTotalItems!() === 1  ? 'item' : 'items'})</h1>
-                    <div  className={`body row ${isClicked && isDesktop ? 'open' : ''}`}>
+                    <div  className={`body column ${isClicked && isDesktop ? 'open' : ''}`}>
                         <div style={{display:"flex", flexDirection:"column",background:"darkgrey", borderRadius:"5px", borderColor:"black", minWidth:"300px"}}>
                         <p style={{textAlign:"center"}}>ITEMS IN CART</p>
                         {true && (<div style={{flex:"1 1 0"}}>
@@ -75,7 +75,7 @@ export function Cart(){
                             ))}
                         </div>)}
                         </div>
-                        <Link to={"/Checkout"}></Link>
+                        <button style={{backgroundColor:"blue"}}><Link to={"/Checkout"}>Checkout</Link></button>
                     </div>
                 </>
             );
