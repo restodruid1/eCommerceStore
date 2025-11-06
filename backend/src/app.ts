@@ -39,11 +39,10 @@ app.post('/create-checkout-session', async (req, res) => {
                       unit_amount: Math.round(item.price * 100),
                     },
                     quantity: item.quantity,
-                    // images:[item.image],
       })),
       mode: 'payment',
       success_url: `http://localhost:5173/Cart?success=true`,
-      cancel_url: `http://localhost:5173?canceled=true`,
+      cancel_url: `http://localhost:5173/Cart?canceled=true`,
     });
   
     res.json({url:session.url!});

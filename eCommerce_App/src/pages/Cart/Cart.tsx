@@ -1,9 +1,10 @@
 import type { LayoutProps } from "../Layout";
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, useLocation } from "react-router-dom";
 import { useCart } from "../../CartContext";
 import { FaTrashAlt } from 'react-icons/fa';
 import type { IconType } from 'react-icons';
 import type { DataInterface } from "../CustNailProd/CustNailProd";
+import { CheckoutButton } from "../../components/CheckoutButton/CheckoutButton";
 import { useState, useEffect } from "react";
 
 export function Cart(){
@@ -12,6 +13,17 @@ export function Cart(){
     const cartDataState = useCart();
     const {cartItems} = cartDataState;
     const [message, setMessage] = useState("");
+    const location = useLocation();
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        if (params.get("success") === "true") {
+        alert("Checkout succeeded!");
+        cartDataState.clearCart!();
+        }
+    }, [location.search]);
+
+
 
     useEffect(() => {
         // Check to see if this is a redirect back from Checkout
@@ -85,8 +97,8 @@ export function Cart(){
                     <p style={{textAlign:"center"}}>ITEMS IN CART</p>
                     {true && (<div style={{flex:"1 1 0"}}>
                         {cartItems!.map(item => (
-                            <div>
-                                <div key={item.id} style={{display:"flex",flex:"1 1 0", alignContent:"center", gap:"5px"}}>
+                            <div key={item.id}>
+                                <div style={{display:"flex",flex:"1 1 0", alignContent:"center", gap:"5px"}}>
                                     <img src={`${item.image}`} style={{width:"100px", height:"100px",objectFit:"fill"}}/>
                                     <div>
                                         <h2>${(item.price * item.quantity).toFixed(2)} <span style={{opacity:"50%"}}>({item.price} each)</span></h2>
@@ -100,32 +112,7 @@ export function Cart(){
                         ))}
                     </div>)}
                     </div>
-                    {/* <Link to={"/Checkout"}>Checkout</Link> */}
-                    <button 
-                    style={{backgroundColor:"blue"}}
-                    onClick={async () => {
-                        try {
-                          const res = await fetch("http://localhost:5000/create-checkout-session", {
-                            method: "POST",
-                            headers: {
-                              "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({
-                              items: cartItems,     
-                            }),
-                          });
-                    
-                          const session = await res.json();     // Stripe hosted checkout page URL
-                          console.log(session);
-                          
-                          window.location.href = session.url;   // Redirect to Stripe Checkout
-                        } catch (error) {
-                          console.error("Error creating checkout session:", error);
-                        }
-                      }}
-                      >
-                        Checkout
-                    </button>
+                    <CheckoutButton />
                 </div>
             </>
         );
