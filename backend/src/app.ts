@@ -4,7 +4,8 @@ import dotenv from "dotenv";
 import pool from "./db/index.js";
 import * as db from "./db/index.js";
 import Stripe from "stripe";
-// import { Request, Response } from "express";
+import { Request, Response } from "express";
+
 
 interface Item {
   id: number;
@@ -20,39 +21,80 @@ app.use(cors({
     origin: 'http://localhost:5173',
     methods: ["GET", "POST"]
   }));
-// app.use(cors());
+
 app.use(express.json()); 
 const stripe = new Stripe(`${process.env.TEST_STRIPE_API}`);
 
 app.post('/create-checkout-session', async (req, res) => {
   // console.log(req.body.items);
   const items = req.body.items as Item[];
+  
+  // Validate client cart data before checkout
   try {
-    const session = await stripe.checkout.sessions.create({
-      line_items: items.map(item =>({
-        price_data: {
-                      currency: 'usd',
-                      product_data: {
-                        name: item.name,
-                        images:[item.image],
-                      },
-                      unit_amount: Math.round(item.price * 100),
-                    },
-                    quantity: item.quantity,
-      })),
-      mode: 'payment',
-      success_url: `http://localhost:5173/Cart?success=true`,
-      cancel_url: `http://localhost:5173/Cart?canceled=true`,
-    });
-  
-    res.json({url:session.url!});
-  } catch (e) {
-    console.error("STRIPE ERROR:", e);
-    res.status(400).send("STRIP CALL ERROR");
-  }
-  
+      const result = await db.query(
+      `SELECT 
+            p.*, 
+            pi.product_id,
+            pi.url,
+            pi.main_image
+        FROM products p
+        JOIN product_images pi 
+            ON pi.product_id = p.id
+        WHERE pi.main_image = true;`
+      ,[]);
+
+      for (const item of items) {
+        const product = result.rows.find(p => p.id === item.id);
+        
+        if (!product) {
+          return res.json({ message: "ITEM NOT FOUND" });
+        }
+      
+        if (item.quantity > product.quantity || item.quantity === 0) {
+          console.log("QUANTITY:", item.quantity);
+          return res.json({ message: "ITEM QUANTITY NOT AVAILABLE" });
+        }
+      
+        // Ensure proper data, not client data
+        item.id = product.id;
+        item.name = product.name;
+        item.price = product.price;
+        item.image = product.url;
+      }
+      
+      checkout(items, req, res);    // Stripe checkout 
+    } catch (e) {
+      console.error("STRIPE ERROR:", e);
+      res.status(400).send("STRIP CALL ERROR");
+    } 
 });
 
+
+const checkout = async(items:Item[], req:Request, res:Response)=>{
+  try {
+        const session = await stripe.checkout.sessions.create({
+          line_items: items.map(item =>({
+            price_data: {
+                          currency: 'usd',
+                          product_data: {
+                            name: item.name,
+                            images:[item.image],
+                          },
+                          unit_amount: Math.round(item.price * 100),
+                        },
+                        quantity: item.quantity,
+          })),
+          mode: 'payment',
+          success_url: `http://localhost:5173/Cart?success=true`,
+          cancel_url: `http://localhost:5173/Cart?canceled=true`,
+        });
+      
+        res.json({url:session.url!});
+      } catch (e) {
+        console.error("STRIPE ERROR:", e);
+        res.status(400).send("STRIP CALL ERROR");
+      }
+};
 
 
 app.get("/products/customnail", async (req, res)=>{
