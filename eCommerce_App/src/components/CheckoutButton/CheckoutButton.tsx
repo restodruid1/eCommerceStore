@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useCart } from "../../CartContext";
+import { Link } from 'react-router-dom';
 
 export function CheckoutButton (){
     const cartDataState = useCart();
@@ -21,7 +22,7 @@ export function CheckoutButton (){
             {errorMessage && (
                <h2 style={{color:"red"}}>{errorMessage}</h2> 
             )}
-            <button 
+            {/* <button 
                 style={{backgroundColor:"blue"}}
                 onClick={async () => {
                     try {
@@ -47,7 +48,8 @@ export function CheckoutButton (){
                     }}
                     >
                     Checkout
-                </button>
+                </button> */}
+            <button><Link to={"/Checkout"}>Checkout</Link></button>
             </>
     )
 }

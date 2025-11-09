@@ -10,7 +10,8 @@ import { HandmadeCrafts } from "./pages/OtherHandmadeCrafts/HandmadeCrafts";
 import { ChannelMerch } from "./pages/ChannelMerch/ChannelMerch";
 import { ContactMe } from "./pages/ContactMe/ContactMe";
 import { Cart } from "./pages/Cart/Cart";
-// import { Checkout2 } from "./pages/Checkout/Checkout";
+// import { StripeCheckout } from "./pages/StripeCheckout/StripeCheckout";
+import  StripeCheckout  from "./pages/StripeCheckout/StripeCheckout"
 
 
 function App() {
@@ -29,7 +30,7 @@ function App() {
           <Route path="Faq" element={<Faq />} />
           <Route path="ContactMe" element={<ContactMe />} />
           <Route path="Cart" element={<Cart />} />
-          {/* <Route path="Checkout" element={<Checkout2 />} /> */}
+          <Route path="Checkout" element={<StripeCheckout />} />
           <Route path="*" element={<h1>404 Not Found</h1>} />
         </Route >
       </Routes>
