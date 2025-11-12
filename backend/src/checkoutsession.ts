@@ -64,18 +64,16 @@ const checkout = async(items:Item[], req:Request, res:Response)=>{
             shipping_address_collection: {
               allowed_countries: ['US'],
             },
-            shipping_options: [
-              {
-                shipping_rate_data: {
-                  display_name: 'Dummy shipping',
-                  type: 'fixed_amount',
-                  fixed_amount: {
-                    amount: 0,
-                    currency: 'usd',
-                  },
+            shipping_options: [{
+              shipping_rate_data: {
+                display_name: "Enter address to determine shipping",
+                type: 'fixed_amount',
+                fixed_amount: {
+                  amount: 0,
+                  currency: 'usd',
                 },
               },
-            ],
+            }],
           line_items: items.map(item =>({
             price_data: {
                           currency: 'usd',

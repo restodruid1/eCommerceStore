@@ -94,21 +94,30 @@ const addressTo = {
 };
 
 const parcel:ParcelCreateRequest = {
-  length: "5",
+  length: "10",
   width: "5",
-  height: "5",
+  height: "2",
+  distanceUnit: "in",
+  weight: "90",
+  massUnit: "lb"
+};
+
+const parcel2:ParcelCreateRequest = {
+  length: "10",
+  width: "10",
+  height: "10",
   distanceUnit: "in",
   weight: "2",
   massUnit: "lb"
 };
 
-const parcel2 = {
+const parcel3:ParcelCreateRequest = {
   length: "10",
-  width: "10",
-  height: "10",
-  distanceUnit: "In",
-  weight: "2",
-  massUnit: "Lb"
+  width: "5",
+  height: "1",
+  distanceUnit: "in",
+  weight: "0.5",
+  massUnit: "lb"
 };
 
 const shipment = await shippo.shipments.create({
@@ -127,7 +136,7 @@ const shipping_options = rates.map(rate => {
       display_name: rate.servicelevel.name,
       type: "fixed_amount",
       fixed_amount: {
-        amount: Number(rate.amount) * 100,
+        amount: Math.round(Number(rate.amount) * 100),
         currency: rate.currency,
       },
       delivery_estimate: {
@@ -144,7 +153,11 @@ const shipping_options = rates.map(rate => {
   };
  
 })
-return shipping_options;
+if (shipping_options.length > 0) {
+  return shipping_options;
+} else {
+  return false;
+}
 // return [
 //     {
 //       shipping_rate_data: {
@@ -219,7 +232,7 @@ router.post('/', async (req:Request, res:Response) => {
     const shippingOptions:any = await calculateShippingOptions(shipping_details, session);
 
     // 4. Update the Checkout Session with the customer's shipping details and shipping options
-    if (shippingOptions!) {
+    if (shippingOptions) {
         console.log("HERE " + shippingOptions);
         await stripe.checkout.sessions.update(checkout_session_id, {
         collected_information: {shipping_details},

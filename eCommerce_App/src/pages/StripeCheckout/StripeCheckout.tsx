@@ -63,21 +63,34 @@ function StripeCheckout() {
   const onShippingDetailsChange = async (shippingDetailsChangeEvent:ShippingDetailsChangeEvent) => {
     const {checkoutSessionId, shippingDetails} = shippingDetailsChangeEvent;
     
-    const response:any = await fetch("http://localhost:5000/calculate-shipping-options", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json" 
-      },
-      body: JSON.stringify({
-        checkout_session_id: checkoutSessionId,
-        shipping_details: shippingDetails,
+    try {
+      const response:any = await fetch("http://localhost:5000/calculate-shipping-options", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json" 
+        },
+        body: JSON.stringify({
+          checkout_session_id: checkoutSessionId,
+          shipping_details: shippingDetails,
+        })
       })
-    })
-    // alert(response);
-    if (response.type === 'error') {
-      return Promise.resolve({ type: "reject", errorMessage: response.message });
-    } else {
-      return Promise.resolve({ type: "accept" });
+      const result = await response.json();
+      
+      if (result.type === 'error') {
+        return {
+          type: "reject",
+          errorMessage: "We couldn't calculate shipping for this address. Please try again or contact support."
+          // You can customize this message to be anything you want
+        };
+      } else {
+        return { type: "accept" };
+      }
+    }catch (error) {
+      // Error handling with custom message
+      return {
+        type: "reject",
+        errorMessage: "We couldn't calculate shipping for this address. Please try again or contact support."
+      };
     }
   };
 
