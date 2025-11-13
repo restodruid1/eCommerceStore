@@ -3,7 +3,10 @@ import { Request, Response } from "express";
 import { stripe } from './server.js';
 import Stripe from 'stripe';
 import { Shippo } from "shippo";
+import type { Rate } from 'shippo';
 const router = Router();
+
+const shippo = new Shippo({apiKeyHeader: `${process.env.SHIPPO_TEST_API}`});
 
 function validateShippingDetails(shippingDetails:ShippingDetails) {
     // TODO: Remove error and implement...
@@ -13,7 +16,7 @@ function validateShippingDetails(shippingDetails:ShippingDetails) {
     `);
   }
  
-const allowedCarriers = ["USPS", "UPS", "FedEx", "DHL Express"];
+
 interface ParcelCreateRequest {
   length: string;
   width: string;
@@ -23,7 +26,29 @@ interface ParcelCreateRequest {
   massUnit: "oz" | "lb" | "g" | "kg";
 }
 
-const shippo = new Shippo({apiKeyHeader: `${process.env.SHIPPO_TEST_API}`});
+
+
+interface ShippingRateWrapper {
+  shipping_rate_data: ShippingRateData;
+}
+interface ShippingRateData {
+  display_name: string;
+  type: "fixed_amount";
+  fixed_amount: {
+    amount: number;
+    currency: string;
+  };
+  delivery_estimate: {
+    minimum: {
+      unit: "business_day";
+      value: number;
+    },
+    maximum: {
+      unit: "business_day";
+      value: number;
+    }
+  };
+}
 
 interface AddressCreateRequest {
   name: string;
@@ -56,20 +81,20 @@ export interface SimplifiedShippoRate {
   };
   amount: string;
   currency: string;
-  estimated_days?: number;
+  estimatedDays: number;
 }
 
-type AllowedCarrier = "USPS" | "UPS" | "FedEx" | "DHL";
-function getFilteredRates(rates: any[]): SimplifiedShippoRate[] {
+const allowedCarriers = ["USPS", "UPS", "FedEx", "DHL Express"];
+function getFilteredRates(rates:Rate[]): SimplifiedShippoRate[] {
   return rates
   .filter(rate => allowedCarriers.includes(rate.provider))
   .filter(rate => parseFloat(rate.amount) < 100)
   .map(rate => ({
     provider: rate.provider,
-    servicelevel: { name: rate.servicelevel?.name },
+    servicelevel: { name: rate.servicelevel.name ?? "Name Not Found" },
     amount: rate.amount,
     currency: rate.currency,
-    estimated_days: rate.estimatedDays
+    estimatedDays: rate.estimatedDays ?? 5
   }))
   .sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount)) 
   .slice(0, 5); 
@@ -78,126 +103,66 @@ function getFilteredRates(rates: any[]): SimplifiedShippoRate[] {
 
 
 // Return an array of the updated shipping options or the original options if no update is needed.
-async function calculateShippingOptions(shippingDetails:ShippingDetails, session:Stripe.Checkout.Session) {
-// TODO: Remove error and implement...
-// throw new Error(`
-//     Calculate shipping options based on the customer's shipping details and the
-//     Checkout Session's line items.
-// `);
-const addressTo = {
-  name: "Mr Hippo",
-  street1: "Broadway 1",
-  city: "New York",
-  state: "NY",
-  zip: "10007",
-  country: "US",
-};
+async function calculateShippingOptions(shippingDetails:ShippingDetails, session:Stripe.Checkout.Session):Promise<ShippingRateWrapper[] | false> {
+  const addressTo = {
+    name: "Mr Hippo",
+    street1: "Broadway 1",
+    city: "New York",
+    state: "NY",
+    zip: "10007",
+    country: "US",
+  };
 
-const parcel:ParcelCreateRequest = {
-  length: "10",
-  width: "5",
-  height: "2",
-  distanceUnit: "in",
-  weight: "90",
-  massUnit: "lb"
-};
+  const parcel:ParcelCreateRequest = {
+    length: "10",
+    width: "5",
+    height: "2",
+    distanceUnit: "in",
+    weight: "20",
+    massUnit: "lb"
+  };
 
-const parcel2:ParcelCreateRequest = {
-  length: "10",
-  width: "10",
-  height: "10",
-  distanceUnit: "in",
-  weight: "2",
-  massUnit: "lb"
-};
 
-const parcel3:ParcelCreateRequest = {
-  length: "10",
-  width: "5",
-  height: "1",
-  distanceUnit: "in",
-  weight: "0.5",
-  massUnit: "lb"
-};
+  const shipment = await shippo.shipments.create({
+    addressFrom: addressFrom,
+    addressTo: addressTo,
+    parcels: [parcel],
+    async: false
+  });
+  console.log( typeof(process.env.SENDER_PHONE));
+  console.log( process.env.SENDER_ADDRESS);
 
-const shipment = await shippo.shipments.create({
-  addressFrom: addressFrom,
-  addressTo: addressTo,
-  parcels: [parcel],
-  async: false
-});
-console.log( typeof(process.env.SENDER_PHONE));
-console.log( process.env.SENDER_ADDRESS);
-const rates = getFilteredRates(shipment.rates);
-console.log(rates);
-const shipping_options = rates.map(rate => {
-  return {
-    shipping_rate_data: {
-      display_name: rate.servicelevel.name,
-      type: "fixed_amount",
-      fixed_amount: {
-        amount: Math.round(Number(rate.amount) * 100),
-        currency: rate.currency,
-      },
-      delivery_estimate: {
-        minimum: {
-          unit: "business_day",
-          value: rate.estimated_days,
+  const rates = getFilteredRates(shipment.rates);
+  console.log(rates);
+  const shipping_options:ShippingRateWrapper[] = rates.map(rate => ({
+      shipping_rate_data: {
+        display_name: `${rate.provider} - ${rate.servicelevel.name}`,
+        type: "fixed_amount",
+        fixed_amount: {
+          amount: Math.round(Number(rate.amount) * 100),
+          currency: rate.currency,
         },
-        maximum: {
-          unit: "business_day",
-          value: rate.estimated_days! + 2,
-        }
-      }
+        delivery_estimate: {
+          minimum: {
+            unit: "business_day",
+            value: rate.estimatedDays,
+          },
+          maximum: {
+            unit: "business_day",
+            value: rate.estimatedDays! + 2,
+          }
+        }    
     }
-  };
- 
-})
-if (shipping_options.length > 0) {
-  return shipping_options;
-} else {
-  return false;
+  }));
+
+  if (shipping_options.length > 0) {
+    return shipping_options;
+  } else {
+    return false;
+  }
+
 }
-// return [
-//     {
-//       shipping_rate_data: {
-//         display_name: "Standard Shipping",
-//         type: "fixed_amount",
-//         fixed_amount: {
-//           amount: 500, // $5.00
-//           currency: "usd",
-//         },
-//         delivery_estimate: {
-//           minimum: {
-//             unit: "business_day",
-//             value: 3,
-//           },
-//           maximum: {
-//             unit: "business_day",
-//             value: 5,
-//           },
-//         },
-//       },
-//     }];
-}
-interface ShippingRateData {
-  display_name: String;
-  type: String;
-  fixed_amount: {
-    amount: Number;
-    currency: String;
-  };
-  delivery_estimate: {
-    minimum: {
-      unit: String;
-      value: Number;
-    },
-    maximum: {
-      unit: String;
-      value: Number;
-    }
-  };
-}
+
 
 interface ShippingDetailsChangeEvent {
   checkout_session_id: string;  // ID of the Checkout Session
@@ -213,8 +178,7 @@ interface ShippingDetails {
     postal_code: string;    // ZIP or postal code (e.g., "94111")
     country: string;        // Two-letter country code (e.g., "US")
   };
-  phone?: string;           // Phone number - optional, may not be present if not collected
-  
+  phone?: string;           // Phone number - optional, may not be present if not collected 
 }
 
 router.post('/', async (req:Request, res:Response) => {
@@ -229,7 +193,7 @@ router.post('/', async (req:Request, res:Response) => {
     }
 
     // 3. Calculate the shipping options
-    const shippingOptions:any = await calculateShippingOptions(shipping_details, session);
+    const shippingOptions: ShippingRateWrapper[] | false = await calculateShippingOptions(shipping_details, session);
 
     // 4. Update the Checkout Session with the customer's shipping details and shipping options
     if (shippingOptions) {

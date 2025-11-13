@@ -1,18 +1,11 @@
 import {loadStripe} from '@stripe/stripe-js';
 import { useCart } from '../../CartContext';
+import { useCallback } from 'react';
+import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
 const stripePromise = loadStripe('pk_test_51SPrSR5UVkCvvwZTK49SKzVqU0o1Kbc9q1jQ7XWQNWm8cKkRLk0JOEzxSQj1fYiJSuVehCrokM7tHCKR14xMZH4900eFAVK3uZ');
-
-
-import React, { useCallback } from 'react';
-import {
-  EmbeddedCheckoutProvider,
-  EmbeddedCheckout,
-} from '@stripe/react-stripe-js';
-
-
 
 interface ShippingDetailsChangeEvent {
   checkoutSessionId: string;  // ID of the Checkout Session
@@ -31,7 +24,6 @@ interface ShippingDetailsChangeEvent {
 }
 
 
-
 function StripeCheckout() {
   const cartDataState = useCart();
   const {cartItems} = cartDataState;
@@ -48,7 +40,7 @@ function StripeCheckout() {
     }),
     })
       .then((res) => res.json())
-      .then((data:{clientSecret?:string, error?:string}) => {
+      .then((data:{clientSecret?:string | null, error?:string}) => {
         if (data.error) {
           alert("SESSION ERROR");
           return undefined;
@@ -64,7 +56,7 @@ function StripeCheckout() {
     const {checkoutSessionId, shippingDetails} = shippingDetailsChangeEvent;
     
     try {
-      const response:any = await fetch("http://localhost:5000/calculate-shipping-options", {
+      const response = await fetch("http://localhost:5000/calculate-shipping-options", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json" 
@@ -74,7 +66,7 @@ function StripeCheckout() {
           shipping_details: shippingDetails,
         })
       })
-      const result = await response.json();
+      const result:{type:string, error?:string, value?:{}} = await response.json();
       
       if (result.type === 'error') {
         return {

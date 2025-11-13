@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { useCart } from "../../CartContext";
+// import { useCart } from "../../CartContext";
 import { Link } from 'react-router-dom';
 
 export function CheckoutButton (){
-    const cartDataState = useCart();
-    const {cartItems} = cartDataState;
+    // const cartDataState = useCart();
+    // const {cartItems} = cartDataState;
     const [errorMessage, setErrorMessage] = useState<string>("");
     
     useEffect(() => {
