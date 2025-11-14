@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import checkoutsession from "./checkoutsession.js";
 import databasequeries from "./databaseroutes.js";
 import handleshipping from "./shipping.js";
+import checkoutreturn from "./checkoutreturn.js";
 import Stripe from "stripe";
 
 export interface Item {
@@ -28,6 +29,7 @@ app.use(cors({
 app.use('/create-checkout-session', checkoutsession);
 app.use('/products', databasequeries);
 app.use('/calculate-shipping-options', handleshipping);
+app.use('/session_status', checkoutreturn);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

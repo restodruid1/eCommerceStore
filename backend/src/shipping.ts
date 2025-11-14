@@ -8,9 +8,6 @@ const router = Router();
 
 const shippo = new Shippo({apiKeyHeader: `${process.env.SHIPPO_TEST_API}`});
 
-
- 
-
 interface ParcelCreateRequest {
   length: string;
   width: string;
@@ -19,8 +16,6 @@ interface ParcelCreateRequest {
   weight: string;
   massUnit: "oz" | "lb" | "g" | "kg";
 }
-
-
 
 interface ShippingRateWrapper {
   shipping_rate_data: ShippingRateData;
@@ -63,7 +58,7 @@ const addressFrom: AddressCreateRequest = {
     city: process.env.SENDER_CITY!,
     state: process.env.SENDER_STATE!,
     zip: process.env.SENDER_ZIP!,
-    country: process.env.SENDER_COUNTRY!, // iso2 country code
+    country: process.env.SENDER_COUNTRY!, // iso2 country code e.g., "US"
     phone: process.env.SENDER_PHONE!,
     email: process.env.SENDER_EMAIL!,
 };
@@ -117,6 +112,11 @@ async function validateShippingDetails(shippingDetails:ShippoShippingDetails): P
   return { success: true };
 }
 
+function packParcelItems() {
+  
+}
+
+
 // Return an array of the updated shipping options or the original options if no update is needed.
 async function calculateShippingOptions(addressTo:ShippoShippingDetails, session:Stripe.Checkout.Session):Promise<ShippingRateWrapper[] | false> {
   const parcel:ParcelCreateRequest = {
@@ -127,7 +127,7 @@ async function calculateShippingOptions(addressTo:ShippoShippingDetails, session
     weight: "20",
     massUnit: "lb"
   };
-
+  const parcel2 = packParcelItems();
   const shipment = await shippo.shipments.create({
     addressFrom: addressFrom,
     addressTo: addressTo,

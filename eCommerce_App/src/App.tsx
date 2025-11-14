@@ -10,8 +10,8 @@ import { HandmadeCrafts } from "./pages/OtherHandmadeCrafts/HandmadeCrafts";
 import { ChannelMerch } from "./pages/ChannelMerch/ChannelMerch";
 import { ContactMe } from "./pages/ContactMe/ContactMe";
 import { Cart } from "./pages/Cart/Cart";
-// import { StripeCheckout } from "./pages/StripeCheckout/StripeCheckout";
-import  StripeCheckout  from "./pages/StripeCheckout/StripeCheckout"
+import {StripeCheckout}  from "./pages/StripeCheckout/StripeCheckout";
+import { CheckoutReturn } from "./pages/CheckoutReturn/CheckoutReturn";
 
 
 function App() {
@@ -31,6 +31,7 @@ function App() {
           <Route path="ContactMe" element={<ContactMe />} />
           <Route path="Cart" element={<Cart />} />
           <Route path="Checkout" element={<StripeCheckout />} />
+          <Route path="CheckoutReturn" element={<CheckoutReturn />} /> 
           <Route path="*" element={<h1>404 Not Found</h1>} />
         </Route >
       </Routes>

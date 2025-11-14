@@ -24,7 +24,7 @@ interface ShippingDetailsChangeEvent {
 }
 
 
-function StripeCheckout() {
+export function StripeCheckout() {
   const cartDataState = useCart();
   const {cartItems} = cartDataState;
 
@@ -102,6 +102,3 @@ function StripeCheckout() {
     </div>
   );
 };
-
-export default StripeCheckout;
-

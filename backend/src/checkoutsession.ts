@@ -86,7 +86,7 @@ const checkout = async(items:Item[], req:Request, res:Response)=>{
                         quantity: item.quantity,
           })),
           mode: 'payment',
-          return_url: `http://localhost:5173/Cart?success=true`,
+          return_url: `http://localhost:5173/CheckoutReturn?session_id={CHECKOUT_SESSION_ID}`,
           // success_url: `http://localhost:5173/Cart?success=true`,
           // cancel_url: `http://localhost:5173/Cart?canceled=true`,
         });
