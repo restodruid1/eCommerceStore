@@ -66,13 +66,12 @@ function StripeCheckout() {
           shipping_details: shippingDetails,
         })
       })
-      const result:{type:string, error?:string, value?:{}} = await response.json();
+      const result:{type:string, message?:string, value?:{}} = await response.json();
       
       if (result.type === 'error') {
         return {
           type: "reject",
-          errorMessage: "We couldn't calculate shipping for this address. Please try again or contact support."
-          // You can customize this message to be anything you want
+          errorMessage: result.message ?? "We couldn't calculate shipping for this address. Please try again or contact support."
         };
       } else {
         return { type: "accept" };

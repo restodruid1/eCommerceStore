@@ -8,13 +8,7 @@ const router = Router();
 
 const shippo = new Shippo({apiKeyHeader: `${process.env.SHIPPO_TEST_API}`});
 
-function validateShippingDetails(shippingDetails:ShippingDetails) {
-    // TODO: Remove error and implement...
-    return true;
-    throw new Error(`
-      Validate the shipping details the customer has entered.
-    `);
-  }
+
  
 
 interface ParcelCreateRequest {
@@ -100,19 +94,31 @@ function getFilteredRates(rates:Rate[]): SimplifiedShippoRate[] {
   .slice(0, 5); 
 }
 
+type ValidationResponse = {
+  success: boolean;
+  error?: string;
+}
+async function validateShippingDetails(shippingDetails:ShippoShippingDetails): Promise<ValidationResponse> {
+  const addressData = await shippo.addresses.create({...shippingDetails, validate:true});   // Shippo validates address & provides message
+  const results = addressData.validationResults;
+  const firstMessage = results?.messages?.[0];
+  console.log(results?.messages);
+  // Address is invalid
+  if (!results?.isValid) {
+    return { success: false, error: firstMessage?.text! };
+  }
 
+  // Address valid but contains warnings (like missing apt number)
+  if (firstMessage?.type === "address_warning") {
+    return { success: false, error: firstMessage.text! };
+  }
+
+  // Fully valid
+  return { success: true };
+}
 
 // Return an array of the updated shipping options or the original options if no update is needed.
-async function calculateShippingOptions(shippingDetails:ShippingDetails, session:Stripe.Checkout.Session):Promise<ShippingRateWrapper[] | false> {
-  const addressTo = {
-    name: "Mr Hippo",
-    street1: "Broadway 1",
-    city: "New York",
-    state: "NY",
-    zip: "10007",
-    country: "US",
-  };
-
+async function calculateShippingOptions(addressTo:ShippoShippingDetails, session:Stripe.Checkout.Session):Promise<ShippingRateWrapper[] | false> {
   const parcel:ParcelCreateRequest = {
     length: "10",
     width: "5",
@@ -122,15 +128,14 @@ async function calculateShippingOptions(shippingDetails:ShippingDetails, session
     massUnit: "lb"
   };
 
-
   const shipment = await shippo.shipments.create({
     addressFrom: addressFrom,
     addressTo: addressTo,
     parcels: [parcel],
     async: false
   });
-  console.log( typeof(process.env.SENDER_PHONE));
-  console.log( process.env.SENDER_ADDRESS);
+  // console.log( typeof(process.env.SENDER_PHONE));
+  // console.log( process.env.SENDER_ADDRESS);
 
   const rates = getFilteredRates(shipment.rates);
   console.log(rates);
@@ -166,9 +171,9 @@ async function calculateShippingOptions(shippingDetails:ShippingDetails, session
 
 interface ShippingDetailsChangeEvent {
   checkout_session_id: string;  // ID of the Checkout Session
-  shipping_details: ShippingDetails;
+  shipping_details: StripeShippingDetails;
 }
-interface ShippingDetails {
+interface StripeShippingDetails {
   name: string;             // Customer's full name (e.g., "Jane Smith")
   address: {
     line1: string;          // Address line 1 (e.g., "123 Main St")
@@ -181,19 +186,42 @@ interface ShippingDetails {
   phone?: string;           // Phone number - optional, may not be present if not collected 
 }
 
+interface ShippoShippingDetails {
+  name: string;
+  street1: string;      
+  street2?: string;     
+  city: string;       
+  state: string;      
+  zip: string;
+  country: string;
+  phone?: string;    
+}
+
 router.post('/', async (req:Request, res:Response) => {
     const {checkout_session_id, shipping_details} = req.body as ShippingDetailsChangeEvent;
-
+    const { name, address, phone } = shipping_details;
+    // Translate Stripe address form data to Shippo address data
+    const addressTo = {
+      name: name,
+      street1: address.line1,
+      ...(address.line2 ? { street2: address.line2 } : {}),
+      city: address.city,
+      state: address.state,
+      zip: address.postal_code,
+      country: address.country,
+      ...(phone ? { phone: phone } : {})
+    };
     // 1. Retrieve the Checkout Session
     const session = await stripe.checkout.sessions.retrieve(checkout_session_id);
 
     // 2. Validate the shipping details
-    if (!validateShippingDetails(shipping_details)!) {
-        return res.json({type: 'error', message: "We can't ship to your address. Please choose a different address."});
+    const validateAddress = await validateShippingDetails(addressTo)!;
+    if (!validateAddress.success) {
+        return res.json({type:'error', message: validateAddress.error || "NOT SURE"});
     }
 
     // 3. Calculate the shipping options
-    const shippingOptions: ShippingRateWrapper[] | false = await calculateShippingOptions(shipping_details, session);
+    const shippingOptions: ShippingRateWrapper[] | false = await calculateShippingOptions(addressTo, session);
 
     // 4. Update the Checkout Session with the customer's shipping details and shipping options
     if (shippingOptions) {

@@ -34,7 +34,7 @@ export function CartDropDown (){
             </p>
             <p className={styles.cartPriceIcon}>
                 $
-                {cartDataState!.cartTotalItems!() < 1 ? "0.00" : cartDataState!.cartTotalPrice!()}
+                {cartDataState!.cartTotalItems!() < 1 ? "0.00" : cartDataState!.cartTotalPrice!().toFixed(2)}
             </p>
         
 

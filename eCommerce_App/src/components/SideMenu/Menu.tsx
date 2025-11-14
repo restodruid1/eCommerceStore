@@ -36,7 +36,7 @@ export function Menu({onClick, clicked, desktop}: MenuProps){
           </div>
           <div style={{display:"flex"}}>
             <Link to={"/Cart"} onClick={handleClick}><CartIcon size={40}/></Link>
-            <p>{cartDataState!.cartTotalItems!()} {cartDataState!.cartTotalItems!() === 1  ? 'item' : 'items'} : ${cartDataState!.cartTotalPrice!()}</p>
+            <p>{cartDataState!.cartTotalItems!()} {cartDataState!.cartTotalItems!() === 1  ? 'item' : 'items'} : ${cartDataState!.cartTotalPrice!().toFixed(2)}</p>
           </div>
           <div>
             {Array(3).fill(0).map((_, i) => <HeartIcon key={i} />)}
