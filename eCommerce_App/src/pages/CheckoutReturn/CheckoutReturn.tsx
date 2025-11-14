@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-
+import type { LayoutProps } from "../Layout";
+import { useOutletContext } from "react-router-dom";
 
 interface SessionResponse {
     status?: 'open' | 'complete';
@@ -7,6 +8,8 @@ interface SessionResponse {
     customer_email?: string;
   }
 export function CheckoutReturn() {
+    const { isClicked, isDesktop } = useOutletContext<LayoutProps>();
+    // const [ isData, setIsData ] = useState<DataInterface[] | null>(null);
     const [session, setSession] = useState<SessionResponse>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -41,7 +44,7 @@ export function CheckoutReturn() {
     if (error) return <p>Error: {error}</p>;
     
     return (
-        <div>
+        <div className={`body column ${isClicked && isDesktop ? 'open' : ''}`}>
         {session?.status === 'complete' ? (
             <div>
             <h2>Thank you for your order!</h2>

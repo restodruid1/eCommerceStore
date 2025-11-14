@@ -4,7 +4,6 @@ import { Item } from './server.js';
 import * as db from "./db/index.js";
 import { stripe } from './server.js';
 
-
 const router = Router();
 
 
@@ -61,6 +60,12 @@ const checkout = async(items:Item[], req:Request, res:Response)=>{
             permissions: {
               update_shipping_details: 'server_only',
             },
+            invoice_creation:{
+              enabled: true
+            },
+            // automatic_tax: {
+            //   enabled: true
+            // },
             shipping_address_collection: {
               allowed_countries: ['US'],
             },
