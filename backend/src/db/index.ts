@@ -14,7 +14,7 @@ const pool = new Pool({
 
 // DO NOT USE POOL IF A TRANSACTION IS NEEDED i.e. A SERIES OF QUERIES WHERE ALL MUST BE SUCCESSFUL OR NONE ARE
 // USE THE PG CLIENT FOR TRANSACTIONS. POOL IS MORE EFFICIENT IS OTHER CASES
-const client = await pool.connect();
+export const client = await pool.connect();
 try {
   await client.query("SELECT 1"); // test connection
 } catch (err) {

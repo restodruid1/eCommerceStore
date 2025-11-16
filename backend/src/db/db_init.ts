@@ -40,7 +40,8 @@ async function initDB() {
         DROP TABLE IF EXISTS product_images CASCADE;
         DROP TABLE IF EXISTS orders CASCADE;
         DROP TABLE IF EXISTS order_items CASCADE;
-
+        DROP TABLE IF EXISTS cart_reservations CASCADE;
+        
         CREATE TABLE products (
             id SERIAL PRIMARY KEY,
             category SMALLINT NOT NULL,
@@ -77,6 +78,14 @@ async function initDB() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (product_id) REFERENCES products(id),
             FOREIGN KEY (order_id) REFERENCES orders(id)
+        );
+
+        CREATE TABLE cart_reservations (
+          reservation_id SERIAL PRIMARY KEY,
+          user_id UUID NOT NULL,
+          product_id INT NOT NULL,
+          quantity INT NOT NULL,
+          expires_at TIMESTAMP NOT NULL
         );
 
     `);

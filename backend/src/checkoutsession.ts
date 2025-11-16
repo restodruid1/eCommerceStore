@@ -3,55 +3,113 @@ import { Request, Response } from "express";
 import { Item } from './server.js';
 import * as db from "./db/index.js";
 import { stripe } from './server.js';
+import { QueryResult } from 'pg';
 
 const router = Router();
 
-
-router.post('/', async (req, res) => {
-  // console.log(req.body.items);
-  const items = req.body.items as Item[];
-  console.log("HERE");
-  // Validate client cart data before checkout
+async function validateUserCart(cartItems:Item[]){
+  const items = cartItems;
   try {
-      const result = await db.query(
-      `SELECT 
-            p.*, 
-            pi.product_id,
-            pi.url,
-            pi.main_image
-        FROM products p
-        JOIN product_images pi 
-            ON pi.product_id = p.id
-        WHERE pi.main_image = true;`
-      ,[]);
+    const result = await db.query(
+    `SELECT 
+          p.*, 
+          pi.product_id,
+          pi.url,
+          pi.main_image
+      FROM products p
+      JOIN product_images pi 
+          ON pi.product_id = p.id
+      WHERE pi.main_image = true;`
+    ,[]);
 
-      for (const item of items) {
-        const product = result.rows.find(p => p.id === item.id);
-        
-        if (!product) {
-          return res.json({ message: "ITEM NOT FOUND" });
-        }
-      
-        if (item.quantity > product.quantity || item.quantity === 0) {
-          console.log("QUANTITY:", item.quantity);
-          return res.json({ message: "ITEM QUANTITY NOT AVAILABLE" });
-        }
-      
-        // Ensure proper data, not client data
-        item.id = product.id;
-        item.name = product.name;
-        item.price = product.price;
-        item.image = product.url;
+    for (const item of items) {
+      const product = result.rows.find(p => p.id === item.id);
+      console.log("ITEM QUANTITY: " + item.quantity);
+      if (!product) {
+        return { success:false, error: "ITEM NOT FOUND" };
       }
-      
-      checkout(items, req, res);    // Stripe checkout
-      
-    } catch (e) {
-      console.error("STRIPE ERROR:", e);
-      res.status(400).send({error:"STRIP CALL ERROR"});
-    } 
-});
+    
+      if (item.quantity > product.quantity || item.quantity === 0) {
+        console.log("QUANTITY:", item.quantity);
+        return { success:false, error: `ITEM QUANTITY NOT AVAILABLE OF ${item.name}` };
+      }
+      console.log("ITEM QUANTITY2: " + item.quantity);
+      // Ensure proper data, not client data
+      item.id = product.id;
+      item.name = product.name;
+      item.price = product.price;
+      item.image = product.url;
+    }
+    return {success:true, items};
 
+  } catch (e) {
+    console.error("STRIPE ERROR:", e);
+    return {success:false, error:"STRIP CALL ERROR"};
+  } 
+}
+
+async function reserveStock(cartItems:Item[]) {
+  const items = cartItems;
+  try {
+    await db.query("BEGIN");    // All or nothing
+
+    var productRows:{id:number, quantity:number}[] = [];
+    for (const item of items){
+
+      // Lock row FOR UPDATE so no one else can modify stock meanwhile
+      const productRes:QueryResult = await db.query(
+        `
+        SELECT id, quantity
+        FROM products
+        WHERE id = $1
+        FOR UPDATE
+        `,
+        [item.id]
+      );
+      productRows.push(productRes.rows[0]);
+    }
+    console.log(productRows);
+    
+    items.forEach((item, index) => {
+      const stock = productRows[index]?.quantity;
+      if (stock! < items[index]?.quantity!) throw new Error(`Not enough stock available of ${item.name}`);
+    })
+
+    for (const item of items){
+      // Decrement stock
+      await db.query(
+        `
+        UPDATE products
+        SET quantity = quantity - $1
+        WHERE id = $2
+        `,
+        [item.quantity, item.id]
+      );
+    }
+
+    const userId = crypto.randomUUID();
+    for (const item of items){
+      // Create reservation (expires later if user abandons cart)
+      await db.query(
+        `
+        INSERT INTO cart_reservations (user_id, product_id, quantity, expires_at)
+        VALUES ($1, $2, $3, NOW() + INTERVAL '30 minutes')
+        `,
+        [userId, item.id, item.quantity]
+      );
+    }
+
+    await db.query("COMMIT");
+    return { success: true };
+
+  } catch (err) {
+    await db.query("ROLLBACK");
+    return { success: false, error: err };
+
+  } finally {
+    // db.client.release();
+  }
+}
 
 const checkout = async(items:Item[], req:Request, res:Response)=>{
   try {
@@ -97,12 +155,78 @@ const checkout = async(items:Item[], req:Request, res:Response)=>{
         });
         console.log(session);
         // return session;
-        res.json({clientSecret: session.client_secret});
+        return { clientSecret: session.client_secret };
         // res.json({url:session.url!});
       } catch (e) {
         console.error("STRIPE ERROR:", e);
         return res.status(400).send({error:"STRIP CALL ERROR"});
       }
 };
+
+router.post('/', async (req, res) => {
+  try{
+    const items = req.body.items as Item[];
+  
+    const cartState = await validateUserCart(items);  // Sanatize items to ensure no client side manipulation
+    
+    if (!cartState?.success) {
+      return res.status(400).send({error: cartState?.error});
+    }
+    const stockResp = await reserveStock(cartState.items!);   // Validate stock & reserve cart on db for 30 minutes
+    console.log(stockResp);
+
+    if (!stockResp.success) return res.status(400).send({error: stockResp.error});
+
+    const checkoutResult = await checkout(cartState.items!, req, res);   // Stripe checkout
+    return res.json(checkoutResult);
+  } catch(e) {
+    return res.status(400).send({error:e});
+  }
+});
+// router.post('/', async (req, res) => {
+//   // console.log(req.body.items);
+//   const items = req.body.items as Item[];
+//   console.log("HERE");
+//   // Validate client cart data before checkout
+//   try {
+//       const result = await db.query(
+//       `SELECT 
+//             p.*, 
+//             pi.product_id,
+//             pi.url,
+//             pi.main_image
+//         FROM products p
+//         JOIN product_images pi 
+//             ON pi.product_id = p.id
+//         WHERE pi.main_image = true;`
+//       ,[]);
+
+//       for (const item of items) {
+//         const product = result.rows.find(p => p.id === item.id);
+        
+//         if (!product) {
+//           return res.json({ message: "ITEM NOT FOUND" });
+//         }
+      
+//         if (item.quantity > product.quantity || item.quantity === 0) {
+//           console.log("QUANTITY:", item.quantity);
+//           return res.json({ message: "ITEM QUANTITY NOT AVAILABLE" });
+//         }
+      
+//         // Ensure proper data, not client data
+//         item.id = product.id;
+//         item.name = product.name;
+//         item.price = product.price;
+//         item.image = product.url;
+//       }
+      
+//       checkout(items, req, res);    // Stripe checkout
+      
+//     } catch (e) {
+//       console.error("STRIPE ERROR:", e);
+//       res.status(400).send({error:"STRIP CALL ERROR"});
+//     } 
+// });
+
 
 export default router;

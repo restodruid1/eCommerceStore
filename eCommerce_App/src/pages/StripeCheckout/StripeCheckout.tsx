@@ -1,6 +1,6 @@
 import {loadStripe} from '@stripe/stripe-js';
 import { useCart } from '../../CartContext';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
@@ -27,6 +27,7 @@ interface ShippingDetailsChangeEvent {
 export function StripeCheckout() {
   const cartDataState = useCart();
   const {cartItems} = cartDataState;
+  const [errorMessage, setErrorMessage] = useState("");
 
   const fetchClientSecret = useCallback(() => {
     // Create a Checkout Session
@@ -43,9 +44,13 @@ export function StripeCheckout() {
       .then((data:{clientSecret?:string | null, error?:string}) => {
         if (data.error) {
           alert("SESSION ERROR");
-          return undefined;
+          // return undefined;
+          alert(data.error);
+          setErrorMessage(data.error);
+          return {error: data.error};
         }
         else {
+          setErrorMessage("");
           return data.clientSecret;
         }
       });
