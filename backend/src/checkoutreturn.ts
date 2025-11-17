@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { Request, Response } from "express";
 import { stripe } from './server.js';  
+import * as db from "./db/index.js";
 
 const router = Router();
 
@@ -15,7 +16,15 @@ router.get('/', async (req:Request, res:Response) => {
         }
         const session_id = String(raw_session_id);
         const session = await stripe.checkout.sessions.retrieve(session_id);
-    
+        // alert("pause");
+        if (session.status === "complete") {
+            const resp = await db.query(
+                `DELETE FROM cart_reservations
+                WHERE user_id = $1`, [session.metadata!.uuid]
+            );
+            // console.log(resp);
+        }
+        // console.log(session);
         res.status(200).send({
             status: session.status,
             payment_status: session.payment_status,

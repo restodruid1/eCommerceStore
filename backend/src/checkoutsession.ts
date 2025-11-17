@@ -100,7 +100,7 @@ async function reserveStock(cartItems:Item[]) {
     }
 
     await db.query("COMMIT");
-    return { success: true };
+    return { success: true, uuid:userId };
 
   } catch (err) {
     await db.query("ROLLBACK");
@@ -111,13 +111,14 @@ async function reserveStock(cartItems:Item[]) {
   }
 }
 
-const checkout = async(items:Item[], req:Request, res:Response)=>{
+const checkout = async(items:Item[], req:Request, res:Response, uuid:string)=>{
   try {
         const session = await stripe.checkout.sessions.create({
           ui_mode: 'embedded',
             permissions: {
               update_shipping_details: 'server_only',
             },
+            expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // 30 minutes
             invoice_creation:{
               enabled: true
             },
@@ -148,6 +149,9 @@ const checkout = async(items:Item[], req:Request, res:Response)=>{
                         },
                         quantity: item.quantity,
           })),
+          metadata:{
+            uuid: uuid
+          },
           mode: 'payment',
           return_url: `http://localhost:5173/CheckoutReturn?session_id={CHECKOUT_SESSION_ID}`,
           // success_url: `http://localhost:5173/Cart?success=true`,
@@ -177,7 +181,7 @@ router.post('/', async (req, res) => {
 
     if (!stockResp.success) return res.status(400).send({error: stockResp.error});
 
-    const checkoutResult = await checkout(cartState.items!, req, res);   // Stripe checkout
+    const checkoutResult = await checkout(cartState.items!, req, res, stockResp.uuid!);   // Stripe checkout
     return res.json(checkoutResult);
   } catch(e) {
     return res.status(400).send({error:e});

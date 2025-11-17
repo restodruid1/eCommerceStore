@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { LayoutProps } from "../Layout";
 import { useOutletContext } from "react-router-dom";
+import { useCart } from '../../CartContext';
 
 interface SessionResponse {
     status?: 'open' | 'complete';
@@ -13,6 +14,8 @@ export function CheckoutReturn() {
     const [session, setSession] = useState<SessionResponse>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const cartDataState = useCart();
+
     useEffect(() => {
         // Get the session_id from URL
         const urlParams = new URLSearchParams(window.location.search);
@@ -28,6 +31,7 @@ export function CheckoutReturn() {
             })
             .then(data => {
               setSession(data);
+              if (data.status === "complete") cartDataState.clearCart!();
               setLoading(false);
             })
             .catch(err => {
