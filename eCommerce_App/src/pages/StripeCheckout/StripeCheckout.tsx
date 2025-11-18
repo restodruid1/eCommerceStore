@@ -30,6 +30,7 @@ export function StripeCheckout() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const fetchClientSecret = useCallback(() => {
+    const userId = localStorage.getItem("uuid");
     // Create a Checkout Session
     return fetch("http://localhost:5000/create-checkout-session", {
       method: "POST",
@@ -37,21 +38,22 @@ export function StripeCheckout() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        items: cartItems,     
+        items: cartItems,
+        uuid: userId,     
     }),
     })
       .then((res) => res.json())
-      .then((data:{clientSecret?:string | null, error?:string}) => {
+      .then((data:{checkoutResult: { clientSecret: string}, uuid?:string , error?:string}) => {
         if (data.error) {
-          alert("SESSION ERROR");
-          // return undefined;
           alert(data.error);
           setErrorMessage(data.error);
-          return {error: data.error};
+          return data.error;
         }
         else {
+          const { clientSecret } = data.checkoutResult;
+          localStorage.setItem("uuid", data.uuid!);
           setErrorMessage("");
-          return data.clientSecret;
+          return clientSecret;
         }
       });
   }, []);

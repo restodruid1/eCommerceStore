@@ -48,8 +48,40 @@ async function validateUserCart(cartItems:Item[]){
   } 
 }
 
-async function reserveStock(cartItems:Item[]) {
+async function reserveStock(cartItems:Item[], user_id:string|null) {
   const items = cartItems;
+  // console.log(user_id);
+  if (user_id != null) {
+    try{
+      // console.log("begin");
+      await db.query("BEGIN");
+      const resp = await db.query(`
+        SELECT * FROM cart_reservations
+        WHERE user_id = $1
+        `,[user_id]);
+
+      resp.rows.forEach(async (row)=>{
+        await db.query(`
+          UPDATE products
+          SET quantity = quantity + $1
+          WHERE id = $2
+          `,[row.quantity, row.product_id]);
+      })
+
+      if (resp.rows.length > 0) {
+        await db.query(`
+          DELETE FROM cart_reservations
+          WHERE user_id = $1
+          `,[user_id]);
+      }
+      // console.log("end");
+      await db.query("COMMIT");
+    }catch (err){
+      await db.query("ROLLBACK");
+      return { success: false, error: err };
+  }
+
+  }
   try {
     await db.query("BEGIN");    // All or nothing
 
@@ -170,19 +202,23 @@ const checkout = async(items:Item[], req:Request, res:Response, uuid:string)=>{
 router.post('/', async (req, res) => {
   try{
     const items = req.body.items as Item[];
+    // console.log(req.body.uuid);
+    // const userId = JSON.parse(req.body.uuid) as string | null;
+    const userId = req.body.uuid as string | null;
   
     const cartState = await validateUserCart(items);  // Sanatize items to ensure no client side manipulation
     
     if (!cartState?.success) {
       return res.status(400).send({error: cartState?.error});
     }
-    const stockResp = await reserveStock(cartState.items!);   // Validate stock & reserve cart on db for 30 minutes
+    const stockResp = await reserveStock(cartState.items!, userId);   // Validate stock & reserve cart on db for 30 minutes
     console.log(stockResp);
 
     if (!stockResp.success) return res.status(400).send({error: stockResp.error});
 
     const checkoutResult = await checkout(cartState.items!, req, res, stockResp.uuid!);   // Stripe checkout
-    return res.json(checkoutResult);
+    // return res.json(checkoutResult, stockResp.uuid!);
+    return res.send({checkoutResult: checkoutResult, uuid: stockResp.uuid!})
   } catch(e) {
     return res.status(400).send({error:e});
   }
