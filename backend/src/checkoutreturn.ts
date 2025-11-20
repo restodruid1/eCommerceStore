@@ -34,5 +34,21 @@ router.get('/', async (req:Request, res:Response) => {
         res.status(400).send({error:"Something Went Wrong"});
     }
 })
+router.get('/check', async (req:Request, res:Response) => {
+    try{
+        const raw_session_id = req.query.session_id;
+        const sesId = String(raw_session_id);
+        // console.log(raw_session_id);
+        // console.log(typeof raw_session_id);
+        // console.log("here in the check");
+        const customerSession = await stripe.checkout.sessions.retrieve(sesId);
+        console.log(customerSession);
+        if (customerSession.status === "expired") return res.send({status: "expired"});
+
+        res.send({status: "not-expired"});
+    } catch (e) {
+        res.status(400).send({error:"Something Went Wrong"});
+    }
+})
 
 export default router;

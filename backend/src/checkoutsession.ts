@@ -50,7 +50,7 @@ async function validateUserCart(cartItems:Item[]){
 
 async function reserveStock(cartItems:Item[], user_id:string|null) {
   const items = cartItems;
-  // console.log(user_id);
+  console.log(user_id);
   if (user_id != null) {
     try{
       // console.log("begin");
@@ -60,13 +60,13 @@ async function reserveStock(cartItems:Item[], user_id:string|null) {
         WHERE user_id = $1
         `,[user_id]);
 
-      resp.rows.forEach(async (row)=>{
+      for (const row of resp.rows) {
         await db.query(`
           UPDATE products
           SET quantity = quantity + $1
           WHERE id = $2
-          `,[row.quantity, row.product_id]);
-      })
+        `, [row.quantity, row.product_id]);
+      }
 
       if (resp.rows.length > 0) {
         await db.query(`
@@ -189,9 +189,9 @@ const checkout = async(items:Item[], req:Request, res:Response, uuid:string)=>{
           // success_url: `http://localhost:5173/Cart?success=true`,
           // cancel_url: `http://localhost:5173/Cart?canceled=true`,
         });
-        console.log(session);
+        console.log("session!!!!!!!!!!!!! " + session.id);
         // return session;
-        return { clientSecret: session.client_secret };
+        return { clientSecret: session.client_secret, sessionId: session.id };
         // res.json({url:session.url!});
       } catch (e) {
         console.error("STRIPE ERROR:", e);
@@ -217,6 +217,7 @@ router.post('/', async (req, res) => {
     if (!stockResp.success) return res.status(400).send({error: stockResp.error});
 
     const checkoutResult = await checkout(cartState.items!, req, res, stockResp.uuid!);   // Stripe checkout
+
     // return res.json(checkoutResult, stockResp.uuid!);
     return res.send({checkoutResult: checkoutResult, uuid: stockResp.uuid!})
   } catch(e) {

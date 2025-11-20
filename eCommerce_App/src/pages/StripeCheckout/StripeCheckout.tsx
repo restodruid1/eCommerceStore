@@ -1,7 +1,9 @@
 import {loadStripe} from '@stripe/stripe-js';
 import { useCart } from '../../CartContext';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
+import { useOutletContext } from "react-router-dom";
+import type { LayoutProps } from "../Layout";
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
@@ -28,6 +30,10 @@ export function StripeCheckout() {
   const cartDataState = useCart();
   const {cartItems} = cartDataState;
   const [errorMessage, setErrorMessage] = useState("");
+  const [checkoutErrorMessage, setCheckoutErrorMessage] = useState("");
+  // const [uuid, setUuid] = useState("");
+  const [sesh, setSesh] = useState("");
+  const { isClicked, isDesktop } = useOutletContext<LayoutProps>();
 
   const fetchClientSecret = useCallback(() => {
     const userId = localStorage.getItem("uuid");
@@ -43,7 +49,7 @@ export function StripeCheckout() {
     }),
     })
       .then((res) => res.json())
-      .then((data:{checkoutResult: { clientSecret: string}, uuid?:string , error?:string}) => {
+      .then((data:{checkoutResult: { clientSecret: string, sessionId: string}, uuid?:string , error?:string}) => {
         if (data.error) {
           alert(data.error);
           setErrorMessage(data.error);
@@ -51,12 +57,15 @@ export function StripeCheckout() {
         }
         else {
           const { clientSecret } = data.checkoutResult;
+          // alert("here" + data.checkoutResult.sessionId);
           localStorage.setItem("uuid", data.uuid!);
-          setErrorMessage("");
+          localStorage.setItem("sessionId", data.checkoutResult.sessionId);
+          setSesh(data.checkoutResult.sessionId);
+          // setErrorMessage("");
           return clientSecret;
         }
       });
-  }, []);
+  }, [cartItems]);
 
 
   const onShippingDetailsChange = async (shippingDetailsChangeEvent:ShippingDetailsChangeEvent) => {
@@ -97,7 +106,31 @@ export function StripeCheckout() {
     onShippingDetailsChange
   };
 
+  // Prevent client from making purchase after 30 minute cart expiration
+  useEffect(() => {
+    if (!sesh) return;  // don’t run until sesh is ready
+  
+    const intervalId = setInterval(async () => {
+      try {
+        // const param = localStorage.getItem("sessionId");
+        const response = await fetch(`http://localhost:5000/session_status/check?session_id=${sesh}`);
+        const { status } = await response.json();
+  
+        if (status === 'expired') {
+          clearInterval(intervalId);
+          setCheckoutErrorMessage("Your checkout session has expired.");
+        }
+      } catch (error) {
+        console.error('Error checking session status:', error);
+      }
+    }, 61000 * 5);  // little over 5 minutes per check so last check will happen at x > 30 minutes when cart expires
+  
+    return () => clearInterval(intervalId);
+  }, [sesh]);  // runs only when sesh changes from null → value
 
+
+  if (errorMessage) return <h1 className={`body column ${isClicked && isDesktop ? 'open' : ''}`}>{errorMessage}</h1>
+  if (checkoutErrorMessage) return <h1 className={`body column ${isClicked && isDesktop ? 'open' : ''}`}>{checkoutErrorMessage}</h1>
   return (
     <div id="checkout">
       <EmbeddedCheckoutProvider
