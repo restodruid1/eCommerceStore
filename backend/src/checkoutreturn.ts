@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { Request, Response } from "express";
 import { stripe } from './server.js';  
 import * as db from "./db/index.js";
+import { terminateReserveUpdateStock } from './checkoutsession.js';
 
 const router = Router();
 
@@ -34,17 +35,17 @@ router.get('/', async (req:Request, res:Response) => {
         res.status(400).send({error:"Something Went Wrong"});
     }
 })
-router.get('/check', async (req:Request, res:Response) => {
+router.post('/check', async (req:Request, res:Response) => {
     try{
-        const raw_session_id = req.query.session_id;
-        const sesId = String(raw_session_id);
-        // console.log(raw_session_id);
-        // console.log(typeof raw_session_id);
-        // console.log("here in the check");
-        const customerSession = await stripe.checkout.sessions.retrieve(sesId);
+        // console.log("REQ BODY: " + req.body);
+        const seshId = req.body.seshId;
+        const uuid = req.body.uuid;
+        const customerSession = await stripe.checkout.sessions.retrieve(seshId);
         console.log(customerSession);
-        if (customerSession.status === "expired") return res.send({status: "expired"});
-
+        if (customerSession.status === "expired") {
+            await terminateReserveUpdateStock(uuid);
+            return res.send({status: "expired"});
+        } 
         res.send({status: "not-expired"});
     } catch (e) {
         res.status(400).send({error:"Something Went Wrong"});

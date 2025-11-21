@@ -47,41 +47,45 @@ async function validateUserCart(cartItems:Item[]){
     return {success:false, error:"STRIP CALL ERROR"};
   } 
 }
+export async function terminateReserveUpdateStock(user_id:string){
+  try{
+    // console.log("begin");
+    await db.query("BEGIN");
+    const resp = await db.query(`
+      SELECT * FROM cart_reservations
+      WHERE user_id = $1
+      `,[user_id]);
+
+    for (const row of resp.rows) {
+      await db.query(`
+        UPDATE products
+        SET quantity = quantity + $1
+        WHERE id = $2
+      `, [row.quantity, row.product_id]);
+    }
+
+    if (resp.rows.length > 0) {
+      await db.query(`
+        DELETE FROM cart_reservations
+        WHERE user_id = $1
+        `,[user_id]);
+    }
+    // console.log("end");
+    await db.query("COMMIT");
+    return { success: true };
+  }catch (err){
+    await db.query("ROLLBACK");
+    return { success: false, error: err };
+  }
+}
 
 async function reserveStock(cartItems:Item[], user_id:string|null) {
   const items = cartItems;
   console.log(user_id);
   if (user_id != null) {
-    try{
-      // console.log("begin");
-      await db.query("BEGIN");
-      const resp = await db.query(`
-        SELECT * FROM cart_reservations
-        WHERE user_id = $1
-        `,[user_id]);
-
-      for (const row of resp.rows) {
-        await db.query(`
-          UPDATE products
-          SET quantity = quantity + $1
-          WHERE id = $2
-        `, [row.quantity, row.product_id]);
-      }
-
-      if (resp.rows.length > 0) {
-        await db.query(`
-          DELETE FROM cart_reservations
-          WHERE user_id = $1
-          `,[user_id]);
-      }
-      // console.log("end");
-      await db.query("COMMIT");
-    }catch (err){
-      await db.query("ROLLBACK");
-      return { success: false, error: err };
+    terminateReserveUpdateStock(user_id);
   }
 
-  }
   try {
     await db.query("BEGIN");    // All or nothing
 
@@ -189,7 +193,7 @@ const checkout = async(items:Item[], req:Request, res:Response, uuid:string)=>{
           // success_url: `http://localhost:5173/Cart?success=true`,
           // cancel_url: `http://localhost:5173/Cart?canceled=true`,
         });
-        console.log("session!!!!!!!!!!!!! " + session.id);
+        console.log("session: " + session.id);
         // return session;
         return { clientSecret: session.client_secret, sessionId: session.id };
         // res.json({url:session.url!});

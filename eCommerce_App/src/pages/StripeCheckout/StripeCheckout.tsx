@@ -113,7 +113,17 @@ export function StripeCheckout() {
     const intervalId = setInterval(async () => {
       try {
         // const param = localStorage.getItem("sessionId");
-        const response = await fetch(`http://localhost:5000/session_status/check?session_id=${sesh}`);
+        const response = await fetch(`http://localhost:5000/session_status/check`,{
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            seshId: sesh,
+            uuid: localStorage.getItem("uuid")    
+          })
+        });
+       
         const { status } = await response.json();
   
         if (status === 'expired') {
