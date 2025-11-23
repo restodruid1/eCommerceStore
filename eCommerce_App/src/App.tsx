@@ -12,7 +12,8 @@ import { ContactMe } from "./pages/ContactMe/ContactMe";
 import { Cart } from "./pages/Cart/Cart";
 import {StripeCheckout}  from "./pages/StripeCheckout/StripeCheckout";
 import { CheckoutReturn } from "./pages/CheckoutReturn/CheckoutReturn";
-
+import { Admin } from "./pages/Admin/Admin";
+import { AdminPage } from "./pages/Admin/AdminPage";
 
 function App() {
   return (
@@ -31,9 +32,11 @@ function App() {
           <Route path="ContactMe" element={<ContactMe />} />
           <Route path="Cart" element={<Cart />} />
           <Route path="Checkout" element={<StripeCheckout />} />
-          <Route path="CheckoutReturn" element={<CheckoutReturn />} /> 
+          <Route path="CheckoutReturn" element={<CheckoutReturn />} />
           <Route path="*" element={<h1>404 Not Found</h1>} />
         </Route >
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/adminpage" element={<AdminPage />} />
       </Routes>
   );
   
