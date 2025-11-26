@@ -5,8 +5,10 @@ import checkoutsession from "./checkoutsession.js";
 import databasequeries from "./databaseroutes.js";
 import handleshipping from "./shipping.js";
 import checkoutreturn from "./checkoutreturn.js";
+import awsS3 from "./awsS3.js";
 import admin from "./admin.js";
 import Stripe from "stripe";
+import multer from "multer";
 
 export interface Item {
   id: number;
@@ -33,6 +35,7 @@ app.use('/products', databasequeries);
 app.use('/calculate-shipping-options', handleshipping);
 app.use('/session_status', checkoutreturn);
 app.use('/api', admin);
+app.use('/api/admin/AwsS3', awsS3);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
