@@ -9,8 +9,11 @@ export function AdminPage(){
     const [productWidth, setProductWidth] = useState("");
     const [productWeight, setProductWeight] = useState("");
     const [productId, setProductId] = useState("");
+    const [productPrice, setProductPrice] = useState("");
+    const [productDescription, setProductDescription] = useState("");
     const [productImages, setProductImages] = useState<File[]>([]);
     const [products, setProducts] = useState([]);
+    const [error, setError] = useState("");
 
     // Validate clients hitting this page
     useEffect(()=>{
@@ -38,27 +41,27 @@ export function AdminPage(){
 
     useEffect(()=>{
       if (!jwt) return;
-      async function getProductData(){
-        const response = await fetch(`http://localhost:5000/api/admin/AwsS3/productData`,{
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-              jwt: localStorage.getItem("jwt")
-          })
-          
-        });
-        const data = await response.json();
-        // alert(data);
-        console.log(data);
-        setProducts(data.result);
-      }
-      
       if (jwt) {
         getProductData();
       }
     },[jwt]);
+
+    async function getProductData(){
+      const response = await fetch(`http://localhost:5000/api/admin/AwsS3/productData`,{
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            jwt: localStorage.getItem("jwt")
+        })
+        
+      });
+      const data = await response.json();
+      // alert(data);
+      // console.log(data);
+      setProducts(data.result);
+    }
 
     async function handleSubmit(e: React.FormEvent){
       e.preventDefault();
@@ -66,16 +69,19 @@ export function AdminPage(){
       
       const formData = new FormData();
       formData.append("productName", productName);
+      formData.append("category", productId);
+      formData.append("price", productPrice);
       formData.append("length", Number(productLength).toFixed(2));
       formData.append("width", Number(productWidth).toFixed(2));
       formData.append("height", Number(productHeight).toFixed(2));
       formData.append("weight", Number(productWeight).toFixed(2));
+      formData.append("description", productDescription);
       formData.append("jwt", String(localStorage.getItem("jwt")));
       for (let i = 0; i < productImages!.length; i++) {
         formData.append("images", productImages![i]); 
       }
 
-      console.log(formData);
+      // console.log(formData);
       try {
         const response = await fetch("http://localhost:5000/api/admin/AwsS3", {
           method: "POST",
@@ -83,8 +89,9 @@ export function AdminPage(){
         });
 
         const data = await response.json();
-        console.log("AWS FETCH: " + data);
-        // setawsimage(data.message);
+        // console.log("AWS FETCH: " + data);
+        if (!data) return;
+        getProductData();
       } catch {
         console.log("eerror");
       }
@@ -105,6 +112,16 @@ export function AdminPage(){
               type="text"
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
+              required
+              className={styles.formInput}
+          />
+
+          <label className={styles.label}>Product Price</label>
+          <input
+              type="text"
+              placeholder="1.99 1.00"
+              value={productPrice}
+              onChange={(e) => setProductPrice(e.target.value)}
               required
               className={styles.formInput}
           />
@@ -145,6 +162,7 @@ export function AdminPage(){
               required
               className={styles.formInput}
           />
+          
           <label className={styles.label}>Weight <span>(oz)</span></label>
           <input
               type="text"
@@ -154,27 +172,42 @@ export function AdminPage(){
               required
               className={styles.formInput}
           />
+
+          <label className={styles.label}>Description</label>
+          <textarea
+              value={productDescription}
+              onChange={(e) => setProductDescription(e.target.value)}
+              rows={6}
+              maxLength={999}
+              required
+              className={styles.formInput}
+          />
+
           <label className={styles.label}>Image(s)</label>
           <input
               type="file"
               multiple
               accept="image/*"
               onChange={(e) => {
-                const files = Array.from(e.target.files!);
-                setProductImages(prev => [...prev, ...files]);
+                if (/\s/.test(e.target.files![0].name)) {
+                  setError("File can't contain whitespace");
+                } else {
+                  setError("");
+                  const files = Array.from(e.target.files!);
+                  setProductImages(prev => [...prev, ...files]);
+                }
               }}
               required
               className={styles.formInput}
           />
+
+          {error && <p style={{ color: 'red', marginBottom: '1rem' }}>{error}</p>}
+
           <ul>
             {productImages.map((file, idx) => (
               <li key={idx} >{file.name} <span onClick={()=>handleDeleteImage(idx)}>X</span></li>  
             ))}
           </ul>
-
-
-          {/* {error && <p style={{ color: 'red', marginBottom: '1rem' }}>{error}</p>} */}
-
 
           <button
               type="submit"
@@ -185,7 +218,7 @@ export function AdminPage(){
       </form>
       <div style={{display:"flex", flexDirection:"column", justifyContent:"center", alignContent:"center"}}>
       {products.length > 0 && products.map((item:any, index)=>{
-        return <p style={{display:"flex", maxHeight:"100px",border:"2px solid black"}} key={index}><img src={item.url}/>{item.name} {item.category} {item.price} {item.quantity} {item.weight}</p>
+        return <p style={{display:"flex", maxHeight:"100px",border:"2px solid black"}} key={index}><img style={{maxWidth:"150px", minHeight:"100px"}} src={item.url}/>{item.name} {item.category} {item.price} {item.quantity} {item.weight}</p>
       })}
       </div>
     </div>
