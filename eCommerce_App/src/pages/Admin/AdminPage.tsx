@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import styles from './Admin.module.css'
 
 export function AdminPage(){
@@ -10,6 +11,7 @@ export function AdminPage(){
     const [productWeight, setProductWeight] = useState("");
     const [productId, setProductId] = useState("");
     const [productPrice, setProductPrice] = useState("");
+    const [productQuantity, setProductQuantity] = useState("");
     const [productDescription, setProductDescription] = useState("");
     const [productImages, setProductImages] = useState<File[]>([]);
     const [products, setProducts] = useState([]);
@@ -71,6 +73,7 @@ export function AdminPage(){
       formData.append("productName", productName);
       formData.append("category", productId);
       formData.append("price", productPrice);
+      formData.append("quantity", String(parseInt(productQuantity) > 0 ? parseInt(productQuantity) : 1));
       formData.append("length", Number(productLength).toFixed(2));
       formData.append("width", Number(productWidth).toFixed(2));
       formData.append("height", Number(productHeight).toFixed(2));
@@ -101,8 +104,35 @@ export function AdminPage(){
       setProductImages(prev => prev.filter((_, index) => index !== imageIndex));
     }
 
+    async function handleDeleteProductFromDB(itemId:number, itemCategory:number){
+      const response = await fetch(`http://localhost:5000/api/admin/AwsS3/deleteProductData`,{
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            jwt: localStorage.getItem("jwt"),
+            itemId: itemId,
+            itemCategory: itemCategory
+        })
+        
+      });
+      const data = await response.json();
+      // alert(data);
+      console.log(data);
+      if (!data.success) return;
+      getProductData();
+      // setProducts(data.result);
+    }
 
-    if (!jwt) return <h1>not VALIDATED</h1> 
+
+    if (!jwt) 
+      return (
+      <div className={styles.formFlex}>
+          <h1>not VALIDATED</h1>
+          <Link to={"/admin"}>Back to admin login</Link>
+          </div> 
+        )
     return (
       <div>
         <form className={styles.formFlex} onSubmit={handleSubmit}>
@@ -122,6 +152,15 @@ export function AdminPage(){
               placeholder="1.99 1.00"
               value={productPrice}
               onChange={(e) => setProductPrice(e.target.value)}
+              required
+              className={styles.formInput}
+          />
+
+          <label className={styles.label}>Product Quantity</label>
+          <input
+              type="text"
+              value={productQuantity}
+              onChange={(e) => setProductQuantity(e.target.value)}
               required
               className={styles.formInput}
           />
@@ -218,7 +257,13 @@ export function AdminPage(){
       </form>
       <div style={{display:"flex", flexDirection:"column", justifyContent:"center", alignContent:"center"}}>
       {products.length > 0 && products.map((item:any, index)=>{
-        return <p style={{display:"flex", maxHeight:"100px",border:"2px solid black"}} key={index}><img style={{maxWidth:"150px", minHeight:"100px"}} src={item.url}/>{item.name} {item.category} {item.price} {item.quantity} {item.weight}</p>
+        return (
+        <p style={{display:"flex", maxHeight:"100px",border:"2px solid black"}} key={index}>
+          <img style={{maxWidth:"150px", minHeight:"100px"}} src={item.url}/>
+          {item.name} {item.category} {item.price} {item.quantity} {item.weight}
+          <button onClick={()=>handleDeleteProductFromDB(item.id, item.category)}>X</button>
+          </p>
+      )
       })}
       </div>
     </div>

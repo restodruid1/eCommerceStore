@@ -57,6 +57,7 @@ async function initDB() {
             id SERIAL PRIMARY KEY,
             product_id INT,
             url VARCHAR(1000),
+            aws_imagekey VARCHAR(100),
             main_image BOOLEAN DEFAULT FALSE,
             FOREIGN KEY (product_id) REFERENCES products(id)
         );
