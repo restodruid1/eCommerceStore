@@ -22,34 +22,8 @@ export function CheckoutButton (){
             {errorMessage && (
                <h2 style={{color:"red"}}>{errorMessage}</h2> 
             )}
-            {/* <button 
-                style={{backgroundColor:"blue"}}
-                onClick={async () => {
-                    try {
-                        const res = await fetch("http://localhost:5000/create-checkout-session", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            items: cartItems,     
-                        }),
-                        });
-                
-                        const session = await res.json();     // Stripe hosted checkout page URL
-                        if (session.message) {
-                            setErrorMessage(session.message);   // Invalid cart
-                        } else {
-                            window.location.href = session.url;   // Redirect to Stripe Checkout
-                        }
-                    } catch (error) {
-                        console.error("Error creating checkout session:", error);
-                    }
-                    }}
-                    >
-                    Checkout
-                </button> */}
-            <button><Link to={"/Checkout"}>Checkout</Link></button>
-            </>
+            
+            <Link to={"/Checkout"}><button>Checkout</button></Link>
+        </>
     )
 }

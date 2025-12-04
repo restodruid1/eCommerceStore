@@ -24,16 +24,16 @@ async function validateUserCart(cartItems:Item[]){
 
     for (const item of items) {
       const product = result.rows.find(p => p.id === item.id);
-      console.log("ITEM QUANTITY: " + item.quantity);
+      // console.log("ITEM QUANTITY: " + item.quantity);
       if (!product) {
         return { success:false, error: "ITEM NOT FOUND" };
       }
     
       if (item.quantity > product.quantity || item.quantity === 0) {
-        console.log("QUANTITY:", item.quantity);
+        // console.log("QUANTITY:", item.quantity);
         return { success:false, error: `ITEM QUANTITY NOT AVAILABLE OF ${item.name}` };
       }
-      console.log("ITEM QUANTITY2: " + item.quantity);
+      // console.log("ITEM QUANTITY2: " + item.quantity);
       // Ensure proper data, not client data
       item.id = product.id;
       item.name = product.name;
@@ -50,6 +50,7 @@ async function validateUserCart(cartItems:Item[]){
 export async function terminateReserveUpdateStock(user_id:string){
   try{
     // console.log("begin");
+    console.log("terminating old cart");
     await db.query("BEGIN");
     const resp = await db.query(`
       SELECT * FROM cart_reservations
@@ -81,10 +82,10 @@ export async function terminateReserveUpdateStock(user_id:string){
 
 async function reserveStock(cartItems:Item[], user_id:string|null) {
   const items = cartItems;
-  console.log(user_id);
-  if (user_id != null) {
-    terminateReserveUpdateStock(user_id);
-  }
+  // console.log(user_id);
+  // if (user_id != null) {
+  //   terminateReserveUpdateStock(user_id);
+  // }
 
   try {
     await db.query("BEGIN");    // All or nothing
@@ -209,7 +210,9 @@ router.post('/', async (req, res) => {
     // console.log(req.body.uuid);
     // const userId = JSON.parse(req.body.uuid) as string | null;
     const userId = req.body.uuid as string | null;
-  
+    if (userId != null) {
+        await terminateReserveUpdateStock(userId);
+    }
     const cartState = await validateUserCart(items);  // Sanatize items to ensure no client side manipulation
     
     if (!cartState?.success) {
@@ -228,50 +231,5 @@ router.post('/', async (req, res) => {
     return res.status(400).send({error:e});
   }
 });
-// router.post('/', async (req, res) => {
-//   // console.log(req.body.items);
-//   const items = req.body.items as Item[];
-//   console.log("HERE");
-//   // Validate client cart data before checkout
-//   try {
-//       const result = await db.query(
-//       `SELECT 
-//             p.*, 
-//             pi.product_id,
-//             pi.url,
-//             pi.main_image
-//         FROM products p
-//         JOIN product_images pi 
-//             ON pi.product_id = p.id
-//         WHERE pi.main_image = true;`
-//       ,[]);
-
-//       for (const item of items) {
-//         const product = result.rows.find(p => p.id === item.id);
-        
-//         if (!product) {
-//           return res.json({ message: "ITEM NOT FOUND" });
-//         }
-      
-//         if (item.quantity > product.quantity || item.quantity === 0) {
-//           console.log("QUANTITY:", item.quantity);
-//           return res.json({ message: "ITEM QUANTITY NOT AVAILABLE" });
-//         }
-      
-//         // Ensure proper data, not client data
-//         item.id = product.id;
-//         item.name = product.name;
-//         item.price = product.price;
-//         item.image = product.url;
-//       }
-      
-//       checkout(items, req, res);    // Stripe checkout
-      
-//     } catch (e) {
-//       console.error("STRIPE ERROR:", e);
-//       res.status(400).send({error:"STRIP CALL ERROR"});
-//     } 
-// });
-
 
 export default router;

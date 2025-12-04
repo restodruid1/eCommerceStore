@@ -44,7 +44,8 @@ export function CartDropDown (){
             <div style={{display:"flex", flexDirection:"column"}}>
             {cartItems!.map(item => (
                     <div style={{display:"flex", alignContent:"center", justifyContent:"space-evenly"}} key={item.id}>
-                    <strong>{item.name}</strong> — ${item.price} × {item.quantity}<button onClick={()=>handleDelete(item.id)} ><TrashIcon/></button>
+                    <strong>{item.name}</strong> — ${item.price} × {item.quantity}
+                    {/* <button onClick={()=>handleDelete(item.id)} ><TrashIcon/></button> */}
                     </div>
                 ))}
             </div>
