@@ -2,7 +2,7 @@ import {loadStripe} from '@stripe/stripe-js';
 import { useCart } from '../../CartContext';
 import { useCallback, useState, useEffect } from 'react';
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, useNavigate } from "react-router-dom";
 import type { LayoutProps } from "../Layout";
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
@@ -34,9 +34,11 @@ export function StripeCheckout() {
   // const [uuid, setUuid] = useState("");
   const [sesh, setSesh] = useState("");
   const { isClicked, isDesktop } = useOutletContext<LayoutProps>();
+  const navigate = useNavigate();
 
   const fetchClientSecret = useCallback(() => {
     const userId = localStorage.getItem("uuid");
+
     // Create a Checkout Session
     return fetch("http://localhost:5000/create-checkout-session", {
       method: "POST",
@@ -51,8 +53,12 @@ export function StripeCheckout() {
       .then((res) => res.json())
       .then((data:{checkoutResult: { clientSecret: string, sessionId: string}, uuid?:string , error?:string}) => {
         if (data.error) {
-          alert(data.error);
-          setErrorMessage(data.error);
+          // alert(data.error);
+          // setErrorMessage(data.error);
+          navigate("/Cart", {
+            state: { error: data.error },
+            replace: true, // optional; prevents user going "forward" back into broken checkout
+          });
           return data.error;
         }
         else {

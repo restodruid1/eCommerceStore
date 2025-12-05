@@ -15,40 +15,56 @@ export function SingleProduct(){
     const [ stockQuantity, setStockQuantity ] = useState<number>(0);
     const [ cartQuantity, setcartQuantity ] = useState<number>(1);
     const { isClicked, isDesktop } = useOutletContext<LayoutProps>();
+    const [ outOfStockMessage, setOutOfStockMessage ] = useState("");
     const cartDataState = useCart();
 
-        useEffect(() => {
-            async function fetchData(){
-                try {
-                    const response = await fetch(`http://localhost:5000/products/${productId}`);
-                    const data: DataInterface[] = await response.json();
-                    // console.log(data);
-                    setIsData(data);
-                    setStockQuantity(data[0].quantity);
-                    if (isData) {
-                        isData.forEach((image, index) => {      // Find the index of the main product photo from array of returned db data
-                            if (image.main_image === true) {
-                                setMainImageIndex(index);
-                            }
-                        }); 
-                    }
-                } catch (err) {
-                    console.log("ERROR: " + err);
+    useEffect(() => {
+        async function fetchData(){
+            try {
+                const response = await fetch(`http://localhost:5000/products/${productId}`);
+                const data: DataInterface[] = await response.json();
+                // console.log(data);
+                setIsData(data);
+                const quantityAlreadyInCart = cartDataState!.findItemCartQuantity!(Number(productId)) || 0;
+                setStockQuantity(data[0].quantity - quantityAlreadyInCart);
+                if (isData) {
+                    isData.forEach((image, index) => {      // Find the index of the main product photo from array of returned db data
+                        if (image.main_image === true) {
+                            setMainImageIndex(index);
+                        }
+                    }); 
                 }
-            };
-            fetchData();
-        },[productId]);
+            } catch (err) {
+                console.log("ERROR: " + err);
+            }
+        };
+        fetchData();
+    },[productId]);
+
+    useEffect(() => {
+        if (!outOfStockMessage) return;
+      
+        const timer = setTimeout(() => {
+            setOutOfStockMessage("");
+        }, 5000);
+      
+        return () => clearTimeout(timer); // cleanup
+      }, [outOfStockMessage]);
 
     function handleClickAdd(){
-        if (cartQuantity + 1 > stockQuantity) {
-            alert("Max Quantity Reached");
-        } else {
-            setcartQuantity(cartQuantity + 1);
-        }
+        // if (cartQuantity + 1 > stockQuantity) {
+        //     alert("Max Quantity Reached");
+        //     setOutOfStockMessage("Quantity not in stock");
+        // } else {
+        //     setcartQuantity(cartQuantity + 1);
+        //     setOutOfStockMessage("");
+        // }
+        setcartQuantity(cartQuantity + 1);
     }
     function handleClickDelete(){
         if (cartQuantity > 1) {
-            setcartQuantity(cartQuantity - 1);   
+            setcartQuantity(cartQuantity - 1);
+            // setOutOfStockMessage("");   
         } 
     }
     
@@ -57,27 +73,33 @@ export function SingleProduct(){
             const response = await fetch(`http://localhost:5000/products/${productId}`);
             const data: DataInterface[] = await response.json();
             // console.log(data);
-            if (cartQuantity > data[0].quantity) {  // Check if item is in stock
-                alert("quantity not in stock");
-                setcartQuantity(data[0].quantity);
+            const databaseStock = data[0].quantity;
+            const mainCartItemQuantity = cartDataState!.findItemCartQuantity!(Number(productId))
+            const totalItemQuantityInCart = cartQuantity + mainCartItemQuantity;
+            const availableProduct = databaseStock - totalItemQuantityInCart;
+            if (availableProduct < 0) {  // Check if item is in stock
+                // alert("quantity not in stock");
+                setOutOfStockMessage("Quantity not in stock");
+                setcartQuantity(mainCartItemQuantity <= databaseStock ?  databaseStock - mainCartItemQuantity : 0);
             } else {
+                setStockQuantity(stockQuantity - cartQuantity);
+                setcartQuantity(1);
                 const { id, name, price, url } = data[0];
                 const cartItem: CartItem = {id,name,price,quantity:cartQuantity, image:url}; 
                 // alert(`added ${cartQuantity} to cart`);
-                cartDataState.addToCart!(cartItem, data[0].quantity); // Pass stock quantity for valid amount check
+                cartDataState.addToCart!(cartItem, databaseStock); // Pass stock quantity for valid amount check
             }   
             
         } catch (err) {
             console.log("ERROR: " + err);
         }
-        setcartQuantity(1);
     }
 
     if (!isData) return <p>PRODUCT NOT FOUND</p>;
 
     return (
         <div className={`body column ${ isClicked && isDesktop ? 'open' : ''}`}>
-            <h2>Product Name =  ${isData[0].name}</h2>
+            <h2>Product Name =  {isData[0].name}</h2>
             <img className={styles.mainImage} src={`${isData[mainImageIndex].url}`}/>
             <div className={styles.secondaryImageContainer}>
                 {isData
@@ -87,10 +109,11 @@ export function SingleProduct(){
                     ))
                 }
             </div>
+            {outOfStockMessage && <p style={{color:"red"}}>{outOfStockMessage}</p>}
             <div className={styles.priceAndCart}>
                 <p>${isData[0].price}</p>
-                <span>Quantity: {stockQuantity === 0 ? 0 : cartQuantity}<button onClick={handleClickAdd}>+</button><button onClick={handleClickDelete}>-</button></span>
-                <button onClick={handleClickCart}>ADD TO CART</button>
+                <span>Quantity: {stockQuantity <= 0 ? 0 : cartQuantity}<button onClick={handleClickAdd}>+</button><button onClick={handleClickDelete}>-</button></span>
+                <button disabled={stockQuantity <= 0 ? true : false} onClick={handleClickCart}>ADD TO CART</button>
             </div>
             
             <h2>DESCRIPTION</h2>

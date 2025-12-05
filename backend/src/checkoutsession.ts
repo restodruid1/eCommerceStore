@@ -31,7 +31,7 @@ async function validateUserCart(cartItems:Item[]){
     
       if (item.quantity > product.quantity || item.quantity === 0) {
         // console.log("QUANTITY:", item.quantity);
-        return { success:false, error: `ITEM QUANTITY NOT AVAILABLE OF ${item.name}` };
+        return { success:false, error: `Only ${product.quantity} ${item.name} left` };
       }
       // console.log("ITEM QUANTITY2: " + item.quantity);
       // Ensure proper data, not client data

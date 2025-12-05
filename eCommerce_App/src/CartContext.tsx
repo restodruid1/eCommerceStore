@@ -18,7 +18,8 @@ interface CartContextType {
     total?: number;
     updateTotal?: () => void;
     decrementQuantity?:(id: number) => void;
-    incrementQuantity?:(id: number) => void;
+    incrementQuantity?:(id: number, amount:number) => void;
+    findItemCartQuantity?:(id: number) => number;
     cartTotalPrice?: () => number;
     cartTotalItems?: () => number;
 }
@@ -41,10 +42,9 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
         
         cartItems.forEach(curCartItem => {      // Update existing quantity else add item to cart
             if (curCartItem.id === item.id){
-                if (curCartItem.quantity + item.quantity > stockQuantity) {
-                    alert("quantity not in stock");
-                } else {
-                    curCartItem.quantity += item.quantity;
+                if (curCartItem.quantity + item.quantity <= stockQuantity) {
+                    // curCartItem.quantity += item.quantity;
+                    incrementQuantity(curCartItem.id, item.quantity);
                     alert(`added ${item.quantity} to cart`);
                 }
                 foundId = true;
@@ -56,15 +56,21 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
         }
     }
 
-    function incrementQuantity(id:number) {
+    function incrementQuantity(id:number, amount:number) {
         // alert("Increment hit");
         setCartData(prevItems =>
             prevItems.map(item =>
               item.id === id
-                ? { ...item, quantity: item.quantity + 1 }
+                ? { ...item, quantity: item.quantity + amount }
                 : item
             )
           );
+    }
+    function findItemCartQuantity(id:number) {
+        const productinfo = cartItems.find((item) => item.id === id)!;
+        // console.log("FIND ITEM QUANTITY IN CART: " + productinfo.quantity);
+        return productinfo.quantity;
+
     }
 
     function decrementQuantity(id:number) {
@@ -96,7 +102,7 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <CartContext.Provider value={{cartItems,cartTotalPrice,cartTotalItems, printCart, addToCart, clearCart,deleteItem, incrementQuantity, decrementQuantity}}>
+        <CartContext.Provider value={{cartItems,cartTotalPrice,cartTotalItems, printCart, addToCart, clearCart,deleteItem, incrementQuantity, decrementQuantity, findItemCartQuantity}}>
             {children}
         </CartContext.Provider>
     )
