@@ -9,6 +9,7 @@ import awsS3 from "./awsS3.js";
 import admin from "./admin.js";
 import Stripe from "stripe";
 import multer from "multer";
+import * as db from "./db/index.js";
 
 export interface Item {
   id: number;

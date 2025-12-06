@@ -25,7 +25,8 @@ export function SingleProduct(){
                 const data: DataInterface[] = await response.json();
                 // console.log(data);
                 setIsData(data);
-                const quantityAlreadyInCart = cartDataState!.findItemCartQuantity!(Number(productId)) || 0;
+                const quantityAlreadyInCart = cartDataState!.findItemCartQuantity!(Number(productId));
+                console.log("CART QUANT: = " + quantityAlreadyInCart);
                 setStockQuantity(data[0].quantity - quantityAlreadyInCart);
                 if (isData) {
                     isData.forEach((image, index) => {      // Find the index of the main product photo from array of returned db data
@@ -52,13 +53,6 @@ export function SingleProduct(){
       }, [outOfStockMessage]);
 
     function handleClickAdd(){
-        // if (cartQuantity + 1 > stockQuantity) {
-        //     alert("Max Quantity Reached");
-        //     setOutOfStockMessage("Quantity not in stock");
-        // } else {
-        //     setcartQuantity(cartQuantity + 1);
-        //     setOutOfStockMessage("");
-        // }
         setcartQuantity(cartQuantity + 1);
     }
     function handleClickDelete(){
@@ -75,12 +69,12 @@ export function SingleProduct(){
             // console.log(data);
             const databaseStock = data[0].quantity;
             const mainCartItemQuantity = cartDataState!.findItemCartQuantity!(Number(productId))
-            const totalItemQuantityInCart = cartQuantity + mainCartItemQuantity;
-            const availableProduct = databaseStock - totalItemQuantityInCart;
+            const itemQuantityInAllCarts = cartQuantity + mainCartItemQuantity;
+            const availableProduct = databaseStock - itemQuantityInAllCarts;
+
             if (availableProduct < 0) {  // Check if item is in stock
-                // alert("quantity not in stock");
-                setOutOfStockMessage("Quantity not in stock");
-                setcartQuantity(mainCartItemQuantity <= databaseStock ?  databaseStock - mainCartItemQuantity : 0);
+                setOutOfStockMessage(`Only ${databaseStock - mainCartItemQuantity} available`);
+                setcartQuantity(mainCartItemQuantity <= databaseStock ?  databaseStock - mainCartItemQuantity : 0);     // Shows reduced quantity available to buy
             } else {
                 setStockQuantity(stockQuantity - cartQuantity);
                 setcartQuantity(1);
@@ -114,6 +108,8 @@ export function SingleProduct(){
                 <p>${isData[0].price}</p>
                 <span>Quantity: {stockQuantity <= 0 ? 0 : cartQuantity}<button onClick={handleClickAdd}>+</button><button onClick={handleClickDelete}>-</button></span>
                 <button disabled={stockQuantity <= 0 ? true : false} onClick={handleClickCart}>ADD TO CART</button>
+                <p>{cartQuantity}</p>
+                <p>{stockQuantity}</p>
             </div>
             
             <h2>DESCRIPTION</h2>

@@ -31,7 +31,7 @@ async function validateUserCart(cartItems:Item[]){
     
       if (item.quantity > product.quantity || item.quantity === 0) {
         // console.log("QUANTITY:", item.quantity);
-        return { success:false, error: `Only ${product.quantity} ${item.name} left` };
+        return { success:false, error: `Only ${product.quantity} ${item.name} available` };
       }
       // console.log("ITEM QUANTITY2: " + item.quantity);
       // Ensure proper data, not client data
@@ -216,19 +216,19 @@ router.post('/', async (req, res) => {
     const cartState = await validateUserCart(items);  // Sanatize items to ensure no client side manipulation
     
     if (!cartState?.success) {
-      return res.status(400).send({error: cartState?.error});
+      return res.status(500).send({error: cartState?.error});
     }
     const stockResp = await reserveStock(cartState.items!, userId);   // Validate stock & reserve cart on db for 30 minutes
     console.log(stockResp);
 
-    if (!stockResp.success) return res.status(400).send({error: stockResp.error});
+    if (!stockResp.success) return res.status(500).send({error: stockResp.error});
 
     const checkoutResult = await checkout(cartState.items!, req, res, stockResp.uuid!);   // Stripe checkout
 
     // return res.json(checkoutResult, stockResp.uuid!);
     return res.send({checkoutResult: checkoutResult, uuid: stockResp.uuid!})
   } catch(e) {
-    return res.status(400).send({error:e});
+    return res.status(500).send({error:e});
   }
 });
 

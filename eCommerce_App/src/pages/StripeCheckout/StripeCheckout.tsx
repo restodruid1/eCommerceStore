@@ -31,48 +31,81 @@ export function StripeCheckout() {
   const {cartItems} = cartDataState;
   const [errorMessage, setErrorMessage] = useState("");
   const [checkoutErrorMessage, setCheckoutErrorMessage] = useState("");
+  const [ clientSecret, setClientSecret ] = useState<string>("");
   // const [uuid, setUuid] = useState("");
   const [sesh, setSesh] = useState("");
   const { isClicked, isDesktop } = useOutletContext<LayoutProps>();
   const navigate = useNavigate();
 
-  const fetchClientSecret = useCallback(() => {
-    const userId = localStorage.getItem("uuid");
+  // const fetchClientSecret = useCallback(() => {
+  //   const userId = localStorage.getItem("uuid");
 
-    // Create a Checkout Session
-    return fetch("http://localhost:5000/create-checkout-session", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        items: cartItems,
-        uuid: userId,     
-    }),
-    })
-      .then((res) => res.json())
-      .then((data:{checkoutResult: { clientSecret: string, sessionId: string}, uuid?:string , error?:string}) => {
-        if (data.error) {
-          // alert(data.error);
-          // setErrorMessage(data.error);
-          navigate("/Cart", {
-            state: { error: data.error },
-            replace: true, // optional; prevents user going "forward" back into broken checkout
-          });
-          return data.error;
-        }
-        else {
-          const { clientSecret } = data.checkoutResult;
-          // alert("here" + data.checkoutResult.sessionId);
-          localStorage.setItem("uuid", data.uuid!);
-          localStorage.setItem("sessionId", data.checkoutResult.sessionId);
-          setSesh(data.checkoutResult.sessionId);
-          // setErrorMessage("");
-          return clientSecret;
-        }
+  //   // Create a Checkout Session
+  //   return fetch("http://localhost:5000/create-checkout-session", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({
+  //       items: cartItems,
+  //       uuid: userId,     
+  //   }),
+  //   })
+  //     .then((res) => res.json())
+  //     .then((data:{checkoutResult: { clientSecret: string, sessionId: string}, uuid?:string , error?:string}) => {
+  //       if (data.error) {
+  //         // alert(data.error);
+  //         // setErrorMessage(data.error);
+  //         navigate("/Cart", {
+  //           state: { error: data.error },
+  //           replace: true, // optional; prevents user going "forward" back into broken checkout
+  //         });
+  //         return "";
+  //       }
+  //       else {
+  //         const { clientSecret } = data.checkoutResult;
+  //         localStorage.setItem("uuid", data.uuid!);
+  //         localStorage.setItem("sessionId", data.checkoutResult.sessionId);
+  //         setSesh(data.checkoutResult.sessionId);
+  //         setIsLoadingCheckout(false);
+  //         return clientSecret;
+  //       }
+  //     });
+  // }, [cartItems]);
+  useEffect(() => {
+    const fetchClientSecret = async () => {
+      const userId = localStorage.getItem("uuid");
+  
+      // Create a Checkout Session
+      const response = await fetch("http://localhost:5000/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          items: cartItems,
+          uuid: userId,     
+      }),
       });
-  }, [cartItems]);
+      const checkoutSession:{checkoutResult: { clientSecret: string, sessionId: string}, uuid?:string , error?:string} = await response.json();
 
+      if (checkoutSession.error) {
+        navigate("/Cart", {
+                state: { error: checkoutSession.error },
+                replace: true, // optional; prevents user going "forward" back into broken checkout
+              });
+      } else {
+          const { clientSecret } = checkoutSession.checkoutResult;
+          localStorage.setItem("uuid", checkoutSession.uuid!);
+          localStorage.setItem("sessionId", checkoutSession.checkoutResult.sessionId);
+          setSesh(checkoutSession.checkoutResult.sessionId);
+          // setIsLoadingCheckout(false);
+          setClientSecret(clientSecret);
+      }
+    }
+    fetchClientSecret();
+  }, []);
+  
 
   const onShippingDetailsChange = async (shippingDetailsChangeEvent:ShippingDetailsChangeEvent) => {
     const {checkoutSessionId, shippingDetails} = shippingDetailsChangeEvent;
@@ -108,7 +141,8 @@ export function StripeCheckout() {
   };
 
   const options: any = {
-    fetchClientSecret,
+    // fetchClientSecret,
+    clientSecret,
     onShippingDetailsChange
   };
 
@@ -147,6 +181,7 @@ export function StripeCheckout() {
 
   if (errorMessage) return <h1 className={`body column ${isClicked && isDesktop ? 'open' : ''}`}>{errorMessage}</h1>
   if (checkoutErrorMessage) return <h1 className={`body column ${isClicked && isDesktop ? 'open' : ''}`}>{checkoutErrorMessage}</h1>
+  if (!clientSecret) return <p className={`body column ${isClicked && isDesktop ? 'open' : ''}`}>Loading...</p>
   return (
     <div id="checkout">
       <EmbeddedCheckoutProvider

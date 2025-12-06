@@ -17,7 +17,7 @@ interface CartContextType {
     addToCart?: (item:CartItem, stockQuantity:number) => void;
     total?: number;
     updateTotal?: () => void;
-    decrementQuantity?:(id: number) => void;
+    decrementQuantity?:(id: number, amount:number) => void;
     incrementQuantity?:(id: number, amount:number) => void;
     findItemCartQuantity?:(id: number) => number;
     cartTotalPrice?: () => number;
@@ -69,16 +69,16 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
     function findItemCartQuantity(id:number) {
         const productinfo = cartItems.find((item) => item.id === id)!;
         // console.log("FIND ITEM QUANTITY IN CART: " + productinfo.quantity);
-        return productinfo.quantity;
+        return productinfo ? productinfo.quantity : 0;
 
     }
 
-    function decrementQuantity(id:number) {
+    function decrementQuantity(id:number, amount:number) {
         // alert("Decrement hit");
         setCartData(prevItems =>
             prevItems.map(item =>
               item.id === id
-                ? { ...item, quantity: item.quantity - 1 }
+                ? { ...item, quantity: item.quantity - amount }
                 : item
             )
           );

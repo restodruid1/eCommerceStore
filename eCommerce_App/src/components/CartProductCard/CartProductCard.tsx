@@ -14,8 +14,24 @@ export function CartProductCard ({ itemInfo }: CartProductCardProps){
     const cartDataState = useCart();
     const TrashIcon: IconType = FaTrashAlt;
     const [ outOfStockMessage, setOutOfStockMessage] = useState<string>("");
+    const [ productStock, setProductStock ] = useState<number>(0);
 
 
+    useEffect(() => {
+        const fetchProductStock = async () => {
+            try {
+                const response = await fetch(`http://localhost:5000/products/${itemInfo.id}`);
+                const data: DataInterface[] = await response.json();
+                console.log("DATA: " + data);
+                setProductStock(data ? data[0].quantity : 0);
+            } catch (err) {
+                console.log("ERROR: " + err);
+            }
+        };
+        fetchProductStock();
+      }, []);
+    
+    
     useEffect(() => {
         if (!outOfStockMessage) return;
       
@@ -30,34 +46,36 @@ export function CartProductCard ({ itemInfo }: CartProductCardProps){
         cartDataState!.deleteItem!(itemId);
     }
 
+
     async function handleClickIncrement(itemId:number, cartQuantity:number) {
         try {
-                const response = await fetch(`http://localhost:5000/products/${itemId}`);
-                const data: DataInterface[] = await response.json();
-                const stockQuantity = data[0].quantity;
-                if (stockQuantity < cartQuantity + 1) {
-                    alert("Max Quantity Reached");
-                    setOutOfStockMessage("Max Quantity Reached");
-                } else {
-                      cartDataState!.incrementQuantity!(itemId, 1);
-                }  
-                
-            } catch (err) {
-                console.log("ERROR: " + err);
-            }
+            if (productStock < cartQuantity + 1) {
+                // alert("Max Quantity Reached");
+                setOutOfStockMessage(`Only ${productStock} available`);
+                cartDataState!.decrementQuantity!(itemId, cartQuantity - productStock);
+            } else {
+                    cartDataState!.incrementQuantity!(itemId, 1);
+            }  
+        } catch (err) {
+            console.log("ERROR: " + err);
+        }
     }
+
+
     async function handleClickDecrement(itemId:number, cartQuantity:number) {
         try {
-                if (cartQuantity - 1 <= 0) {
-                    cartDataState!.deleteItem!(itemId);
-                } else {
-                    alert("Decrementing Item");
-                    cartDataState!.decrementQuantity!(itemId);
-                }  
-                
-            } catch (err) {
-                console.log("ERROR: " + err);
-            }
+            if (cartQuantity - 1 <= 0) {
+                cartDataState!.deleteItem!(itemId);
+            } else if (productStock < cartQuantity - 1) {
+                cartDataState!.decrementQuantity!(itemId, cartQuantity - productStock);
+            } else {
+                // alert("Decrementing Item");
+                cartDataState!.decrementQuantity!(itemId, 1);
+            }  
+            // cartDataState!.decrementQuantity!(itemId, 1);
+        } catch (err) {
+            console.log("ERROR: " + err);
+        }
     }
     
     return (

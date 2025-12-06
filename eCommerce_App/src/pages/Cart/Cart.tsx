@@ -11,6 +11,7 @@ export function Cart(){
     const {cartItems} = cartDataState;
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(true);
     const location = useLocation();
 
     useEffect(() => {
@@ -41,12 +42,31 @@ export function Cart(){
       useEffect(() => {
         if (location.state?.error) {
           setError(location.state.error);
-    
+  
           // Auto-clear after 5s
           const timer = setTimeout(() => setError(""), 5000);
           return () => clearTimeout(timer);
         }
       }, [location.state]);
+
+      useEffect(() => {
+        const deleteReservedCart = async () => {
+          const userId = localStorage.getItem("uuid");
+          const response = await fetch("http://localhost:5000/session_status/deleteCartReservation", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              uuid: userId,     
+            }),
+          });
+          const data = await response.json();
+          console.log("RESERVE STOCK DELETED? " + data.success);
+          setLoading(false);
+        }
+        deleteReservedCart();
+      }, []);
 
     const Message = ({ message }:{ message: string }) => (
     <section>
@@ -63,6 +83,8 @@ export function Cart(){
                 <h2 >0 Items in Cart</h2>
             </div>
         )
+
+    if (loading) return <p className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>Loading...</p>
 
     return message ? (
         <Message message={message} />

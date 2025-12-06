@@ -51,5 +51,18 @@ router.post('/check', async (req:Request, res:Response) => {
         res.status(400).send({error:"Something Went Wrong"});
     }
 })
+router.post('/deleteCartReservation', async (req:Request, res:Response) => {
+    try{
+        const uuid = req.body.uuid;
+        if (uuid) {
+            const response = await terminateReserveUpdateStock(uuid);
+            return res.send(response);
+        }
+        
+        res.send({status: "failed"});
+    } catch (e) {
+        res.status(400).send({error:"Something Went Wrong"});
+    }
+})
 
 export default router;
