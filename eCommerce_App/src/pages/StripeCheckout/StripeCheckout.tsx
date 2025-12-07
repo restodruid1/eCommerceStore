@@ -1,6 +1,6 @@
 import {loadStripe} from '@stripe/stripe-js';
 import { useCart } from '../../CartContext';
-import { useCallback, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
 import { useOutletContext, useNavigate } from "react-router-dom";
 import type { LayoutProps } from "../Layout";
@@ -29,49 +29,13 @@ interface ShippingDetailsChangeEvent {
 export function StripeCheckout() {
   const cartDataState = useCart();
   const {cartItems} = cartDataState;
-  const [errorMessage, setErrorMessage] = useState("");
   const [checkoutErrorMessage, setCheckoutErrorMessage] = useState("");
   const [ clientSecret, setClientSecret ] = useState<string>("");
-  // const [uuid, setUuid] = useState("");
   const [sesh, setSesh] = useState("");
   const { isClicked, isDesktop } = useOutletContext<LayoutProps>();
   const navigate = useNavigate();
 
-  // const fetchClientSecret = useCallback(() => {
-  //   const userId = localStorage.getItem("uuid");
-
-  //   // Create a Checkout Session
-  //   return fetch("http://localhost:5000/create-checkout-session", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       items: cartItems,
-  //       uuid: userId,     
-  //   }),
-  //   })
-  //     .then((res) => res.json())
-  //     .then((data:{checkoutResult: { clientSecret: string, sessionId: string}, uuid?:string , error?:string}) => {
-  //       if (data.error) {
-  //         // alert(data.error);
-  //         // setErrorMessage(data.error);
-  //         navigate("/Cart", {
-  //           state: { error: data.error },
-  //           replace: true, // optional; prevents user going "forward" back into broken checkout
-  //         });
-  //         return "";
-  //       }
-  //       else {
-  //         const { clientSecret } = data.checkoutResult;
-  //         localStorage.setItem("uuid", data.uuid!);
-  //         localStorage.setItem("sessionId", data.checkoutResult.sessionId);
-  //         setSesh(data.checkoutResult.sessionId);
-  //         setIsLoadingCheckout(false);
-  //         return clientSecret;
-  //       }
-  //     });
-  // }, [cartItems]);
+  
   useEffect(() => {
     const fetchClientSecret = async () => {
       const userId = localStorage.getItem("uuid");
@@ -179,7 +143,6 @@ export function StripeCheckout() {
   }, [sesh]);  // runs only when sesh changes from null → value
 
 
-  if (errorMessage) return <h1 className={`body column ${isClicked && isDesktop ? 'open' : ''}`}>{errorMessage}</h1>
   if (checkoutErrorMessage) return <h1 className={`body column ${isClicked && isDesktop ? 'open' : ''}`}>{checkoutErrorMessage}</h1>
   if (!clientSecret) return <p className={`body column ${isClicked && isDesktop ? 'open' : ''}`}>Loading...</p>
   return (

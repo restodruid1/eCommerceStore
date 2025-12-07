@@ -11,7 +11,15 @@ export function Product ({ data, pageUrl }:ProductProps) {
     
     return (
             <div className="productItems">
-                <Link to={`/${pageUrl}/${data.id}/${data.name}`}><img src={`${data.url}`} className='productImages'/></Link>
+                <Link to={`/${pageUrl}/${data.id}/${data.name}`}>
+                <img 
+                    src={data.url}
+                    className='productImages'
+                    onError={(e) => {
+                        e.currentTarget.src = "https://cdk-hnb659fds-assets-289931925246-us-east-1.s3.us-east-1.amazonaws.com/defaultImg.jpg";
+                    }} 
+                />
+                </Link>
                 <div style={{display:"flex", flexDirection:"column", alignContent:"center", justifyContent:"center"}}>
                     <h3 style={{textAlign:"center"}}>{data.name}</h3>
                     <p style={{textAlign:"center"}}>${data.price}</p>

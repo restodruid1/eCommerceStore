@@ -1,21 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import styles from './Admin.module.css'
 
 export function AdminPage(){
     const [jwt, setJwt] = useState<boolean>(false);
-    const [productName, setProductName] = useState("");
-    const [productHeight, setProductHeight] = useState("");
-    const [productLength, setProductLength] = useState("");
-    const [productWidth, setProductWidth] = useState("");
-    const [productWeight, setProductWeight] = useState("");
-    const [productId, setProductId] = useState("");
-    const [productPrice, setProductPrice] = useState("");
-    const [productQuantity, setProductQuantity] = useState("");
-    const [productDescription, setProductDescription] = useState("");
-    const [productImages, setProductImages] = useState<File[]>([]);
     const [products, setProducts] = useState([]);
     const [error, setError] = useState("");
+    const initialFormData = {
+      productName: "",
+      productHeight: "",
+      productLength: "",
+      productWidth: "",
+      productWeight: "",
+      productId: "",
+      productPrice: "",
+      productQuantity: "",
+      productDescription: "",
+      productImages: [] as File[],
+    };
+    const [formInputData, setFormInputData] = useState(initialFormData);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Validate clients hitting this page
     useEffect(()=>{
@@ -57,31 +61,45 @@ export function AdminPage(){
         body: JSON.stringify({
             jwt: localStorage.getItem("jwt")
         })
-        
       });
       const data = await response.json();
-      // alert(data);
-      // console.log(data);
       setProducts(data.result);
     }
 
     async function handleSubmit(e: React.FormEvent){
       e.preventDefault();
-      console.log(productImages);
+      console.log(formInputData.productImages);
       
+      const skipFields = ["productImages", "productName", "productDescription"]; // only numeric fields checked
+
+      for (const key in formInputData) {
+        if (skipFields.includes(key)) continue; // skip non-numeric fields
+
+        const value = formInputData[key as keyof typeof formInputData]; // TS type safety
+        const numericValue = Number(value);
+
+        if (isNaN(numericValue)) {
+          console.log(`${key} is not a valid number:`, value);
+          setError(`${key} needs to be a number`);
+          return;
+        } else {
+          console.log(`${key} is a valid number:`, numericValue);
+        }
+      }
+
       const formData = new FormData();
-      formData.append("productName", productName);
-      formData.append("category", productId);
-      formData.append("price", productPrice);
-      formData.append("quantity", String(parseInt(productQuantity) > 0 ? parseInt(productQuantity) : 1));
-      formData.append("length", Number(productLength).toFixed(2));
-      formData.append("width", Number(productWidth).toFixed(2));
-      formData.append("height", Number(productHeight).toFixed(2));
-      formData.append("weight", Number(productWeight).toFixed(2));
-      formData.append("description", productDescription);
+      formData.append("productName", formInputData.productName);
+      formData.append("category", formInputData.productId);
+      formData.append("price", formInputData.productPrice);
+      formData.append("quantity", String(parseInt(formInputData.productQuantity) > 0 ? parseInt(formInputData.productQuantity) : 1));
+      formData.append("length", Number(formInputData.productLength).toFixed(2));
+      formData.append("width", Number(formInputData.productWidth).toFixed(2));
+      formData.append("height", Number(formInputData.productHeight).toFixed(2));
+      formData.append("weight", Number(formInputData.productWeight).toFixed(2));
+      formData.append("description", formInputData.productDescription);
       formData.append("jwt", String(localStorage.getItem("jwt")));
-      for (let i = 0; i < productImages!.length; i++) {
-        formData.append("images", productImages![i]); 
+      for (let i = 0; i < formInputData.productImages!.length; i++) {
+        formData.append("images", formInputData.productImages![i]); 
       }
 
       // console.log(formData);
@@ -92,16 +110,32 @@ export function AdminPage(){
         });
 
         const data = await response.json();
-        // console.log("AWS FETCH: " + data);
-        if (!data) return;
-        getProductData();
-      } catch {
-        console.log("eerror");
+        console.log("AWS FETCH: " + data);
+        console.log("AWS FETCH: " + data.success);
+        if (!data.success) {
+          setError(data.error);
+        } else {
+          setError("");
+          resetForm();
+          getProductData();
+        }
+      } catch (err) {
+        console.log("Error: ", err);
+      }
+    }
+
+    function resetForm() {
+      setFormInputData(initialFormData);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""; // clears the file input
       }
     }
 
     function handleDeleteImage(imageIndex:number){
-      setProductImages(prev => prev.filter((_, index) => index !== imageIndex));
+      setFormInputData(prev => ({
+        ...prev,
+        productImages: prev.productImages.filter((_, index) => index !== imageIndex)
+      }));
     }
 
     async function handleDeleteProductFromDB(itemId:number, itemCategory:number){
@@ -125,6 +159,36 @@ export function AdminPage(){
       // setProducts(data.result);
     }
 
+    const handleFormTextChange = (
+      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+      const { name, value } = e.target;
+    
+      setFormInputData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    };
+
+    const handleFormFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (!e.target.files) return;
+      const fileName = e.target.files![0].name; 
+      
+      if (/\s/.test(fileName)) {
+        setError("File name can't contain whitespace");
+      } 
+      else if (formInputData.productImages.some(file => file.name === fileName)) {
+        setError("Duplicate file name");
+      } 
+      else {
+        setError("");
+        const files = Array.from(e.target.files!);
+        setFormInputData(prev => ({
+          ...prev,
+          productImages: [...prev.productImages, ...files]
+        }));
+      }
+    };
 
     if (!jwt) 
       return (
@@ -140,8 +204,9 @@ export function AdminPage(){
           <label className={styles.label}>Product Name</label>
           <input
               type="text"
-              value={productName}
-              onChange={(e) => setProductName(e.target.value)}
+              value={formInputData.productName}
+              onChange={handleFormTextChange}
+              name="productName"
               required
               className={styles.formInput}
           />
@@ -150,8 +215,9 @@ export function AdminPage(){
           <input
               type="text"
               placeholder="1.99 1.00"
-              value={productPrice}
-              onChange={(e) => setProductPrice(e.target.value)}
+              value={formInputData.productPrice}
+              onChange={handleFormTextChange}
+              name="productPrice"
               required
               className={styles.formInput}
           />
@@ -159,8 +225,9 @@ export function AdminPage(){
           <label className={styles.label}>Product Quantity</label>
           <input
               type="text"
-              value={productQuantity}
-              onChange={(e) => setProductQuantity(e.target.value)}
+              value={formInputData.productQuantity}
+              onChange={handleFormTextChange}
+              name="productQuantity"
               required
               className={styles.formInput}
           />
@@ -168,8 +235,9 @@ export function AdminPage(){
           <label className={styles.label}>Product ID <span>(1-4)</span></label>
           <input
               type="text"
-              value={productId}
-              onChange={(e) => setProductId(e.target.value)}
+              value={formInputData.productId}
+              onChange={handleFormTextChange}
+              name="productId"
               required
               className={styles.formInput}
           />
@@ -177,8 +245,9 @@ export function AdminPage(){
           <label className={styles.label}>Length <span>(in)</span></label>
           <input
               type="text"
-              value={productLength}
-              onChange={(e) => setProductLength(e.target.value)}
+              value={formInputData.productLength}
+              onChange={handleFormTextChange}
+              name="productLength"
               placeholder="4, 4.2, 4.26"
               required
               className={styles.formInput}
@@ -187,8 +256,9 @@ export function AdminPage(){
           <label className={styles.label}>Width <span>(in)</span></label>
           <input
               type="text"
-              value={productWidth}
-              onChange={(e) => setProductWidth(e.target.value)}
+              value={formInputData.productWidth}
+              onChange={handleFormTextChange}
+              name="productWidth"
               required
               className={styles.formInput}
           />
@@ -196,8 +266,9 @@ export function AdminPage(){
           <label className={styles.label}>Height <span>(in)</span></label>
           <input
               type="text"
-              value={productHeight}
-              onChange={(e) => setProductHeight(e.target.value)}
+              value={formInputData.productHeight}
+              onChange={handleFormTextChange}
+              name="productHeight"
               required
               className={styles.formInput}
           />
@@ -205,8 +276,9 @@ export function AdminPage(){
           <label className={styles.label}>Weight <span>(oz)</span></label>
           <input
               type="text"
-              value={productWeight}
-              onChange={(e) => setProductWeight(e.target.value)}
+              value={formInputData.productWeight}
+              onChange={handleFormTextChange}
+              name="productWeight"
               placeholder="10, 10.2, 10.22"
               required
               className={styles.formInput}
@@ -214,8 +286,9 @@ export function AdminPage(){
 
           <label className={styles.label}>Description</label>
           <textarea
-              value={productDescription}
-              onChange={(e) => setProductDescription(e.target.value)}
+              value={formInputData.productDescription}
+              onChange={handleFormTextChange}
+              name="productDescription"
               rows={6}
               maxLength={999}
               required
@@ -227,15 +300,9 @@ export function AdminPage(){
               type="file"
               multiple
               accept="image/*"
-              onChange={(e) => {
-                if (/\s/.test(e.target.files![0].name)) {
-                  setError("File can't contain whitespace");
-                } else {
-                  setError("");
-                  const files = Array.from(e.target.files!);
-                  setProductImages(prev => [...prev, ...files]);
-                }
-              }}
+              ref={fileInputRef}
+              onChange={handleFormFileChange}
+              name="productImages"
               required
               className={styles.formInput}
           />
@@ -243,8 +310,8 @@ export function AdminPage(){
           {error && <p style={{ color: 'red', marginBottom: '1rem' }}>{error}</p>}
 
           <ul>
-            {productImages.map((file, idx) => (
-              <li key={idx} >{file.name} <span onClick={()=>handleDeleteImage(idx)}>X</span></li>  
+            {formInputData.productImages.map((file, idx) => (
+              <li key={idx} ><span>{file.name} <button type="button" onClick={()=>handleDeleteImage(idx)}>X</button></span></li>  
             ))}
           </ul>
 
@@ -255,6 +322,7 @@ export function AdminPage(){
           Submit
           </button>
       </form>
+
       <div style={{display:"flex", flexDirection:"column", justifyContent:"center", alignContent:"center"}}>
       {products.length > 0 && products.map((item:any, index)=>{
         return (

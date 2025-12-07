@@ -22,6 +22,38 @@ router.post('/', upload.array("images"), requireAdmin, async (req,res)=>{
     const files = req.files as Express.Multer.File[];
 
     try {
+
+        try {
+            const result = await db.query(
+                `
+                SELECT * FROM products WHERE LOWER(name) = LOWER($1);
+                `, [req.body.productName]
+            );
+            if (result.rowCount! > 0) {
+                return res.status(500).json({success: false, error: "Product name already exists"})
+            }
+        } 
+        catch (err) {
+            return res.json({success: false, error: err instanceof Error ? err.message : "Product name already exists"});
+        }
+
+        try {
+            for (const file of files) {
+                const result = await db.query(
+                  `
+                  SELECT * FROM product_images WHERE aws_imagekey = $1;
+                  `,
+                  [file.originalname]
+                );
+                if (result.rowCount! > 0) {
+                    return res.status(500).json({success: false, error: `image ${file.originalname} already exists`})
+                }
+            }
+        } 
+        catch (err) {
+            return res.json({success: false, error: err instanceof Error ? err.message : "Failed to query database aws_imagekeys"});
+        }
+
         const s3Client = new S3Client(
             { 
                 region: process.env.AWS_REGION!,
@@ -52,6 +84,7 @@ router.post('/', upload.array("images"), requireAdmin, async (req,res)=>{
             // console.log("UPLOAD SUCCESSFUL?: ", results);
             if (!results) return {success: false, error: "Failed to upload to AWS"};
 
+
             // Create entry in products and product_images tables
             try{
                 const { productName, category, quantity, price, length, width, height, weight, description } = req.body;
@@ -80,18 +113,21 @@ router.post('/', upload.array("images"), requireAdmin, async (req,res)=>{
                     );
                   }
                 await db.query("COMMIT");
-            } catch (e) {
+            } 
+            catch (e) {
                 await db.query("ROLLBACK");
                 return res.json({success: false, error: e instanceof Error ? e.message : "Write to DB unsuccessful"});
             }
-        } catch (e) {
+        } 
+        catch (e) {
             return res.json({success: false, error: e instanceof Error ? e.message : "Issue With AWS"});
         }
         
-    } catch (err) {
+    } 
+    catch (err) {
         console.error(err);
     }
-    res.json({message:"hello"});
+    res.json({success: true, message:"hello"});
 })
 
 router.post('/productData', requireAdmin, async (req,res)=>{
