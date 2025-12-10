@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import styles from "./SingleProd.module.css";
 import type { LayoutProps } from "../Layout";
 import { useOutletContext } from "react-router-dom";
+import { ProductImagesDisplay } from "../../components/Products/ProductImagesDisplay";
 import "../../App.css";
 import type { CartItem } from "../../CartContext";
 import { useCart } from "../../CartContext";
@@ -94,15 +95,16 @@ export function SingleProduct(){
     return (
         <div className={`body column ${ isClicked && isDesktop ? 'open' : ''}`}>
             <h2>Product Name =  {isData[0].name}</h2>
-            <img className={styles.mainImage} src={`${isData[mainImageIndex].url}`}/>
-            <div className={styles.secondaryImageContainer}>
+            {/* <img className={styles.mainImage} src={`${isData[mainImageIndex].url}`}/> */}
+            {/* <div className={styles.secondaryImageContainer}>
                 {isData
                     .filter(image => !image.main_image)
                     .map((image,index) => (
                         <img className={styles.secondaryImage} key={index} src={image.url} alt="" />
                     ))
                 }
-            </div>
+            </div> */}
+            <ProductImagesDisplay images={isData}/>
             {outOfStockMessage && <p style={{color:"red"}}>{outOfStockMessage}</p>}
             <div className={styles.priceAndCart}>
                 <p>${isData[0].price}</p>
