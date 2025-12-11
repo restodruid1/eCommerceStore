@@ -4,20 +4,21 @@ import styles from './NavBar.module.css';
 import { CartDropDown } from '../CartDropDown/CartDropDown';
 
 type NavBarProps = {
-    onClick: () => void;
-    isClicked: boolean;
+    toggleMenu: () => void;
+    isMenuClicked: boolean;
 };
 
-export function NavBar({onClick, isClicked}: NavBarProps) {
+export function NavBar({toggleMenu, isMenuClicked}: NavBarProps) {
     const HamburgerIcon: IconType = BsList;
 
-
-
     return (
-        <nav className={`${styles.navBar} ${isClicked ? styles.open : ''}`}>
-            <button onClick={onClick}><HamburgerIcon size={40} /></button>
+        <nav className={`${styles.navBar} ${isMenuClicked ? styles.open : ''}`}>
+            <button onClick={toggleMenu} aria-label="Toggle menu">
+                <HamburgerIcon size={40} />
+            </button>
+
             <h1>The Anne Elizabeth Boutique</h1>
-            {/* <Link to={"/Cart"}><CartDropDown /></Link> */}
+            
             <CartDropDown />
         </nav>
     )

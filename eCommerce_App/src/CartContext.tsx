@@ -8,33 +8,36 @@ export interface CartItem {
     image?: string;
 }
 interface CartContextType {
-    cartItems?: CartItem[];
-    addItem?: (item: Omit<CartItem, "quantity">) => void;
-    deleteItem?: (id: number) => void;
-    updateQuantity?: (id: number, quantity: number) => void;
-    clearCart?: () => void;
-    printCart?: () => void;
-    addToCart?: (item:CartItem, stockQuantity:number) => void;
-    total?: number;
-    updateTotal?: () => void;
-    decrementQuantity?:(id: number, amount:number) => void;
-    incrementQuantity?:(id: number, amount:number) => void;
-    findItemCartQuantity?:(id: number) => number;
-    cartTotalPrice?: () => number;
-    cartTotalItems?: () => number;
+    cartItems: CartItem[];
+    // addItem: (item: Omit<CartItem, "quantity">) => void;
+    deleteItem: (id: number) => void;
+    // updateQuantity: (id: number, quantity: number) => void;
+    clearCart: () => void;
+    printCart: () => void;
+    addToCart: (item:CartItem, stockQuantity:number) => void;
+    // updateTotal: () => void;
+    decrementQuantity:(id: number, amount:number) => void;
+    incrementQuantity:(id: number, amount:number) => void;
+    findItemCartQuantity:(id: number) => number;
+    // getTotalPriceOfCart: () => number;
+    // getTotalItemsInCart: () => number;
+    totalPriceOfCart:number;
+    totalItemsInCart:number;
 }
 
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider ({ children }: { children: React.ReactNode }) {
-    // const [cartItems, setCartData] = useState<CartItem[]>([]);
     const storedCart = localStorage.getItem("cart");
-    const [cartItems, setCartData] = useState<CartItem[]>(storedCart ? JSON.parse(storedCart) as CartItem[] : []);
-
+    const [cartItems, setCartData] = useState<CartItem[]>(storedCart ? JSON.parse(storedCart) : []);
+    const [ totalPriceOfCart, setTotalPriceOfCart ] = useState(0);
+    const [ totalItemsInCart, setTotalItemsInCart ] = useState(0);
 
     useEffect(() => {
         localStorage.setItem("cart", JSON.stringify(cartItems));
+        setTotalPriceOfCart(getTotalPriceOfCart());
+        setTotalItemsInCart(getTotalItemsInCart());
     }, [cartItems]);
 
     function addToCart(item:CartItem, stockQuantity:number){
@@ -45,7 +48,7 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
                 if (curCartItem.quantity + item.quantity <= stockQuantity) {
                     // curCartItem.quantity += item.quantity;
                     incrementQuantity(curCartItem.id, item.quantity);
-                    alert(`added ${item.quantity} to cart`);
+                    // alert(`added ${item.quantity} to cart`);
                 }
                 foundId = true;
             }
@@ -90,10 +93,11 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
     const printCart = () => {
         console.log(cartItems);
     }
-    const cartTotalPrice = () => {
+
+    const getTotalPriceOfCart = () => {
         return Number(cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2));
     }
-    const cartTotalItems = () => {
+    const getTotalItemsInCart = () => {
         return cartItems.reduce((sum, item) => sum + item.quantity, 0);
     }
     
@@ -102,16 +106,16 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <CartContext.Provider value={{cartItems,cartTotalPrice,cartTotalItems, printCart, addToCart, clearCart,deleteItem, incrementQuantity, decrementQuantity, findItemCartQuantity}}>
+        <CartContext.Provider value={{cartItems, totalPriceOfCart, totalItemsInCart , printCart, addToCart, clearCart, deleteItem, incrementQuantity, decrementQuantity, findItemCartQuantity}}>
             {children}
         </CartContext.Provider>
     )
-
 }
+
 export const useCart = (): CartContextType => {
     const context = useContext(CartContext);
     if (!context) {
-      throw new Error("useCounter must be used within a CounterProvider");
+      throw new Error("failed to create cartContext");
     }
     return context;
   };

@@ -10,55 +10,40 @@ export function CartDropDown (){
     const CartIcon: IconType = BsCart3;
     const TrashIcon: IconType = FaTrashAlt;
     const [isOpen, setIsOpen] = useState<boolean>(false);
-    const cartDataState = useCart();
-    const {cartItems} = cartDataState;
+    const cart = useCart();
+    const { cartItems, totalPriceOfCart, totalItemsInCart } = cart;
 
     function handleDelete(itemId:number){
-        cartDataState!.deleteItem!(itemId);
+        cart.deleteItem(itemId);
     }
 
-
     return (
-        <div
-        className={styles.cartContainer}
-        onMouseEnter={() => setIsOpen(true)}
-        onMouseLeave={() => setIsOpen(false)}
+        <div 
+            className={styles.cartContainer}
+            onMouseEnter={() => setIsOpen(true)}
+            onMouseLeave={() => setIsOpen(false)}
         >    
         
-        
-            <div className={styles.cartIcon}>
-                <Link to={"/Cart"}><CartIcon size={40}/></Link>
-            </div>
-            <p className={styles.cartQuantityIcon}>
-                {cartDataState!.cartTotalItems!()}
-            </p>
-            <p className={styles.cartPriceIcon}>
-                $
-                {cartDataState!.cartTotalItems!() < 1 ? "0.00" : cartDataState!.cartTotalPrice!().toFixed(2)}
-            </p>
-        
+        <div className={styles.cartIcon}>
+            <Link to={"/Cart"}><CartIcon aria-label="Toggle cart dropdown" size={40}/></Link>
+        </div>
 
+        <p className={styles.cartQuantityIcon}>{totalItemsInCart}</p>
+        <p className={styles.cartPriceIcon}>${totalItemsInCart < 1 ? "0.00" : totalPriceOfCart.toFixed(2)}</p>
+        
         {isOpen && (
             <div className={styles.cartDropdown}>
-            <h4>Your Cart</h4>
-            <div style={{display:"flex", flexDirection:"column"}}>
-            {cartItems!.map(item => (
-                    <div style={{display:"flex", alignContent:"center", justifyContent:"space-evenly"}} key={item.id}>
-                    <strong>{item.name}</strong> — ${item.price} × {item.quantity}
-                    {/* <button onClick={()=>handleDelete(item.id)} ><TrashIcon/></button> */}
+                <h4>Your Cart</h4>
+                <div style={{display:"flex", flexDirection:"column"}}>
+                    {cartItems.map(item => (
+                            <div style={{display:"flex", alignContent:"center", justifyContent:"space-evenly"}} key={item.id}>
+                                <strong>{item.name}</strong> — ${item.price} × {item.quantity}
+                            </div>
+                        ))}
                     </div>
-                ))}
+                    <Link to={"/Cart"}>View Cart</Link>
             </div>
-            {/* <ul>
-                {cartItems!.map(item => (
-                    <li key={item.id}>
-                    <strong>{item.name}</strong> — ${item.price} × {item.quantity}<button style={{display:"inline"}}onClick={()=>handleDelete(item.id)} ><TrashIcon/></button>
-                    </li>
-                ))}
-            </ul> */}
-            <button><Link to={"/Cart"}>View Cart</Link></button>
-            </div>
-        )}
+            )}
         </div>
     );
 };

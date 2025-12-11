@@ -20,35 +20,71 @@ export interface DataInterface {
 };
 
 export function CustNailProd(){
-    const { isClicked, isDesktop } = useOutletContext<LayoutProps>();
-    const [ isData, setIsData ] = useState<DataInterface[] | null>(null);
+    const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
+    const [ customNailProducts, setCustomNailProducts ] = useState<DataInterface[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<Error | null>(null);
+
     useEffect(() => {
-        async function fetchData(){
+        async function fetchCustomNailDataData(){
+            setLoading(true);
+            setError(null);
             try {
                 const response = await fetch("http://localhost:5000/products/customnail");
+                if (!response.ok) throw new Error('Failed to fetch custom nail products');
+                
                 const data: DataInterface[] = await response.json();
-                // console.log(data);
-                data.length === 0 ? setIsData(null) : setIsData(data);  
+                console.log(data);
+                setCustomNailProducts(data ?? []); 
             } catch (err) {
-                console.log("ERROR: " + err);
-            }
+                console.error(err);
+                const message = err instanceof Error ? err.message : String(err);
+                setError(new Error(message));
+            } finally {
+                setLoading(false);
+              }
         };
-        fetchData();
+        fetchCustomNailDataData();
     },[]);
 
-    if (!isData)
+
+    function customNailProductHeaderHtml() {
         return (
             <>
-                <h1 className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>Custom Nail Products</h1>
+                <h1 className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>Custom Nail Products</h1>
                 <ComingSoon />
-            </>
-        );
+            </>)
+    }
+
+    if (loading) {
+        return (
+            <div className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>
+                {customNailProductHeaderHtml()}
+                <p>Loading...</p>
+            </div>
+        )
+    }
+    if (error) {
+        return (
+            <div className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>
+                {customNailProductHeaderHtml()}
+                <p>Error: Try Again Later</p>
+            </div>
+        )
+    } 
+    if (!customNailProducts.length) {
+        return (
+            <div className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>
+                {customNailProductHeaderHtml()}
+            </div>
+        )
+    }
 
     return (
         <>
-            <h1 className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>Custom Nail Products</h1>
-            <div className={`body row ${isClicked && isDesktop ? 'open' : ''}`}>
-                {isData.map((dataInterface, index) => <Product key={index} pageUrl="CustomNailProducts" data={dataInterface}/>)}
+            <h1 className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>Custom Nail Products</h1>
+            <div className={`body row ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}>
+                {customNailProducts.map((dataInterface, index) => <Product key={index} pageUrl="CustomNailProducts" data={dataInterface}/>)}
             </div>
         </>
     );

@@ -6,29 +6,33 @@ import { Outlet } from "react-router-dom";
 
 
 export interface LayoutProps {
-    isClicked: boolean;
-    isDesktop: boolean;
+    isMenuClicked: boolean;
+    isDesktopOpen: boolean;
 };
 
 
 export function Layout () {
-    const [isClicked, setIsClicked] = useState<boolean>(false);
-    const isDesktop = useMediaQuery("(min-width: 768px)");
+    const [isMenuClicked, setIsMenuClicked] = useState(false);
+    const isDesktopOpen = useMediaQuery("(min-width: 768px)");
 
     useEffect(() => {
-        setIsClicked(isDesktop);
-    }, [isDesktop]);
+        setIsMenuClicked(isDesktopOpen);
+    }, [isDesktopOpen]);
 
     function handleClick () {
-        setIsClicked(!isClicked);
+        setIsMenuClicked(!isMenuClicked);
     }
     return (
             <>
-                <NavBar onClick={handleClick} isClicked={isClicked}/>
-                {isClicked && <Menu onClick={handleClick} clicked={isClicked} desktop={isDesktop}/>}
-                <Outlet context={{ isClicked, isDesktop }}/>
+                <NavBar toggleMenu={handleClick} isMenuClicked={isMenuClicked}/>
+                {isMenuClicked && (
+                    <Menu 
+                        toggleMenu={handleClick} 
+                        isMenuClicked={isMenuClicked} 
+                        isDesktopOpen={isDesktopOpen}
+                    />
+                )}
+                <Outlet context={{ isMenuClicked, isDesktopOpen }}/>
             </>
         )
 }
-
-// export type { LayoutProps };
