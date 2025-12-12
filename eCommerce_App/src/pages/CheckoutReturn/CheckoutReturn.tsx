@@ -10,38 +10,37 @@ interface SessionResponse {
   }
 export function CheckoutReturn() {
     const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
-    // const [ isData, setIsData ] = useState<DataInterface[] | null>(null);
     const [session, setSession] = useState<SessionResponse>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const cartDataState = useCart();
+    const cart = useCart();
 
     useEffect(() => {
         // Get the session_id from URL
         const urlParams = new URLSearchParams(window.location.search);
         const session_id = urlParams.get('session_id');
     
-        if (session_id) {
-          fetch(`http://localhost:5000/session_status?session_id=${session_id}`)
-            .then(response => {
-              if (!response.ok) {
-                throw new Error('Network response was not ok');
-              }
-              return response.json();
-            })
-            .then(data => {
-              setSession(data);
-              if (data.status === "complete") cartDataState.clearCart!();
-              setLoading(false);
-            })
-            .catch(err => {
-              setError(err.message);
-              setLoading(false);
-            });
-        } else {
+        if (!session_id) {
           setError('No session ID found in URL');
           setLoading(false);
+          return;
         }
+        async function fetchSessionStatus(){
+          try {
+            const response = await fetch(`http://localhost:5000/session_status?session_id=${session_id}`);
+            if (!response.ok) throw new Error("Could not find session");
+  
+            const data = await response.json();
+            setSession(data);
+            if (data.status === "complete") cart.clearCart();
+            setLoading(false);
+          } catch (err) {
+            console.error(err);
+            setLoading(false);
+            if (err instanceof Error) setError(err.message);
+          }
+        }
+        fetchSessionStatus();
       }, []);
 
     if (loading) return <p>Loading...</p>;
@@ -49,7 +48,7 @@ export function CheckoutReturn() {
     
     return (
         <div className={`body column ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}>
-        {session?.status === 'complete' ? (
+        {session.status === 'complete' ? (
             <div>
             <h2>Thank you for your order!</h2>
             {session.customer_email && <p>A confirmation email will be sent to {session.customer_email}</p>}

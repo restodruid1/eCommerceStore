@@ -19,33 +19,7 @@ export function SingleProduct(){
     const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
     const [ outOfStockMessage, setOutOfStockMessage ] = useState("");
     const cartDataState = useCart();
-    const { data, loading, error } = useFetch<DataInterface>(`http://localhost:5000/product/${productId}`);
-
-    // useEffect(() => {
-    //     async function fetchSingleProductData(){
-    //         try {
-    //             const response = await fetch(`http://localhost:5000/products/${productId}`);
-    //             if (!response.ok) throw new Error(`Failed to fetch product information`);
-    //             console.log(response);
-    //             const data: DataInterface[] = await response.json();
-    //             console.log(data);
-    //             setIsData(data);
-    //             const quantityAlreadyInCart = cartDataState!.findItemCartQuantity!(Number(productId));
-    //             console.log("CART QUANT: = " + quantityAlreadyInCart);
-    //             setStockQuantity(data[0].quantity - quantityAlreadyInCart);
-    //             if (isData) {
-    //                 isData.forEach((image, index) => {      // Find the index of the main product photo from array of returned db data
-    //                     if (image.main_image === true) {
-    //                         setMainImageIndex(index);
-    //                     }
-    //                 }); 
-    //             }
-    //         } catch (err) {
-    //             console.log("ERROR: " + err);
-    //         }
-    //     };
-    //     fetchSingleProductData();
-    // },[productId]);
+    const { data, loading, error } = useFetch<DataInterface[]>(`http://localhost:5000/products/${productId}`);
 
 
     useEffect(() => {
@@ -138,15 +112,6 @@ export function SingleProduct(){
     return (
         <div className={`body column ${ isMenuClicked && isDesktopOpen ? 'open' : ''}`}>
             <h2>Product Name =  {data[0].name}</h2>
-            {/* <img className={styles.mainImage} src={`${isData[mainImageIndex].url}`}/> */}
-            {/* <div className={styles.secondaryImageContainer}>
-                {isData
-                    .filter(image => !image.main_image)
-                    .map((image,index) => (
-                        <img className={styles.secondaryImage} key={index} src={image.url} alt="" />
-                    ))
-                }
-            </div> */}
             <ProductImagesDisplay images={data}/>
             {outOfStockMessage && <p style={{color:"red"}}>{outOfStockMessage}</p>}
             <div className={styles.priceAndCart}>

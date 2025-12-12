@@ -6,19 +6,19 @@ import { CartProductCard } from "../../components/CartProductCard/CartProductCar
 import { useState, useEffect } from "react";
 
 export function Cart(){
-    const { isClicked, isDesktop } = useOutletContext<LayoutProps>();
-    const cartDataState = useCart();
-    const {cartItems} = cartDataState;
+    const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
     const location = useLocation();
+    const cart = useCart();
+    const {cartItems} = cart;
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         if (params.get("success") === "true") {
         alert("Checkout succeeded!");
-        cartDataState.clearCart!();
+        cart.clearCart();
         }
     }, [location.search]);
 
@@ -50,22 +50,29 @@ export function Cart(){
       }, [location.state]);
 
       useEffect(() => {
-        const deleteReservedCart = async () => {
-          const userId = localStorage.getItem("uuid");
-          const response = await fetch("http://localhost:5000/session_status/deleteCartReservation", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              uuid: userId,     
-            }),
-          });
-          const data = await response.json();
-          console.log("RESERVE STOCK DELETED? " + data.success);
-          setLoading(false);
+        const deleteReservedCartOnDB = async () => {
+          try {
+            const userId = localStorage.getItem("uuid");
+            const response = await fetch("http://localhost:5000/session_status/deleteCartReservation", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                uuid: userId,     
+              }),
+            });
+            if (!response.ok) throw new Error("Failure to delete cart reservation");
+            
+            const data = await response.json();
+            console.log("RESERVE STOCK DELETED? " + data.success);
+            setLoading(false);
+          } catch (err) {
+            console.error(err);
+            if (err instanceof Error) setError(err.message);
+          }
         }
-        deleteReservedCart();
+        deleteReservedCartOnDB();
       }, []);
 
     const Message = ({ message }:{ message: string }) => (
@@ -75,34 +82,38 @@ export function Cart(){
     );
 
 
+    if (loading) return <p className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>Loading...</p>
 
-    if (cartItems?.length! <= 0) 
+    if (cartItems.length <= 0) 
         return (
-            <div className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>
+            <div className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>
                 <h1>Cart</h1>
                 <h2 >0 Items in Cart</h2>
             </div>
         )
 
-    if (loading) return <p className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>Loading...</p>
-
     return message ? (
         <Message message={message} />
     ) : (
             <>
-                <h1 className={`${isClicked && isDesktop? 'open' : ''}`} style={{textAlign:"center"}}>Cart ({cartDataState!.cartTotalItems!()} {cartDataState!.cartTotalItems!() === 1  ? 'item' : 'items'})</h1>
-                <div  className={`body column ${isClicked && isDesktop ? 'open' : ''}`}>
+                <h1 className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>
+                  Cart ({cart.totalItemsInCart} {cart.totalItemsInCart === 1  ? 'item' : 'items'})
+                </h1>
+                <div  className={`body column ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}>
                     {error && <div style={{color:"red"}}>{error}</div>}
+
                     <div style={{display:"flex", flexDirection:"column",background:"darkgrey", borderRadius:"5px", borderColor:"black", minWidth:"300px"}}>
-                    <p style={{textAlign:"center"}}>ITEMS IN CART</p>
-                    {true && (<div style={{flex:"1 1 0"}}>
-                        {cartItems!.map((item, index) => (
-                            <CartProductCard
-                            key={index}
-                            itemInfo={item}
-                            />
-                        ))}
-                    </div>)}
+                      <p style={{textAlign:"center"}}>
+                        ITEMS IN CART
+                      </p>
+                      {true && (<div style={{flex:"1 1 0"}}>
+                          {cartItems.map((item, index) => (
+                              <CartProductCard
+                              key={index}
+                              itemInfo={item}
+                              />
+                          ))}
+                      </div>)}
                     </div>
                     <CheckoutButton />
                 </div>

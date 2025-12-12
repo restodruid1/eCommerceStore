@@ -27,7 +27,7 @@ type CustomProductPage = {
 export function CustomizableProductPage(props:CustomProductPage){
     const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
     const { dbProductRouteName, pageName, urlNameSingleProductPage } = props;
-    const { data, loading, error } = useFetch<DataInterface>(`http://localhost:5000/products/${dbProductRouteName}`);
+    const { data, loading, error } = useFetch<DataInterface[]>(`http://localhost:5000/products/${dbProductRouteName}`);
 
     function getPageHeaderHtml() {
         return (
