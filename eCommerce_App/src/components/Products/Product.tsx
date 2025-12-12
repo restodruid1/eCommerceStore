@@ -19,12 +19,13 @@ export function Product ({ product, pageUrl }:ProductProps) {
                             e.currentTarget.onerror = null;
                             e.currentTarget.src = "https://cdk-hnb659fds-assets-289931925246-us-east-1.s3.us-east-1.amazonaws.com/defaultImg.jpg";
                         }} 
-                    />
+                        />
                 </Link>
 
                 <div style={{display:"flex", flexDirection:"column", alignContent:"center", justifyContent:"center"}}>
                     <h3 style={{textAlign:"center"}}>{product.name}</h3>
                     <p style={{textAlign:"center"}}>${product.price}</p>
+                    {product.quantity < 1 ? <p style={{color:"red",textAlign:"center"}}>Out of stock</p> : ""}
                 </div> 
             </article>
     )

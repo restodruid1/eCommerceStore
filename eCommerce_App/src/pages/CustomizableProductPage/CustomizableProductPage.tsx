@@ -1,9 +1,9 @@
 import { Product } from "../../components/Products/Product";
 import { useOutletContext } from "react-router-dom";
-import { useEffect, useState } from "react";
 import '../../App.css';
 import { ComingSoon } from "../../components/ComingSoon/ComingSoon";
 import type { LayoutProps } from "../Layout";
+import { useFetch } from "../../helper/helpers";
 
 export interface DataInterface {
     id: number,
@@ -26,35 +26,8 @@ type CustomProductPage = {
 
 export function CustomizableProductPage(props:CustomProductPage){
     const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
-    const [products, setProducts] = useState<DataInterface[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<Error | null>(null);
     const { dbProductRouteName, pageName, urlNameSingleProductPage } = props;
-
-    useEffect(() => {
-        async function fetchCustomNailDataData(){
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await fetch(`http://localhost:5000/products/${dbProductRouteName}`);
-                if (!response.ok) throw new Error(`Failed to fetch ${pageName}`);
-                
-                const data: DataInterface[] = await response.json();
-                console.log(data);
-                setProducts(data ?? []);
-
-            } catch (err) {
-                console.error(err);
-                const message = err instanceof Error ? err.message : String(err);
-                setError(new Error(message));
-
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchCustomNailDataData();
-    },[]);
-
+    const { data, loading, error } = useFetch<DataInterface>(`http://localhost:5000/products/${dbProductRouteName}`);
 
     function getPageHeaderHtml() {
         return (
@@ -83,7 +56,7 @@ export function CustomizableProductPage(props:CustomProductPage){
         )
     }
 
-    if (!products.length) {
+    if (!data) {
         return (
             <div className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>
                 {getPageHeaderHtml()}
@@ -95,7 +68,7 @@ export function CustomizableProductPage(props:CustomProductPage){
         <>
             <h1 className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>{pageName}</h1>
             <div className={`body row ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}>
-                {products.map((product, index) => <Product key={index} pageUrl={urlNameSingleProductPage} product={product}/>)}
+                {data.map((product, index) => <Product key={index} pageUrl={urlNameSingleProductPage} product={product}/>)}
             </div>
         </>
     );

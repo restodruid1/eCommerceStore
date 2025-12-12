@@ -9,7 +9,7 @@ interface SessionResponse {
     customer_email?: string;
   }
 export function CheckoutReturn() {
-    const { isClicked, isDesktop } = useOutletContext<LayoutProps>();
+    const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
     // const [ isData, setIsData ] = useState<DataInterface[] | null>(null);
     const [session, setSession] = useState<SessionResponse>({});
     const [loading, setLoading] = useState(true);
@@ -48,7 +48,7 @@ export function CheckoutReturn() {
     if (error) return <p>Error: {error}</p>;
     
     return (
-        <div className={`body column ${isClicked && isDesktop ? 'open' : ''}`}>
+        <div className={`body column ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}>
         {session?.status === 'complete' ? (
             <div>
             <h2>Thank you for your order!</h2>

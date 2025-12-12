@@ -32,7 +32,7 @@ export function StripeCheckout() {
   const [checkoutErrorMessage, setCheckoutErrorMessage] = useState("");
   const [ clientSecret, setClientSecret ] = useState<string>("");
   const [sesh, setSesh] = useState("");
-  const { isClicked, isDesktop } = useOutletContext<LayoutProps>();
+  const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
   const navigate = useNavigate();
 
   
@@ -143,8 +143,8 @@ export function StripeCheckout() {
   }, [sesh]);  // runs only when sesh changes from null → value
 
 
-  if (checkoutErrorMessage) return <h1 className={`body column ${isClicked && isDesktop ? 'open' : ''}`}>{checkoutErrorMessage}</h1>
-  if (!clientSecret) return <p className={`body column ${isClicked && isDesktop ? 'open' : ''}`}>Loading...</p>
+  if (checkoutErrorMessage) return <h1 className={`body column ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}>{checkoutErrorMessage}</h1>
+  if (!clientSecret) return <p className={`body column ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}>Loading...</p>
   return (
     <div id="checkout">
       <EmbeddedCheckoutProvider

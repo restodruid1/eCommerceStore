@@ -48,6 +48,9 @@ async function initDB() {
             name VARCHAR(50) NOT NULL,
             quantity SMALLINT DEFAULT 0,
             weight DECIMAL(5,2) DEFAULT 0,
+            height DECIMAL(5,2) DEFAULT 0,
+            length DECIMAL(5,2) DEFAULT 0,
+            width DECIMAL(5,2) DEFAULT 0,
             price DECIMAL(12,2) DEFAULT 0,
             description VARCHAR(8000) DEFAULT 'COMING SOON',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
