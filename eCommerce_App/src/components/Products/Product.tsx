@@ -1,29 +1,31 @@
 // import { FaSackDollar } from 'react-icons/fa6';
-import type { DataInterface } from '../../pages/CustNailProd/CustNailProd';
+import type { DataInterface } from "../../pages/CustomizableProductPage/CustomizableProductPage";
 import { Link } from 'react-router-dom';
 
 interface ProductProps {
-    data: DataInterface;
+    product: DataInterface;
     pageUrl: string;
 };
 
-export function Product ({ data, pageUrl }:ProductProps) {
-    
+export function Product ({ product, pageUrl }:ProductProps) {
     return (
-            <div className="productItems">
-                <Link to={`/${pageUrl}/${data.id}/${data.name}`}>
-                <img 
-                    src={data.url}
-                    className='productImages'
-                    onError={(e) => {
-                        e.currentTarget.src = "https://cdk-hnb659fds-assets-289931925246-us-east-1.s3.us-east-1.amazonaws.com/defaultImg.jpg";
-                    }} 
-                />
+            <article className="productItems">
+                <Link to={`/${pageUrl}/${product.id}/${encodeURIComponent(product.name)}`}>
+                    <img 
+                        src={product.url}
+                        className='productImages'
+                        alt={product.name}
+                        onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = "https://cdk-hnb659fds-assets-289931925246-us-east-1.s3.us-east-1.amazonaws.com/defaultImg.jpg";
+                        }} 
+                    />
                 </Link>
+
                 <div style={{display:"flex", flexDirection:"column", alignContent:"center", justifyContent:"center"}}>
-                    <h3 style={{textAlign:"center"}}>{data.name}</h3>
-                    <p style={{textAlign:"center"}}>${data.price}</p>
+                    <h3 style={{textAlign:"center"}}>{product.name}</h3>
+                    <p style={{textAlign:"center"}}>${product.price}</p>
                 </div> 
-            </div>
+            </article>
     )
 }

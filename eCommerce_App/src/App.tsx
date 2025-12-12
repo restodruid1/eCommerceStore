@@ -10,7 +10,7 @@ import { HandmadeCrafts } from "./pages/OtherHandmadeCrafts/HandmadeCrafts";
 import { ChannelMerch } from "./pages/ChannelMerch/ChannelMerch";
 import { ContactMe } from "./pages/ContactMe/ContactMe";
 import { Cart } from "./pages/Cart/Cart";
-import {StripeCheckout}  from "./pages/StripeCheckout/StripeCheckout";
+import { StripeCheckout }  from "./pages/StripeCheckout/StripeCheckout";
 import { CheckoutReturn } from "./pages/CheckoutReturn/CheckoutReturn";
 import { Admin } from "./pages/Admin/Admin";
 import { AdminPage } from "./pages/Admin/AdminPage";

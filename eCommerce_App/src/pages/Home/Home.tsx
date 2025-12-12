@@ -3,11 +3,11 @@ import { useOutletContext } from "react-router-dom";
 import type { LayoutProps } from '../Layout';
 import styles from './Home.module.css';
 import { FaSackDollar } from 'react-icons/fa6';
-import { useCart } from "../../CartContext";
+// import { useCart } from "../../CartContext";
 
 export function Home(){
     const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
-    const cart = useCart();
+    // const cart = useCart();
     
     return (
         <>
