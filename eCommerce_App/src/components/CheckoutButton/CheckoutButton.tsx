@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 // import { useCart } from "../../CartContext";
 import { Link } from 'react-router-dom';
 
-export function CheckoutButton (){
+export function CheckoutButton ({disableButton}:{disableButton:boolean}){
     // const cartDataState = useCart();
     // const {cartItems} = cartDataState;
     const [errorMessage, setErrorMessage] = useState<string>("");
@@ -23,7 +23,7 @@ export function CheckoutButton (){
                <h2 style={{color:"red"}}>{errorMessage}</h2> 
             )}
             
-            <Link to={"/Checkout"}><button>Checkout</button></Link>
+            <Link to={"/Checkout"}><button disabled={disableButton}>Checkout</button></Link>
         </>
     )
 }

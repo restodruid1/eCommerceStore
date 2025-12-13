@@ -20,8 +20,11 @@ export function ItemQuantityCard({stock, selectedCartQuantityFromCheckout, setSe
                 setErrorMessage("");
             }}
         >
-            {!selectedCartQuantityFromCheckout && (<option value={0}>
+            {selectedCartQuantityFromCheckout === undefined && (<option value={0}>
                 {stock > 0 ? "Select quantity" : "Out Of Stock"}
+            </option>)}
+            {(selectedCartQuantityFromCheckout != undefined && stock <= 0) && (<option value={0}>
+                {"Out Of Stock"}
             </option>)}
             
 

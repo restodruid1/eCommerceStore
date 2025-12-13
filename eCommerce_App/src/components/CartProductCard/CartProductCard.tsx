@@ -16,31 +16,28 @@ export function CartProductCard ({ cartItemInfo }: CartProductCardProps){
     const cart = useCart();
     const TrashIcon: IconType = FaTrashAlt;
     const [ outOfStockMessage, setOutOfStockMessage] = useState<string>("");
-    const [ productStock, setProductStock ] = useState<number>(0);
     const { data, loading, error } = useFetch<DataInterface[]>(`http://localhost:5000/products/${cartItemInfo.id}`);
-    const [selectedQuantity, setSelectedQuantity] = useState<number>(cart.findItemCartQuantity(cartItemInfo.id) ?? 0);
+    const [selectedQuantity, setSelectedQuantity] = useState<number>(cart.findItemCartQuantity(cartItemInfo.id));
     const [ errorMessage, setErrorMessage ] = useState("");
-    const stockMinusCart = (productStock ?? 0) - (cart.findItemCartQuantity(cartItemInfo.id ?? -1));
+    const productStock = data?.[0].quantity;
 
+    
+    useEffect(() => {
+        function validateCartState(){
+            if (!data) return;
+            if (productStock === undefined) return;
 
-    useEffect(()=>{
-        if (!data) return;
+            const productId = data[0].id;
+            const cartItemQuantity = cart.findItemCartQuantity(productId);
 
-        setProductStock(data[0].quantity ?? 0);
-    },[data]);
-    // useEffect(() => {
-    //     const fetchProductStock = async () => {
-    //         try {
-    //             const response = await fetch(`http://localhost:5000/products/${cartItemInfo.id}`);
-    //             const data: DataInterface[] = await response.json();
-    //             console.log("DATA: " + data);
-    //             setProductStock(data ? data[0].quantity : 0);
-    //         } catch (err) {
-    //             console.log("ERROR: " + err);
-    //         }
-    //     };
-    //     fetchProductStock();
-    //   }, []);
+            if (cartItemQuantity > productStock) {
+                cart.decrementProductQuantity(productId, cartItemQuantity - productStock);
+                setSelectedQuantity(productStock);
+            } 
+        }
+        validateCartState();
+    },[productStock]);
+
     useEffect(()=>{
         if (!data) return;
 
@@ -80,12 +77,12 @@ export function CartProductCard ({ cartItemInfo }: CartProductCardProps){
             {errorMessage && <p style={{color:"red", textAlign:'center'}}>{errorMessage}</p>}
             <p style={{textAlign:'center'}}>
                 <ItemQuantityCard 
-                    stock={productStock}
+                    stock={productStock ?? 0}
                     selectedCartQuantityFromCheckout={selectedQuantity}
                     setSelectedQuantity={setSelectedQuantity}
                     setErrorMessage={setErrorMessage}
                 />
-                <TrashIcon/>
+                <TrashIcon onClick={()=>handleDelete(data![0].id)}/>
             </p>
         </div>
     )

@@ -10,6 +10,7 @@ export function Cart(){
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
+    const [disableButton, setDisableButton] = useState(false);
     const location = useLocation();
     const cart = useCart();
     const {cartItems} = cart;
@@ -22,7 +23,11 @@ export function Cart(){
         }
     }, [location.search]);
 
+    useEffect(()=>{
+      if (!cart) return;
 
+      setDisableButton(cart.itemsEqualToZeroQuantity());
+    },[cart])
 
     useEffect(() => {
         // Check to see if this is a redirect back from Checkout
@@ -115,7 +120,7 @@ export function Cart(){
                           ))}
                       </div>)}
                     </div>
-                    <CheckoutButton />
+                    <CheckoutButton disableButton={disableButton}/>
                 </div>
             </>
         );

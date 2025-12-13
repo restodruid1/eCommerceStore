@@ -18,6 +18,7 @@ interface CartContextType {
     // updateTotal: () => void;
     decrementProductQuantity:(id: number, amount:number) => void;
     incrementProductQuantity:(id: number, amount:number) => void;
+    itemsEqualToZeroQuantity: () => boolean;
     findItemCartQuantity:(id: number) => number;
     // getTotalPriceOfCart: () => number;
     // getTotalItemsInCart: () => number;
@@ -89,6 +90,13 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
         console.log(cartItems);
     }
 
+    const itemsEqualToZeroQuantity = () => {
+        if (cartItems.find(cartItem => cartItem.quantity === 0)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     const getTotalPriceOfCart = () => {
         return Number(cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2));
     }
@@ -101,7 +109,7 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <CartContext.Provider value={{cartItems, totalPriceOfCart, totalItemsInCart , printCart, addToCart, clearCart, deleteItem, incrementProductQuantity, decrementProductQuantity, findItemCartQuantity}}>
+        <CartContext.Provider value={{cartItems, totalPriceOfCart, totalItemsInCart , printCart, addToCart, clearCart, deleteItem, itemsEqualToZeroQuantity, incrementProductQuantity, decrementProductQuantity, findItemCartQuantity}}>
             {children}
         </CartContext.Provider>
     )
