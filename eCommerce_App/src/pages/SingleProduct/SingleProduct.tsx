@@ -7,6 +7,7 @@ import { useCart } from "../../CartContext";
 import type { LayoutProps } from "../Layout";
 import { useOutletContext } from "react-router-dom";
 import { ProductImagesDisplay } from "../../components/Products/ProductImagesDisplay";
+import { ItemQuantityCard } from "../../components/ItemQuantityCard/itemQuantityCard";
 import styles from "./SingleProd.module.css"; 
 
 interface ProductInformation {
@@ -27,7 +28,7 @@ export function SingleProduct() {
     const [selectedQuantity, setSelectedQuantity] = useState<number>(0);
     const [ errorMessage, setErrorMessage ] = useState("");
     const stockMinusCart = (productInformation?.stock ?? 0) - (cart.findItemCartQuantity(productInformation.id ?? -1));
-   
+    console.log("rerender?");
     useEffect(() => {
         if (!data) return;
 
@@ -85,23 +86,12 @@ export function SingleProduct() {
 
             <h2>${productInformation.price}</h2>
             <div className={styles.priceAndCart}>
-                <select
-                    disabled={stockMinusCart <= 0}
-                    onChange={(e)=>{
-                        setSelectedQuantity(Number(e.target.value));
-                        setErrorMessage("");
-                    }}
-                 >
-                    <option value={0}>
-                        {stockMinusCart > 0 ? "Select quantity" : "Out Of Stock"}
-                    </option>
-
-                    {Array.from({ length: stockMinusCart }, (_, i) => (
-                        <option key={i + 1} value={i + 1}>
-                        {i + 1}
-                        </option>
-                    ))}
-                </select>
+                <ItemQuantityCard
+                    stock={stockMinusCart}
+                    setSelectedQuantity={setSelectedQuantity}
+                    setErrorMessage={setErrorMessage} 
+                />
+                
                 <button onClick={()=>handleAddToCart(selectedQuantity)} disabled={stockMinusCart <= 0 || selectedQuantity === 0}>
                     Add To Cart
                 </button>

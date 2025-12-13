@@ -110,7 +110,7 @@ export function Cart(){
                           {cartItems.map((item, index) => (
                               <CartProductCard
                               key={index}
-                              itemInfo={item}
+                              cartItemInfo={item}
                               />
                           ))}
                       </div>)}
