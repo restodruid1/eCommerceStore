@@ -14,10 +14,10 @@ interface CartContextType {
     // updateQuantity: (id: number, quantity: number) => void;
     clearCart: () => void;
     printCart: () => void;
-    addToCart: (item:CartItem, stockQuantity:number) => void;
+    addToCart: (item:CartItem) => void;
     // updateTotal: () => void;
-    decrementQuantity:(id: number, amount:number) => void;
-    incrementQuantity:(id: number, amount:number) => void;
+    decrementProductQuantity:(id: number, amount:number) => void;
+    incrementProductQuantity:(id: number, amount:number) => void;
     findItemCartQuantity:(id: number) => number;
     // getTotalPriceOfCart: () => number;
     // getTotalItemsInCart: () => number;
@@ -40,50 +40,47 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
         setTotalItemsInCart(getTotalItemsInCart());
     }, [cartItems]);
 
-    function addToCart(item:CartItem, stockQuantity:number){
+    function addToCart(itemToBeAddedToCart:CartItem){
         var foundId = false;
         
-        cartItems.forEach(curCartItem => {      // Update existing quantity else add item to cart
-            if (curCartItem.id === item.id){
-                if (curCartItem.quantity + item.quantity <= stockQuantity) {
-                    // curCartItem.quantity += item.quantity;
-                    incrementQuantity(curCartItem.id, item.quantity);
-                    // alert(`added ${item.quantity} to cart`);
-                }
+        cartItems.forEach(cartItem => {     
+            if (cartItem.id === itemToBeAddedToCart.id){
+                incrementProductQuantity(cartItem.id, itemToBeAddedToCart.quantity);
                 foundId = true;
             }
         });
         if (!foundId) {
-            setCartData((prevItems) => [...prevItems, item]);
-            alert(`added ${item.quantity} to cart`);
+            setCartData((prevItems) => [...prevItems, itemToBeAddedToCart]);
+            alert(`added ${itemToBeAddedToCart.quantity} to cart`);
         }
     }
 
-    function incrementQuantity(id:number, amount:number) {
-        // alert("Increment hit");
-        setCartData(prevItems =>
-            prevItems.map(item =>
-              item.id === id
-                ? { ...item, quantity: item.quantity + amount }
-                : item
+    function incrementProductQuantity(productId:number, amount:number) {
+        setCartData(prevCartItems =>
+            prevCartItems.map(cartItem =>
+                cartItem.id === productId
+                ? { ...cartItem, quantity: cartItem.quantity + amount }
+                : cartItem
             )
           );
     }
+
+    function decrementProductQuantity(productId:number, amount:number) {
+        // alert("Decrement hit");
+        setCartData(prevCartItems =>
+            prevCartItems.map(cartItem =>
+                cartItem.id === productId
+                ? { ...cartItem, quantity: cartItem.quantity - amount }
+                : cartItem
+            )
+          );
+    }
+
     function findItemCartQuantity(id:number) {
         const product = cartItems.find((item) => item.id === id);
         return product?.quantity ?? 0;
     }
 
-    function decrementQuantity(id:number, amount:number) {
-        // alert("Decrement hit");
-        setCartData(prevItems =>
-            prevItems.map(item =>
-              item.id === id
-                ? { ...item, quantity: item.quantity - amount }
-                : item
-            )
-          );
-    }
     function deleteItem(id:number){
         setCartData(cartItems.filter(item => item.id !== id));
     }
@@ -104,7 +101,7 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <CartContext.Provider value={{cartItems, totalPriceOfCart, totalItemsInCart , printCart, addToCart, clearCart, deleteItem, incrementQuantity, decrementQuantity, findItemCartQuantity}}>
+        <CartContext.Provider value={{cartItems, totalPriceOfCart, totalItemsInCart , printCart, addToCart, clearCart, deleteItem, incrementProductQuantity, decrementProductQuantity, findItemCartQuantity}}>
             {children}
         </CartContext.Provider>
     )

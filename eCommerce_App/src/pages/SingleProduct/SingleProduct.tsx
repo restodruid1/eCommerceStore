@@ -25,6 +25,7 @@ export function SingleProduct() {
     const cart = useCart();
     const [productInformation, setProductInformation] = useState<Partial<ProductInformation>>({});
     const [selectedQuantity, setSelectedQuantity] = useState<number>(0);
+    const [ errorMessage, setErrorMessage ] = useState("");
     const stockMinusCart = (productInformation?.stock ?? 0) - (cart.findItemCartQuantity(productInformation.id ?? -1));
    
     useEffect(() => {
@@ -43,12 +44,14 @@ export function SingleProduct() {
 
     function handleAddToCart(quantityToAddToCart:number){
         console.log("AADEDD TO CART: ", quantityToAddToCart);
-        const { id,name,stock,price,imageUrl } = productInformation;
+        const { id,name,price,imageUrl } = productInformation;
 
-        if (id != null && name && price != null && stock != null && imageUrl) {
-              const cartItem: CartItem = {id, name, price, quantity:stock, image:imageUrl};
-              cart.addToCart(cartItem, quantityToAddToCart);
-          }
+        if (id != null && name && price != null && quantityToAddToCart != null && imageUrl) {
+              const cartItem: CartItem = {id, name, price, quantity:quantityToAddToCart, image:imageUrl};
+              cart.addToCart(cartItem);
+        } else {
+            setErrorMessage("Something went wrong. Try again later");
+        }
     }
 
     if (loading) {
@@ -84,7 +87,10 @@ export function SingleProduct() {
             <div className={styles.priceAndCart}>
                 <select
                     disabled={stockMinusCart <= 0}
-                    onChange={(e)=>setSelectedQuantity(Number(e.target.value))}
+                    onChange={(e)=>{
+                        setSelectedQuantity(Number(e.target.value));
+                        setErrorMessage("");
+                    }}
                  >
                     <option value={0}>
                         {stockMinusCart > 0 ? "Select quantity" : "Out Of Stock"}
@@ -100,6 +106,7 @@ export function SingleProduct() {
                     Add To Cart
                 </button>
             </div>
+            {errorMessage && <p style={{color:"red"}}>{errorMessage}</p>}
             
             <h2>DESCRIPTION</h2>
             <p>{productInformation.description}</p>
