@@ -1,89 +1,55 @@
+import { useFetch } from "../../helper/helpers";
 import { useParams } from "react-router-dom";
 import type { DataInterface } from "../CustomizableProductPage/CustomizableProductPage";
 import { useEffect, useState } from "react";
-import styles from "./SingleProd.module.css";
+import type { CartItem } from "../../CartContext";
+import { useCart } from "../../CartContext";
 import type { LayoutProps } from "../Layout";
 import { useOutletContext } from "react-router-dom";
 import { ProductImagesDisplay } from "../../components/Products/ProductImagesDisplay";
-import "../../App.css";
-import type { CartItem } from "../../CartContext";
-import { useCart } from "../../CartContext";
-import { useFetch } from "../../helper/helpers";
+import styles from "./SingleProd.module.css"; 
 
-export function SingleProduct(){
-    const { productId } = useParams();
-    const [ isData, setIsData ] = useState<DataInterface[] | null>(null);
-    const [ mainImageIndex, setMainImageIndex ] = useState<number>(0);
-    const [ stockQuantity, setStockQuantity ] = useState<number>(0);
-    const [ cartQuantity, setcartQuantity ] = useState<number>(1);
+interface ProductInformation {
+    id:number;
+    description: string;
+    stock: number;
+    name: string;
+    price: number;
+    imageUrl: string;
+}
+
+export function SingleProduct() {
     const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
-    const [ outOfStockMessage, setOutOfStockMessage ] = useState("");
-    const cartDataState = useCart();
+    const { productId } = useParams();
     const { data, loading, error } = useFetch<DataInterface[]>(`http://localhost:5000/products/${productId}`);
-
-
+    const cart = useCart();
+    const [productInformation, setProductInformation] = useState<Partial<ProductInformation>>({});
+    const [selectedQuantity, setSelectedQuantity] = useState<number>(0);
+    const stockMinusCart = (productInformation?.stock ?? 0) - (cart.findItemCartQuantity(productInformation.id ?? -1));
+   
     useEffect(() => {
         if (!data) return;
 
-        const quantityAlreadyInCart = cartDataState!.findItemCartQuantity!(Number(productId));
-        console.log("CART QUANT: = " + quantityAlreadyInCart);
-        setStockQuantity(data[0].quantity - quantityAlreadyInCart);
-        if (data) {
-            data.forEach((image, index) => {      // Find the index of the main product photo from array of returned db data
-                if (image.main_image === true) {
-                    setMainImageIndex(index);
-                }
-            }); 
-        }
-      }, []);
+        setProductInformation({
+            id: data[0].id,
+            name: data[0].name,
+            description: data[0].description,
+            stock: data[0].quantity,
+            price: data[0].price,
+            imageUrl: data[0].url 
+        })
+    },[data]);
 
-    useEffect(() => {
-        if (!outOfStockMessage) return;
-      
-        const timer = setTimeout(() => {
-            setOutOfStockMessage("");
-        }, 5000);
-      
-        return () => clearTimeout(timer); // cleanup
-      }, [outOfStockMessage]);
 
-    function handleClickAdd(){
-        setcartQuantity(cartQuantity + 1);
+    function handleAddToCart(quantityToAddToCart:number){
+        console.log("AADEDD TO CART: ", quantityToAddToCart);
+        const { id,name,stock,price,imageUrl } = productInformation;
+
+        if (id != null && name && price != null && stock != null && imageUrl) {
+              const cartItem: CartItem = {id, name, price, quantity:stock, image:imageUrl};
+              cart.addToCart(cartItem, quantityToAddToCart);
+          }
     }
-    function handleClickDelete(){
-        if (cartQuantity > 1) {
-            setcartQuantity(cartQuantity - 1);
-            // setOutOfStockMessage("");   
-        } 
-    }
-    
-    async function handleClickCart(){
-        try {
-            const response = await fetch(`http://localhost:5000/products/${productId}`);
-            const data: DataInterface[] = await response.json();
-            // console.log(data);
-            const databaseStock = data[0].quantity;
-            const mainCartItemQuantity = cartDataState!.findItemCartQuantity!(Number(productId))
-            const itemQuantityInAllCarts = cartQuantity + mainCartItemQuantity;
-            const availableProduct = databaseStock - itemQuantityInAllCarts;
-
-            if (availableProduct < 0) {  // Check if item is in stock
-                setOutOfStockMessage(`Only ${databaseStock - mainCartItemQuantity} available`);
-                setcartQuantity(mainCartItemQuantity <= databaseStock ?  databaseStock - mainCartItemQuantity : 0);     // Shows reduced quantity available to buy
-            } else {
-                setStockQuantity(stockQuantity - cartQuantity);
-                setcartQuantity(1);
-                const { id, name, price, url } = data[0];
-                const cartItem: CartItem = {id,name,price,quantity:cartQuantity, image:url}; 
-                // alert(`added ${cartQuantity} to cart`);
-                cartDataState.addToCart!(cartItem, databaseStock); // Pass stock quantity for valid amount check
-            }   
-            
-        } catch (err) {
-            console.log("ERROR: " + err);
-        }
-    }
-
 
     if (loading) {
         return (
@@ -101,7 +67,7 @@ export function SingleProduct(){
         )
     }
 
-    if (!data) {
+    if (!data || !productInformation) {
         return (
             <div className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>
                 <p>Product Not Found</p>;
@@ -111,19 +77,32 @@ export function SingleProduct(){
 
     return (
         <div className={`body column ${ isMenuClicked && isDesktopOpen ? 'open' : ''}`}>
-            <h2>Product Name =  {data[0].name}</h2>
-            <ProductImagesDisplay images={data}/>
-            {outOfStockMessage && <p style={{color:"red"}}>{outOfStockMessage}</p>}
+            <h2>Product Name =  {productInformation.name}</h2>
+            <ProductImagesDisplay productData={data}/>
+
+            <h2>${productInformation.price}</h2>
             <div className={styles.priceAndCart}>
-                <p>${data[0].price}</p>
-                <span>Quantity: {stockQuantity <= 0 ? 0 : cartQuantity}<button onClick={handleClickAdd}>+</button><button onClick={handleClickDelete}>-</button></span>
-                <button disabled={stockQuantity <= 0 ? true : false} onClick={handleClickCart}>ADD TO CART</button>
-                <p>{cartQuantity}</p>
-                <p>{stockQuantity}</p>
+                <select
+                    disabled={stockMinusCart <= 0}
+                    onChange={(e)=>setSelectedQuantity(Number(e.target.value))}
+                 >
+                    <option value={0}>
+                        {stockMinusCart > 0 ? "Select quantity" : "Out Of Stock"}
+                    </option>
+
+                    {Array.from({ length: stockMinusCart }, (_, i) => (
+                        <option key={i + 1} value={i + 1}>
+                        {i + 1}
+                        </option>
+                    ))}
+                </select>
+                <button onClick={()=>handleAddToCart(selectedQuantity)} disabled={stockMinusCart <= 0 || selectedQuantity === 0}>
+                    Add To Cart
+                </button>
             </div>
             
             <h2>DESCRIPTION</h2>
-            <p>{data[0].description}</p>
+            <p>{productInformation.description}</p>
         </div>
     );
-};
+}

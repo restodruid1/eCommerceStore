@@ -1,22 +1,28 @@
-import type { DataInterface } from '../../pages/CustNailProd/CustNailProd';
+import type { DataInterface } from "../../pages/CustomizableProductPage/CustomizableProductPage";
 import { useEffect, useState } from 'react';
 
-export function ProductImagesDisplay ({images}: {images: DataInterface[]}) {
+
+export function ProductImagesDisplay ({productData}: {productData: DataInterface[]}) {
     
     const [ imagesArray, setImagesArray ] = useState<string[]>([]);
-    const [ mainImageArrayIndex, setMainImageArrayIndex ] = useState(0);
+    const [ mainImageUrlIndex, setMainImageUrlIndex ] = useState(0);
 
     useEffect(() => {
         // Map all URLs at once and set state
-        const urls = images.map((item) => item.url);
+        const urls = productData.map((image, index) => {
+            if (image.main_image) {
+                setMainImageUrlIndex(index);
+            }
+            return image.url;
+        });
         setImagesArray(urls);
-    }, [images]); 
+    }, [productData]); 
     
     return (
         <div>
             {/* Main image */}
-            {imagesArray[mainImageArrayIndex] && (
-                <img src={imagesArray[mainImageArrayIndex]} alt="Main product" style={{ width: '300px', height: '300px' }} />
+            {imagesArray[mainImageUrlIndex] && (
+                <img src={imagesArray[mainImageUrlIndex]} alt="Main product" style={{ width: '300px', height: '300px' }} />
             )}
 
             {/* Thumbnails */}
@@ -31,9 +37,9 @@ export function ProductImagesDisplay ({images}: {images: DataInterface[]}) {
                             height: '50px',
                             marginRight: '5px',
                             cursor: 'pointer',
-                            border: mainImageArrayIndex === index ? '2px solid blue' : '1px solid gray'
+                            border: mainImageUrlIndex === index ? '2px solid blue' : '1px solid gray'
                         }}
-                        onClick={() => setMainImageArrayIndex(index)}
+                        onClick={() => setMainImageUrlIndex(index)}
                     />
                 ))}
             </div>

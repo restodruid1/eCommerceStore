@@ -70,10 +70,8 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
           );
     }
     function findItemCartQuantity(id:number) {
-        const productinfo = cartItems.find((item) => item.id === id)!;
-        // console.log("FIND ITEM QUANTITY IN CART: " + productinfo.quantity);
-        return productinfo ? productinfo.quantity : 0;
-
+        const product = cartItems.find((item) => item.id === id);
+        return product?.quantity ?? 0;
     }
 
     function decrementQuantity(id:number, amount:number) {
