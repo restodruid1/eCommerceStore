@@ -31,3 +31,24 @@ export function useFetch<T>(url: string) {
   
     return { data, loading, error };
   }
+
+  export const deleteReservedCartOnDB = async () => {
+    try {
+      const userId = localStorage.getItem("uuid");
+      const response = await fetch("http://localhost:5000/session_status/deleteCartReservation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          uuid: userId,     
+        }),
+      });
+      if (!response.ok) throw new Error("Failure to delete cart reservation");
+      
+      const data = await response.json();
+      console.log("RESERVE STOCK DELETED? " + data.success);
+    } catch (err) {
+      console.error(err);
+    } 
+  }

@@ -26,6 +26,9 @@ export function ItemQuantityCard({stock, selectedCartQuantityFromCheckout, setSe
             {(selectedCartQuantityFromCheckout != undefined && stock <= 0) && (<option value={0}>
                 {"Out Of Stock"}
             </option>)}
+            {(selectedCartQuantityFromCheckout != undefined && stock > 0) && (<option value={0}>
+                {"0"}
+            </option>)}
             
 
             {Array.from({ length: stock }, (_, i) => (

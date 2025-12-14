@@ -56,7 +56,7 @@ export function CustomizableProductPage(props:CustomProductPage){
         )
     }
 
-    if (!data) {
+    if (!data || data.length === 0) {
         return (
             <div className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>
                 {getPageHeaderHtml()}

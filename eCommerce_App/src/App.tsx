@@ -31,10 +31,10 @@ function App() {
           <Route path="Faq" element={<Faq />} />
           <Route path="ContactMe" element={<ContactMe />} />
           <Route path="Cart" element={<Cart />} />
-          <Route path="Checkout" element={<StripeCheckout />} />
           <Route path="CheckoutReturn" element={<CheckoutReturn />} />
           <Route path="*" element={<h1>404 Not Found</h1>} />
         </Route >
+        <Route path="/Checkout" element={<StripeCheckout />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/adminpage" element={<AdminPage />} />
       </Routes>

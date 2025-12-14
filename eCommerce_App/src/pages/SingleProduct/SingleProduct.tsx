@@ -7,7 +7,7 @@ import { useCart } from "../../CartContext";
 import type { LayoutProps } from "../Layout";
 import { useOutletContext } from "react-router-dom";
 import { ProductImagesDisplay } from "../../components/Products/ProductImagesDisplay";
-import { ItemQuantityCard } from "../../components/ItemQuantityCard/itemQuantityCard";
+import { ItemQuantityCard } from "../../components/ItemQuantityCard/ItemQuantityCard";
 import styles from "./SingleProd.module.css"; 
 
 interface ProductInformation {

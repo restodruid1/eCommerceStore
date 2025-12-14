@@ -5,7 +5,7 @@ import type { DataInterface } from "../../pages/CustomizableProductPage/Customiz
 import { FaTrashAlt } from 'react-icons/fa';
 import type { IconType } from 'react-icons';
 import { useFetch } from "../../helper/helpers";
-import { ItemQuantityCard } from "../ItemQuantityCard/itemQuantityCard";
+import { ItemQuantityCard } from "../ItemQuantityCard/ItemQuantityCard";
 
 
 interface CartProductCardProps {
@@ -33,7 +33,9 @@ export function CartProductCard ({ cartItemInfo }: CartProductCardProps){
             if (cartItemQuantity > productStock) {
                 cart.decrementProductQuantity(productId, cartItemQuantity - productStock);
                 setSelectedQuantity(productStock);
-            } 
+            } else if ((cartItemQuantity === 0) && (productStock > 0)) {
+                setSelectedQuantity(0);
+            }
         }
         validateCartState();
     },[productStock]);

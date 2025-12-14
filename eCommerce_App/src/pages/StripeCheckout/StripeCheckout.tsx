@@ -1,9 +1,9 @@
 import {loadStripe} from '@stripe/stripe-js';
 import { useCart } from '../../CartContext';
+import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
-import { useOutletContext, useNavigate } from "react-router-dom";
-import type { LayoutProps } from "../Layout";
+import { useNavigate } from "react-router-dom";
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
@@ -29,10 +29,9 @@ interface ShippingDetailsChangeEvent {
 export function StripeCheckout() {
   const cartDataState = useCart();
   const {cartItems} = cartDataState;
-  const [checkoutErrorMessage, setCheckoutErrorMessage] = useState("");
+  // const [checkoutErrorMessage, setCheckoutErrorMessage] = useState("");
   const [ clientSecret, setClientSecret ] = useState<string>("");
   const [sesh, setSesh] = useState("");
-  const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
   const navigate = useNavigate();
 
   
@@ -112,7 +111,7 @@ export function StripeCheckout() {
 
   // Prevent client from making purchase after 30 minute cart expiration
   useEffect(() => {
-    if (!sesh) return;  // don’t run until sesh is ready
+    if (!sesh) return;  
   
     const intervalId = setInterval(async () => {
       try {
@@ -132,21 +131,32 @@ export function StripeCheckout() {
   
         if (status === 'expired') {
           clearInterval(intervalId);
-          setCheckoutErrorMessage("Your checkout session has expired.");
+          navigate("/CheckoutReturn", {
+            replace: true, //prevents user going "forward" back into broken checkout
+          });
+          // setCheckoutErrorMessage("Your checkout session has expired.");
         }
       } catch (error) {
         console.error('Error checking session status:', error);
       }
-    }, 61000 * 5);  // little over 5 minutes per check so last check will happen at x > 30 minutes when cart expires
+    }, 30000);  //61000 * 5);  // little over 5 minutes per check so last check will happen at x > 30 minutes when cart expires
   
     return () => clearInterval(intervalId);
-  }, [sesh]);  // runs only when sesh changes from null → value
+  }, [sesh]); 
 
+  // className={`body column ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}
 
-  if (checkoutErrorMessage) return <h1 className={`body column ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}>{checkoutErrorMessage}</h1>
-  if (!clientSecret) return <p className={`body column ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}>Loading...</p>
+  // if (checkoutErrorMessage) return (
+  //   <div style={{textAlign:"center"}}>
+  //     <Link replace={true} to={"/cart"}><h1>Anne Elizabeth Boutique</h1></Link>
+  //     <h1 >{checkoutErrorMessage}</h1>
+  //   </div>
+  // )
+  if (!clientSecret) return <p style={{textAlign:"center", background:"blue"}}>Loading...</p>
   return (
-    <div id="checkout">
+    // id="checkout"
+    <div style={{width:"100%", minHeight:"500px", overflow:"hidden", textAlign:"center"}}>
+      <Link replace={true} to={"/Cart"}><h1>Anne Elizabeth Boutique</h1></Link>
       <EmbeddedCheckoutProvider
         stripe={stripePromise}
         options={options}

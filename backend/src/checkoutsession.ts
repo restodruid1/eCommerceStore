@@ -31,7 +31,10 @@ async function validateUserCart(cartItems:Item[]){
     
       if (item.quantity > product.quantity || item.quantity === 0) {
         // console.log("QUANTITY:", item.quantity);
-        return { success:false, error: `Only ${product.quantity} ${item.name} available` };
+        return { 
+          success:false, 
+          error: product.quantity === 0 ? `${item.name} is out of stock` : `Only ${product.quantity} ${item.name} available`, 
+        };
       }
       // console.log("ITEM QUANTITY2: " + item.quantity);
       // Ensure proper data, not client data
