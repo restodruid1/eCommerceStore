@@ -84,8 +84,13 @@ export function StripeCheckout() {
           shipping_details: shippingDetails,
         })
       })
+
+      if (!response.ok) throw new Error;
+
       const result:{type:string, message?:string, value?:{}} = await response.json();
       
+      // TODO: DYNAMIC SHIPPING CALCULATIONS
+
       if (result.type === 'error') {
         return {
           type: "reject",
@@ -98,16 +103,12 @@ export function StripeCheckout() {
       // Error handling with custom message
       return {
         type: "reject",
-        errorMessage: "We couldn't calculate shipping for this address. Please try again or contact support."
+        errorMessage: "An error occured. Please try again or contact support."
       };
     }
   };
 
-  const options: any = {
-    // fetchClientSecret,
-    clientSecret,
-    onShippingDetailsChange
-  };
+  
 
   // Prevent client from making purchase after 30 minute cart expiration
   useEffect(() => {
@@ -152,6 +153,13 @@ export function StripeCheckout() {
   //     <h1 >{checkoutErrorMessage}</h1>
   //   </div>
   // )
+
+  const options: any = {
+    // fetchClientSecret,
+    clientSecret,
+    onShippingDetailsChange
+  };
+
   if (!clientSecret) return <p style={{textAlign:"center", background:"blue"}}>Loading...</p>
   return (
     // id="checkout"

@@ -16,18 +16,18 @@ export function CartProductCard ({ cartItemInfo }: CartProductCardProps){
     const cart = useCart();
     const TrashIcon: IconType = FaTrashAlt;
     const [ outOfStockMessage, setOutOfStockMessage] = useState<string>("");
-    const { data, loading, error } = useFetch<DataInterface[]>(`http://localhost:5000/products/${cartItemInfo.id}`);
+    const { data } = useFetch<DataInterface[]>(`http://localhost:5000/products/${cartItemInfo.id}`);
     const [selectedQuantity, setSelectedQuantity] = useState<number>(cart.findItemCartQuantity(cartItemInfo.id));
     const [ errorMessage, setErrorMessage ] = useState("");
     const productStock = data?.[0].quantity;
-
+    const productId = data?.[0].id;
     
     useEffect(() => {
-        function validateCartState(){
+        function showItemQuantityInCheckout(){
             if (!data) return;
+            if (productId === undefined) return;
             if (productStock === undefined) return;
 
-            const productId = data[0].id;
             const cartItemQuantity = cart.findItemCartQuantity(productId);
 
             if (cartItemQuantity > productStock) {
@@ -37,13 +37,13 @@ export function CartProductCard ({ cartItemInfo }: CartProductCardProps){
                 setSelectedQuantity(0);
             }
         }
-        validateCartState();
+        showItemQuantityInCheckout();
     },[productStock]);
 
     useEffect(()=>{
         if (!data) return;
+        if (productId === undefined) return;
 
-        const productId = data[0].id;
         const cartItemQuantity = cart.findItemCartQuantity(productId);
         if (cartItemQuantity < selectedQuantity) {
             cart.incrementProductQuantity(productId, selectedQuantity - cartItemQuantity);
@@ -62,7 +62,8 @@ export function CartProductCard ({ cartItemInfo }: CartProductCardProps){
         return () => clearTimeout(timer); // cleanup
       }, [outOfStockMessage]);
     
-    function handleDelete(itemId:number){
+    function handleDelete(itemId:number | undefined){
+        if (itemId === undefined) return;
         cart.deleteItem(itemId);
     }
 
@@ -84,7 +85,7 @@ export function CartProductCard ({ cartItemInfo }: CartProductCardProps){
                     setSelectedQuantity={setSelectedQuantity}
                     setErrorMessage={setErrorMessage}
                 />
-                <TrashIcon onClick={()=>handleDelete(data![0].id)}/>
+                <TrashIcon onClick={()=>handleDelete(productId)}/>
             </p>
         </div>
     )

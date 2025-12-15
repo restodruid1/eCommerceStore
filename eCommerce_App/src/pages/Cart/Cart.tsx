@@ -58,7 +58,7 @@ export function Cart(){
       useEffect(() => {
         setLoading(false);
         deleteReservedCartOnDB();
-      }, []);
+      }, [location.pathname]); 
 
     const Message = ({ message }:{ message: string }) => (
     <section>
