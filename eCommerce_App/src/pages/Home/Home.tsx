@@ -13,11 +13,16 @@ export function Home(){
         <>
             <h2 style={{textAlign:"center", marginLeft:`${isMenuClicked && isDesktopOpen ? `250px` : '0px'}`}}>FEATURED ITEMS</h2>
             <div className={`${styles.mainBody} ${isMenuClicked && isDesktopOpen ? `${styles.open}` : ''}`}>
-                {Array(30).fill(0).map((_, index) => <FaSackDollar key={index} style={{width:"100px", height:"200px", flex:"auto",margin: "5%", cursor:"pointer", backgroundColor:"lightgray", maxWidth:"100px"}}/>)}
+                {Array(5).fill(0).map((_, index) => <FaSackDollar key={index} style={{width:"100px", height:"200px", flex:"auto",margin: "5%", cursor:"pointer", backgroundColor:"lightgray", maxWidth:"100px"}}/>)}
             </div>
             
             <div className={`${styles.imageContainer} ${isMenuClicked && isDesktopOpen ? `${styles.open}` : ''}`}>
-                <img className={`${styles.image} ${isMenuClicked ? `${styles.open}` : ''}`} src='https://img.youtube.com/vi/kzWhzxuSyRA/sddefault.jpg'/>
+                <iframe
+                    width={isDesktopOpen ? "600px" : '200px'}
+                    height={isDesktopOpen ? "300px" : '200px'}
+                    src="https://youtube.com/embed/NZ96QcpBdmM"
+                    allow="autoplay; encrypted-media"
+                />
             </div>
         </>
     )

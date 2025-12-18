@@ -13,11 +13,12 @@ export function NavBar({toggleMenu, isMenuClicked}: NavBarProps) {
 
     return (
         <nav className={`${styles.navBar} ${isMenuClicked ? styles.open : ''}`}>
-            <button onClick={toggleMenu} aria-label="Toggle menu">
+            
+            <button hidden={isMenuClicked ? true : false} onClick={toggleMenu} aria-label="Toggle menu">
                 <HamburgerIcon size={40} />
             </button>
 
-            <h1>The Anne Elizabeth Boutique</h1>
+            <h1 style={{textAlign: `${isMenuClicked ? 'center' : 'right'}`}}>The Anne Elizabeth Boutique</h1>
             
             <CartDropDown />
         </nav>
