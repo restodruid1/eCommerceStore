@@ -51,6 +51,45 @@ interface AddressCreateRequest {
   email: string;
 }
 
+interface ShippingDetailsChangeEvent {
+  checkout_session_id: string;  // ID of the Checkout Session
+  shipping_details: StripeShippingDetails;
+}
+interface StripeShippingDetails {
+  name: string;             // Customer's full name (e.g., "Jane Smith")
+  address: {
+    line1: string;          // Address line 1 (e.g., "123 Main St")
+    line2?: string;         // Address line 2 (e.g., "Apt 4B") - optional
+    city: string;           // City (e.g., "San Francisco")
+    state: string;          // State/province/region (e.g., "CA")
+    postal_code: string;    // ZIP or postal code (e.g., "94111")
+    country: string;        // Two-letter country code (e.g., "US")
+  };
+  phone?: string;           // Phone number - optional, may not be present if not collected 
+}
+
+interface ShippoShippingDetails {
+  name: string;
+  street1: string;      
+  street2?: string;     
+  city: string;       
+  state: string;      
+  zip: string;
+  country: string;
+  phone?: string;    
+}
+
+
+export interface SimplifiedShippoRate {
+  provider: string;
+  servicelevel: {
+    name: string;
+  };
+  amount: string;
+  currency: string;
+  estimatedDays: number;
+}
+
 const addressFrom: AddressCreateRequest = {
     name: process.env.SENDER_NAME!,
     company: process.env.SENDER_COMPANY!,
@@ -62,16 +101,6 @@ const addressFrom: AddressCreateRequest = {
     phone: process.env.SENDER_PHONE!,
     email: process.env.SENDER_EMAIL!,
 };
-
-export interface SimplifiedShippoRate {
-  provider: string;
-  servicelevel: {
-    name: string;
-  };
-  amount: string;
-  currency: string;
-  estimatedDays: number;
-}
 
 const allowedCarriers = ["USPS", "UPS", "FedEx", "DHL Express"];
 function getFilteredRates(rates:Rate[]): SimplifiedShippoRate[] {
@@ -168,34 +197,6 @@ async function calculateShippingOptions(addressTo:ShippoShippingDetails, session
 
 }
 
-
-interface ShippingDetailsChangeEvent {
-  checkout_session_id: string;  // ID of the Checkout Session
-  shipping_details: StripeShippingDetails;
-}
-interface StripeShippingDetails {
-  name: string;             // Customer's full name (e.g., "Jane Smith")
-  address: {
-    line1: string;          // Address line 1 (e.g., "123 Main St")
-    line2?: string;         // Address line 2 (e.g., "Apt 4B") - optional
-    city: string;           // City (e.g., "San Francisco")
-    state: string;          // State/province/region (e.g., "CA")
-    postal_code: string;    // ZIP or postal code (e.g., "94111")
-    country: string;        // Two-letter country code (e.g., "US")
-  };
-  phone?: string;           // Phone number - optional, may not be present if not collected 
-}
-
-interface ShippoShippingDetails {
-  name: string;
-  street1: string;      
-  street2?: string;     
-  city: string;       
-  state: string;      
-  zip: string;
-  country: string;
-  phone?: string;    
-}
 
 router.post('/', async (req:Request, res:Response) => {
     const {checkout_session_id, shipping_details} = req.body as ShippingDetailsChangeEvent;

@@ -1,25 +1,45 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import styles from './Admin.module.css'
+import { FormInputTypeText } from "../../components/AdminComponents/FormInputTypeText";
+import { ProductsContainer } from "../../components/AdminComponents/ProductsContainer";
 
+export interface DataInterface {
+  id: number,
+  category: number,
+  name: string,
+  quantity: number,
+  weight: number,
+  price: number,
+  description: string,
+  urls: urlObj[],
+  product_id?: number,
+  main_image?: boolean
+};
+type urlObj = {
+  imageId: number,
+  url: string
+}
+
+const initialFormData = {
+  productName: "",
+  productHeight: "",
+  productLength: "",
+  productWidth: "",
+  productWeight: "",
+  productId: "",
+  productPrice: "",
+  productQuantity: "",
+  productDescription: "",
+  productImages: [] as File[],
+};
 export function AdminPage(){
-    const [jwt, setJwt] = useState<boolean>(false);
-    const [products, setProducts] = useState([]);
+    const [userIsAdmin, setUserIsAdmin] = useState<boolean>(false);
     const [error, setError] = useState("");
-    const initialFormData = {
-      productName: "",
-      productHeight: "",
-      productLength: "",
-      productWidth: "",
-      productWeight: "",
-      productId: "",
-      productPrice: "",
-      productQuantity: "",
-      productDescription: "",
-      productImages: [] as File[],
-    };
+    const [products, setProducts] = useState<DataInterface[]>([]);
     const [formInputData, setFormInputData] = useState(initialFormData);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
 
     // Validate clients hitting this page
     useEffect(()=>{
@@ -36,35 +56,38 @@ export function AdminPage(){
               const data = await response.json();
             //   console.log(data);
               if (data.message === "valid") {
-                setJwt(true)
+                setUserIsAdmin(true)
+                getProductData();
               }
               else {
-                setJwt(false);
+                setUserIsAdmin(false);
                 }
             }
         validate();
         },[]);
 
-    useEffect(()=>{
-      if (!jwt) return;
-      if (jwt) {
-        getProductData();
-      }
-    },[jwt]);
 
-    async function getProductData(){
-      const response = await fetch(`http://localhost:5000/api/admin/AwsS3/productData`,{
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            jwt: localStorage.getItem("jwt")
-        })
-      });
-      const data = await response.json();
-      setProducts(data.result);
-    }
+      async function getProductData(){
+          try {
+              const response = await fetch(`http://localhost:5000/api/admin/AwsS3/productData`,{
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                      jwt: localStorage.getItem("jwt")
+                  })
+                });
+                if (!response.ok) throw new Error("Unable to get product data");
+
+                const data = await response.json();
+                const result:DataInterface[] = data.result;
+                setProducts(result);
+          } catch (err) {
+              console.error(err);
+              if (err instanceof Error) setError(err.message);
+          }        
+        }
 
     async function handleSubmit(e: React.FormEvent){
       e.preventDefault();
@@ -129,6 +152,7 @@ export function AdminPage(){
       if (fileInputRef.current) {
         fileInputRef.current.value = ""; // clears the file input
       }
+      
     }
 
     function handleDeleteImage(imageIndex:number){
@@ -136,27 +160,6 @@ export function AdminPage(){
         ...prev,
         productImages: prev.productImages.filter((_, index) => index !== imageIndex)
       }));
-    }
-
-    async function handleDeleteProductFromDB(itemId:number, itemCategory:number){
-      const response = await fetch(`http://localhost:5000/api/admin/AwsS3/deleteProductData`,{
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            jwt: localStorage.getItem("jwt"),
-            itemId: itemId,
-            itemCategory: itemCategory
-        })
-        
-      });
-      const data = await response.json();
-      // alert(data);
-      console.log(data);
-      if (!data.success) return;
-      getProductData();
-      // setProducts(data.result);
     }
 
     const handleFormTextChange = (
@@ -190,100 +193,74 @@ export function AdminPage(){
       }
     };
 
-    if (!jwt) 
+    if (!userIsAdmin) 
       return (
       <div className={styles.formFlex}>
           <h1>not VALIDATED</h1>
           <Link to={"/admin"}>Back to admin login</Link>
           </div> 
         )
+
     return (
       <div>
         <form className={styles.formFlex} onSubmit={handleSubmit}>
           <h1>ADMIN PAGE</h1>
-          <label className={styles.label}>Product Name</label>
-          <input
-              type="text"
-              value={formInputData.productName}
-              onChange={handleFormTextChange}
-              name="productName"
-              required
-              className={styles.formInput}
+          <FormInputTypeText 
+            labelName="Product Name"
+            inputName="productName"
+            valueForInput={formInputData.productName}
+            handleFormTextChange={handleFormTextChange}
           />
-
-          <label className={styles.label}>Product Price</label>
-          <input
-              type="text"
-              placeholder="1.99 1.00"
-              value={formInputData.productPrice}
-              onChange={handleFormTextChange}
-              name="productPrice"
-              required
-              className={styles.formInput}
+          <FormInputTypeText 
+            labelName="Product Price"
+            inputName="productPrice"
+            valueForInput={formInputData.productPrice}
+            inputExamples="1.99 1.00"
+            handleFormTextChange={handleFormTextChange}
           />
-
-          <label className={styles.label}>Product Quantity</label>
-          <input
-              type="text"
-              value={formInputData.productQuantity}
-              onChange={handleFormTextChange}
-              name="productQuantity"
-              required
-              className={styles.formInput}
+          <FormInputTypeText 
+            labelName="Product Quantity"
+            inputName="productQuantity"
+            valueForInput={formInputData.productQuantity}
+            handleFormTextChange={handleFormTextChange}
           />
-        
-          <label className={styles.label}>Product ID <span>(1-4)</span></label>
-          <input
-              type="text"
-              value={formInputData.productId}
-              onChange={handleFormTextChange}
-              name="productId"
-              required
-              className={styles.formInput}
+          <FormInputTypeText 
+            labelName="Product Id"
+            inputName="productId"
+            labelNameUnit="(1-4)"
+            valueForInput={formInputData.productId}
+            handleFormTextChange={handleFormTextChange}
           />
-
-          <label className={styles.label}>Length <span>(in)</span></label>
-          <input
-              type="text"
-              value={formInputData.productLength}
-              onChange={handleFormTextChange}
-              name="productLength"
-              placeholder="4, 4.2, 4.26"
-              required
-              className={styles.formInput}
+          <FormInputTypeText 
+            labelName="Length"
+            inputName="productLength"
+            labelNameUnit="(in)"
+            valueForInput={formInputData.productLength}
+            inputExamples="4, 4.2, 4.26"
+            handleFormTextChange={handleFormTextChange}
           />
-
-          <label className={styles.label}>Width <span>(in)</span></label>
-          <input
-              type="text"
-              value={formInputData.productWidth}
-              onChange={handleFormTextChange}
-              name="productWidth"
-              required
-              className={styles.formInput}
+          <FormInputTypeText 
+            labelName="Width"
+            inputName="productWidth"
+            labelNameUnit="(in)"
+            valueForInput={formInputData.productWidth}
+            handleFormTextChange={handleFormTextChange}
           />
-
-          <label className={styles.label}>Height <span>(in)</span></label>
-          <input
-              type="text"
-              value={formInputData.productHeight}
-              onChange={handleFormTextChange}
-              name="productHeight"
-              required
-              className={styles.formInput}
+          <FormInputTypeText 
+            labelName="Height"
+            inputName="productHeight"
+            labelNameUnit="(in)"
+            valueForInput={formInputData.productHeight}
+            handleFormTextChange={handleFormTextChange}
           />
-          
-          <label className={styles.label}>Weight <span>(oz)</span></label>
-          <input
-              type="text"
-              value={formInputData.productWeight}
-              onChange={handleFormTextChange}
-              name="productWeight"
-              placeholder="10, 10.2, 10.22"
-              required
-              className={styles.formInput}
+          <FormInputTypeText 
+            labelName="Weight"
+            inputName="productWeight"
+            labelNameUnit="(oz)"
+            valueForInput={formInputData.productWeight}
+            inputExamples="10, 10.2, 10.22"
+            handleFormTextChange={handleFormTextChange}
           />
-
           <label className={styles.label}>Description</label>
           <textarea
               value={formInputData.productDescription}
@@ -294,7 +271,6 @@ export function AdminPage(){
               required
               className={styles.formInput}
           />
-
           <label className={styles.label}>Image(s)</label>
           <input
               type="file"
@@ -322,18 +298,7 @@ export function AdminPage(){
           Submit
           </button>
       </form>
-
-      <div style={{display:"flex", flexDirection:"column", justifyContent:"center", alignContent:"center"}}>
-      {products.length > 0 && products.map((item:any, index)=>{
-        return (
-        <p style={{display:"flex", maxHeight:"100px",border:"2px solid black"}} key={index}>
-          <img style={{maxWidth:"150px", minHeight:"100px"}} src={item.url}/>
-          {item.name} {item.category} {item.price} {item.quantity} {item.weight}
-          <button onClick={()=>handleDeleteProductFromDB(item.id, item.category)}>X</button>
-          </p>
-      )
-      })}
-      </div>
+      <ProductsContainer productCatalog={products} getProductData={getProductData}/>
     </div>
   )
 }

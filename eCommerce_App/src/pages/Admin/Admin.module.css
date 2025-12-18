@@ -22,3 +22,11 @@
 span {
     color: grey;
 }
+
+.editableMode {
+    background-color: grey;
+    cursor: pointer;
+}
+.editableItem {
+    margin: 5px;
+}

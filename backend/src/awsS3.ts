@@ -133,15 +133,32 @@ router.post('/', upload.array("images"), requireAdmin, async (req,res)=>{
 router.post('/productData', requireAdmin, async (req,res)=>{
     try{
         const result = await db.query(
-                  `SELECT 
-                      p.*, 
-                      pi.url
-                  FROM products p
-                  JOIN product_images pi 
-                      ON pi.product_id = p.id
-                  ;`
+                //   `SELECT 
+                //       p.*, 
+                //       pi.url
+                //   FROM products p
+                //   JOIN product_images pi 
+                //       ON pi.product_id = p.id
+                //   ;`
+                `
+                SELECT
+                    p.*,
+                    COALESCE(
+                        JSONB_AGG(
+                        JSONB_BUILD_OBJECT(
+                            'imageId', pi.id,
+                            'url', pi.url
+                        )
+                        ) FILTER (WHERE pi.id IS NOT NULL),
+                        '[]'
+                    ) AS urls
+                    FROM products p
+                    LEFT JOIN product_images pi ON pi.product_id = p.id
+                    GROUP BY p.id, p.name, p.price
+                    ORDER BY p.id;
+                `
                   ,[]);
-        console.log(result);
+        // console.log(result);
         return res.status(200).json({result: result.rows})
     } catch (err) {
         console.error(err);
@@ -151,7 +168,7 @@ router.post('/productData', requireAdmin, async (req,res)=>{
 
 router.post('/deleteProductData', requireAdmin, async (req: Request<{}, {}, {itemId:number, itemCategory:number}>,res:Response)=>{
     const { itemId, itemCategory } = req.body;
-    console.log(itemId ,"", itemCategory);
+    // console.log(itemId ,"", itemCategory);
     try{
         var results;
         try{
@@ -200,6 +217,64 @@ router.post('/deleteProductData', requireAdmin, async (req: Request<{}, {}, {ite
     } catch (e) {
         return res.json({success: false, error: e instanceof Error ? e.message : "Something wrong with server"});
     }
+})
+
+type Product = {
+    id: number;
+    name: string;
+    category: number;
+    price: number;
+    quantity: number;
+    weight: number;
+    description: string;
+    urls: {imageId?:number, url:string}[];
+  };
+router.post('/updateProductData', requireAdmin, async (req: Request<{}, {}, {jwt:string, product:Product}>,res:Response)=>{
+    const productData = req.body.product;
+    // console.log(req.body);
+
+    try{
+        await db.query("BEGIN");
+        const results = await db.query(
+                `SELECT
+                    name,
+                    category,
+                    price,
+                    quantity,
+                    weight,
+                    description
+                FROM products
+                WHERE id = $1;`
+                ,[productData.id]);
+        const resultsFromDatabase = results.rows[0];
+
+        if (resultsFromDatabase.name !== productData.name) {
+            const nameCheck =  await db.query(
+                `SELECT * FROM products WHERE LOWER(name) = LOWER($1);`
+                , [productData.name]);
+            if (nameCheck.rowCount! > 0) {
+                await db.query("ROLLBACK");
+                return res.status(500).json({success: false, error: "Product name already exists"})
+            }
+        }
+
+        for (const field of ['category', 'name', 'price', 'quantity', 'weight', 'description'] as const) {
+            if (resultsFromDatabase[field] !== productData[field]) {
+                console.log("Change from ", resultsFromDatabase[field], "to ", productData[field])
+                await db.query(
+                    `UPDATE products
+                    SET ${field} = $1
+                    WHERE id = $2;`
+                    ,[productData[field], productData.id]);
+            }
+        }
+
+        await db.query("COMMIT");
+        return res.status(200).json({success:true});
+    } catch (e) {
+        await db.query("ROLLBACK");
+        return res.json({success: false, error: e instanceof Error ? e.message : "Update on Db Unsuccessful"});
+    }  
 })
 
 export default router;
