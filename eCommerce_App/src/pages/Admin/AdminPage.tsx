@@ -41,6 +41,7 @@ export function AdminPage(){
     const [formInputData, setFormInputData] = useState(initialFormData);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [youTubeVideoId, setYouTubeVideoId] = useState<string>("");
+    console.log("YOUTYBE VIDEO ID: " + youTubeVideoId);
     const [youTubeError, setYouTubeError] = useState("");
 
     // Validate clients hitting this page
@@ -60,7 +61,7 @@ export function AdminPage(){
               if (data.message === "valid") {
                 setUserIsAdmin(true)
                 getProductData();
-                getYouTubeVideoUrl()
+                getYouTubeVideoId()
               }
               else {
                 setUserIsAdmin(false);
@@ -69,7 +70,7 @@ export function AdminPage(){
         validate();
         },[]);
 
-      async function getYouTubeVideoUrl(){
+      async function getYouTubeVideoId(){
         try {
             const response = await fetch(`http://localhost:5000/api/admin/AwsS3/YouTubeVideoId`,{
                 method: "GET",

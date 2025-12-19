@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaPencilAlt } from "react-icons/fa";
 import { InlineEditableField } from "./EditableProductCard"; 
 
@@ -11,8 +11,12 @@ type EditYouTubeVideoIdProps = {
 
 
 export function EditYouTubeVideoId({initialVideoId, setYouTubeVideoId, youTubeError, setYouTubeError}:EditYouTubeVideoIdProps) {
-    const [temporaryVideoId, setTemporaryVideoId] = useState<string>(initialVideoId);
+    const [temporaryVideoId, setTemporaryVideoId] = useState<string>("");
     const [isEditing, setIsEditing] = useState<boolean>(false);
+
+    useEffect(()=>{
+        if (initialVideoId) setTemporaryVideoId(initialVideoId);
+    },[initialVideoId]);
 
     async function handleSubmit(){
         try {
