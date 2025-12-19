@@ -75,6 +75,27 @@ router.get("/channelmerch", async (req, res)=>{
       }
 })
 
+router.get('/YouTubeVideoId', async (req, res) =>{
+    console.log("Fetching YouTube video ID");
+    try{
+        const result = await db.query(
+                `
+                SELECT * FROM youtube_videos;
+                `
+                  ,[]);
+
+        // console.log(result);          
+        if (result && result.rowCount && result.rowCount > 0 ) {
+            return res.status(200).json({result: result.rows[0]})
+        } else {
+            return res.status(404).json({ message: "No videos found"});
+        }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+})
+
 router.get("/:id", async (req, res)=>{
   try {
       const { id } = req.params;
@@ -97,5 +118,6 @@ router.get("/:id", async (req, res)=>{
     }
   // res.send("<h1>HELLO WORLD</h1>");
 })
+
 
 export default router;

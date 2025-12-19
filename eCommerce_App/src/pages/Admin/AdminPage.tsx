@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import styles from './Admin.module.css'
 import { FormInputTypeText } from "../../components/AdminComponents/FormInputTypeText";
 import { ProductsContainer } from "../../components/AdminComponents/ProductsContainer";
+import { EditYouTubeVideoId } from "../../components/AdminComponents/EditYouTubeVideoId";
 
 export interface DataInterface {
   id: number,
@@ -39,7 +40,8 @@ export function AdminPage(){
     const [products, setProducts] = useState<DataInterface[]>([]);
     const [formInputData, setFormInputData] = useState(initialFormData);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
+    const [youTubeVideoId, setYouTubeVideoId] = useState<string>("");
+    const [youTubeError, setYouTubeError] = useState("");
 
     // Validate clients hitting this page
     useEffect(()=>{
@@ -58,6 +60,7 @@ export function AdminPage(){
               if (data.message === "valid") {
                 setUserIsAdmin(true)
                 getProductData();
+                getYouTubeVideoUrl()
               }
               else {
                 setUserIsAdmin(false);
@@ -66,6 +69,26 @@ export function AdminPage(){
         validate();
         },[]);
 
+      async function getYouTubeVideoUrl(){
+        try {
+            const response = await fetch(`http://localhost:5000/api/admin/AwsS3/YouTubeVideoId`,{
+                method: "GET",
+                headers: {
+                "Authorization": "Bearer " + localStorage.getItem("jwt"),
+                "Content-Type": "application/json"
+                }
+            });
+
+            if (!response.ok) throw new Error("Unable to get product data");
+            const data:Partial<{result:{videoid:string}, message:string, error:string}> = await response.json();
+            if (!data || data.message) throw new Error("No video url found");
+            if (data.error) throw new Error("Server failure when getting video url");
+            if (data.result) setYouTubeVideoId(data.result.videoid);
+
+        } catch (err) {
+            if (err instanceof Error) setYouTubeError(err.message);
+        }
+      };
 
       async function getProductData(){
           try {
@@ -298,7 +321,16 @@ export function AdminPage(){
           Submit
           </button>
       </form>
-      <ProductsContainer productCatalog={products} getProductData={getProductData}/>
+      <EditYouTubeVideoId
+        initialVideoId={youTubeVideoId}
+        setYouTubeVideoId={setYouTubeVideoId}
+        youTubeError={youTubeError}
+        setYouTubeError={setYouTubeError}
+      />
+      <ProductsContainer 
+        productCatalog={products}
+        getProductData={getProductData}
+      />
     </div>
   )
 }

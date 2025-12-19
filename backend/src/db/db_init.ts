@@ -41,6 +41,7 @@ async function initDB() {
         DROP TABLE IF EXISTS orders CASCADE;
         DROP TABLE IF EXISTS order_items CASCADE;
         DROP TABLE IF EXISTS cart_reservations CASCADE;
+        DROP TABLE IF EXISTS youtube_videos CASCADE;
         
         CREATE TABLE products (
             id SERIAL PRIMARY KEY,
@@ -91,7 +92,11 @@ async function initDB() {
           quantity INT NOT NULL,
           expires_at TIMESTAMP NOT NULL
         );
-
+        
+        CREATE TABLE youtube_videos (
+          id SERIAL PRIMARY KEY, 
+          videoid varchar(50) NOT NULL
+        );
     `);
 
     console.log('Tables created or already exist.');

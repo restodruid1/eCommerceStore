@@ -1,5 +1,6 @@
 // import { Product } from '../../components/Products/Product';
 import { useOutletContext } from "react-router-dom";
+import { useState, useEffect } from 'react';
 import type { LayoutProps } from '../Layout';
 import styles from './Home.module.css';
 import { FaSackDollar } from 'react-icons/fa6';
@@ -7,8 +8,33 @@ import { FaSackDollar } from 'react-icons/fa6';
 
 export function Home(){
     const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
-    // const cart = useCart();
+    const [youTubeVideoId, setYouTubeVideoId] = useState<string>("");
     
+    useEffect(()=>{
+        async function fetchYouTubeVideoId(){
+            try {
+                const response = await fetch(`http://localhost:5000/products/YouTubeVideoId`,{
+                    method: "GET",
+                    headers: {
+                    "Content-Type": "application/json"
+                    }
+                });
+
+                if (!response.ok) throw new Error("Unable to fetch YouTube video ID");
+
+                const data:Partial<{result: {videoid:string}, error:string}> = await response.json();
+                if (data.error) throw new Error("Server failure when fetching video ID");
+                if (data.result) setYouTubeVideoId(data.result.videoid);
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        fetchYouTubeVideoId();
+    },[]);
+
+
     return (
         <>
             <h2 style={{textAlign:"center", marginLeft:`${isMenuClicked && isDesktopOpen ? `250px` : '0px'}`}}>FEATURED ITEMS</h2>
@@ -20,7 +46,10 @@ export function Home(){
                 <iframe
                     width={isDesktopOpen ? "600px" : '200px'}
                     height={isDesktopOpen ? "300px" : '200px'}
-                    src="https://youtube.com/embed/NZ96QcpBdmM"
+                    src={youTubeVideoId ?
+                        `https://youtube.com/embed/${youTubeVideoId}`
+                        : 
+                        "https://youtube.com/embed/0expGa_qGGM"}
                     allow="autoplay; encrypted-media"
                 />
             </div>

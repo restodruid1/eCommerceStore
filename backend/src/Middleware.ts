@@ -5,7 +5,8 @@ import multer from "multer";
 const JWT_SECRET = process.env.JWTSECRET!;
 
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  const token = req.body.jwt;
+  const jwtFromHeader = req.headers.authorization?.split(" ")[1];   // e.g. "Bearer jwtToken"
+  const token:string | undefined | null = jwtFromHeader ?? req.body.jwt;
   
   // const jwtToken = req.headers.authorization!.split(" ")[1];
   console.log(token);

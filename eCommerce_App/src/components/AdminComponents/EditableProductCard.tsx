@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { FaPencilAlt } from "react-icons/fa";
 
-type InlineEditableFieldProps = {
+export type InlineEditableFieldProps = {
     value: string | number;
     editing: boolean;
     type?: "text" | "number" | "text-area";
     onChange: (val: string) => void;
   };
   
-function InlineEditableField({
+export function InlineEditableField({
     value,
     editing,
     onChange,

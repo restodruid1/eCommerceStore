@@ -277,4 +277,44 @@ router.post('/updateProductData', requireAdmin, async (req: Request<{}, {}, {jwt
     }  
 })
 
+router.get('/YouTubeVideoId', requireAdmin, async (req, res) =>{
+    try{
+        const result = await db.query(
+                `
+                SELECT * FROM youtube_videos;
+                `
+                  ,[]);
+
+        if (result && result.rowCount && result.rowCount > 0 ) {
+            return res.status(200).json({result: result.rows[0]})
+        } else {
+            return res.status(404).json({ message: "No videos found"});
+        }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+})
+
+router.post('/UpdateYouTubeVideoId', requireAdmin, async (req: Request<{}, {}, {videoid:string}>, res:Response) =>{
+    const { videoid } = req.body;
+    try{
+        const result = await db.query(
+                `
+                UPDATE youtube_videos
+                SET videoid = $1
+                `
+                  ,[videoid]);
+
+        if (result) {
+            return res.status(200).json({ message: "YouTube video ID updated successfully" })
+        } else {
+            return res.status(500).json({ error: "Failed to update YouTube video ID" });
+        }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+})
+
 export default router;
