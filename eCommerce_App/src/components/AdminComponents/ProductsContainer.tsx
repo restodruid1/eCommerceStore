@@ -66,9 +66,9 @@ export function ProductsContainer({productCatalog, getProductData}:{productCatal
             <div style={{display:"flex", justifyContent:"space-between", borderBottom:"2px solid black", maxHeight:"100px"}}>
               <h3>Images</h3>
               <h3>Product Name</h3>
-              <h3>Product Id</h3>
+              <h3>Product Category Id</h3>
               <h3>Product Price</h3>
-              <h3>Product Category</h3>
+              <h3>Product Quantity</h3>
               <h3>Product Weight</h3>
               <h3>Product Description</h3>
             </div>

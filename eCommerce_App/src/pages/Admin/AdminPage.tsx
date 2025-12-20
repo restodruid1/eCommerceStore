@@ -28,7 +28,7 @@ const initialFormData = {
   productLength: "",
   productWidth: "",
   productWeight: "",
-  productId: "",
+  productCategoryId: "",
   productPrice: "",
   productQuantity: "",
   productDescription: "",
@@ -136,7 +136,7 @@ export function AdminPage(){
 
       const formData = new FormData();
       formData.append("productName", formInputData.productName);
-      formData.append("category", formInputData.productId);
+      formData.append("category", formInputData.productCategoryId);
       formData.append("price", formInputData.productPrice);
       formData.append("quantity", String(parseInt(formInputData.productQuantity) > 0 ? parseInt(formInputData.productQuantity) : 1));
       formData.append("length", Number(formInputData.productLength).toFixed(2));
@@ -249,10 +249,10 @@ export function AdminPage(){
             handleFormTextChange={handleFormTextChange}
           />
           <FormInputTypeText 
-            labelName="Product Id"
-            inputName="productId"
+            labelName="Product Category Id"
+            inputName="productCategoryId"
             labelNameUnit="(1-4)"
-            valueForInput={formInputData.productId}
+            valueForInput={formInputData.productCategoryId}
             handleFormTextChange={handleFormTextChange}
           />
           <FormInputTypeText 

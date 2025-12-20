@@ -18,14 +18,22 @@ export function InlineEditableField({
         return <p>{value}</p>;
     }
 
-    return (
-        <input
+    return (type === "text-area" ? 
+      <textarea
+        value={value}
+        maxLength={8000}
+        autoFocus
+        onChange={(e) => onChange(e.target.value)}
+        className="inline-input"
+      />
+      : 
+      <input
         type={type}
         value={value}
         autoFocus
         onChange={(e) => onChange(e.target.value)}
         className="inline-input"
-        />
+      />   
     );
 }
 
