@@ -92,11 +92,11 @@ router.post('/', upload.array("images"), requireAdmin, async (req,res)=>{
                 await db.query("BEGIN");
                 const result = await db.query(
                     `
-                    INSERT INTO products (category, name, quantity, weight, price, description)
+                    INSERT INTO products (category, name, quantity, weight, height, length, width, price, description)
                     VALUES ($1, $2, $3, $4, $5, $6)
                     RETURNING id
                     `,
-                    [category, productName, quantity, weight, price, description]
+                    [category, productName, quantity, weight, height, length, width, price, description]
                 );
                 const newProductId = result.rows[0].id;     // ID of new DB entry
                 console.log("PRODUCT ID: " + newProductId);
@@ -226,6 +226,9 @@ type Product = {
     price: number;
     quantity: number;
     weight: number;
+    length:number;
+    height:number;
+    width:number;
     description: string;
     urls: {imageId?:number, url:string}[];
   };
@@ -242,6 +245,9 @@ router.post('/updateProductData', requireAdmin, async (req: Request<{}, {}, {jwt
                     price,
                     quantity,
                     weight,
+                    length,
+                    height,
+                    width,
                     description
                 FROM products
                 WHERE id = $1;`
@@ -258,7 +264,7 @@ router.post('/updateProductData', requireAdmin, async (req: Request<{}, {}, {jwt
             }
         }
 
-        for (const field of ['category', 'name', 'price', 'quantity', 'weight', 'description'] as const) {
+        for (const field of ['category', 'name', 'price', 'quantity', 'weight', 'length', 'height', 'width', 'description'] as const) {
             if (resultsFromDatabase[field] !== productData[field]) {
                 console.log("Change from ", resultsFromDatabase[field], "to ", productData[field])
                 await db.query(

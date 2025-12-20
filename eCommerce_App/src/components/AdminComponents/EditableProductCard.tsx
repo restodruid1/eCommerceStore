@@ -45,6 +45,9 @@ export type Product = {
     price: number;
     quantity: number;
     weight: number;
+    length: number;
+    height: number;
+    width: number;
     description: string;
     urls: {imageId?:number, url:string}[];
   };
@@ -126,6 +129,30 @@ export type Product = {
           editing={isEditing}
           onChange={(val) =>
             setDraftProduct((p) => ({ ...p, weight: Number(val) }))
+          }
+        />
+        <InlineEditableField
+          value={draftProduct.length}
+          type="number"
+          editing={isEditing}
+          onChange={(val) =>
+            setDraftProduct((p) => ({ ...p, length: Number(val) }))
+          }
+        />
+        <InlineEditableField
+          value={draftProduct.height}
+          type="number"
+          editing={isEditing}
+          onChange={(val) =>
+            setDraftProduct((p) => ({ ...p, height: Number(val) }))
+          }
+        />
+        <InlineEditableField
+          value={draftProduct.width}
+          type="number"
+          editing={isEditing}
+          onChange={(val) =>
+            setDraftProduct((p) => ({ ...p, width: Number(val) }))
           }
         />
 

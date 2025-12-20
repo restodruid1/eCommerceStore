@@ -53,6 +53,9 @@ export function StripeCheckout() {
       const checkoutSession:{checkoutResult: { clientSecret: string, sessionId: string}, uuid?:string , error?:string} = await response.json();
 
       if (checkoutSession.error) {
+        if (checkoutSession.uuid) {
+          localStorage.setItem("uuid", checkoutSession.uuid);
+        }
         navigate("/Cart", {
                 state: { error: checkoutSession.error },
                 replace: true, // optional; prevents user going "forward" back into broken checkout

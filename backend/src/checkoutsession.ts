@@ -7,6 +7,21 @@ import { QueryResult } from 'pg';
 
 const router = Router();
 
+type DataInterface = {
+  id: number,
+  category: number,
+  name: string,
+  quantity: number,
+  weight: number,
+  length: number,
+  height: number,
+  width: number,
+  price: number,
+  // description: string,
+  url: string,
+};
+
+
 async function validateUserCart(cartItems:Item[]){
   const items = cartItems;
   try {
@@ -21,7 +36,8 @@ async function validateUserCart(cartItems:Item[]){
           ON pi.product_id = p.id
       WHERE pi.main_image = true;`
     ,[]);
-
+    console.log("product information: ", result.rows);
+    var newItemsArray:DataInterface[] = [];
     for (const item of items) {
       const product = result.rows.find(p => p.id === item.id);
       // console.log("ITEM QUANTITY: " + item.quantity);
@@ -38,12 +54,21 @@ async function validateUserCart(cartItems:Item[]){
       }
       // console.log("ITEM QUANTITY2: " + item.quantity);
       // Ensure proper data, not client data
-      item.id = product.id;
-      item.name = product.name;
-      item.price = product.price;
-      item.image = product.url;
+      const object = new Object({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: item.quantity,
+        url: product.url,
+        weight: product.weight,
+        height: product.height,
+        length: product.length,
+        width: product.width,
+      });
+      newItemsArray.push(object as DataInterface);
     }
-    return {success:true, items};
+    // return {success:true, items};
+    return {success:true, newItemsArray};
 
   } catch (e) {
     console.error("STRIPE ERROR:", e);
@@ -83,7 +108,7 @@ export async function terminateReserveUpdateStock(user_id:string){
   }
 }
 
-async function reserveStock(cartItems:Item[], user_id:string|null) {
+async function reserveStock(cartItems:DataInterface[], user_id:string|null) {
   const items = cartItems;
   // console.log(user_id);
   // if (user_id != null) {
@@ -151,7 +176,7 @@ async function reserveStock(cartItems:Item[], user_id:string|null) {
   }
 }
 
-const checkout = async(items:Item[], req:Request, res:Response, uuid:string)=>{
+const checkout = async(items:DataInterface[], req:Request, res:Response, uuid:string)=>{
   try {
         const session = await stripe.checkout.sessions.create({
           ui_mode: 'embedded',
@@ -183,7 +208,13 @@ const checkout = async(items:Item[], req:Request, res:Response, uuid:string)=>{
                           currency: 'usd',
                           product_data: {
                             name: item.name,
-                            images:[item.image],
+                            images:[item.url],
+                            metadata:{
+                              weight: item.weight.toString(),
+                              length: item.length.toString(),
+                              height: item.height.toString(),
+                              width: item.width.toString(),
+                            },
                           },
                           unit_amount: Math.round(item.price * 100),
                         },
@@ -203,16 +234,16 @@ const checkout = async(items:Item[], req:Request, res:Response, uuid:string)=>{
         // res.json({url:session.url!});
       } catch (e) {
         console.error("STRIPE ERROR:", e);
-        return res.status(400).send({error:"STRIP CALL ERROR"});
+        return {error:"STRIP CALL ERROR"};
       }
 };
 
 router.post('/', async (req, res) => {
+  var newUuid = "";
   try{
     const items = req.body.items as Item[];
-    // console.log(req.body.uuid);
-    // const userId = JSON.parse(req.body.uuid) as string | null;
     const userId = req.body.uuid as string | null;
+
     if (userId != null) {
         await terminateReserveUpdateStock(userId);
     }
@@ -221,17 +252,18 @@ router.post('/', async (req, res) => {
     if (!cartState?.success) {
       return res.status(500).send({error: cartState?.error});
     }
-    const stockResp = await reserveStock(cartState.items!, userId);   // Validate stock & reserve cart on db for 30 minutes
+    const stockResp = await reserveStock(cartState.newItemsArray!, userId);   // Validate stock & reserve cart on db for 30 minutes
     console.log(stockResp);
-
+    newUuid = stockResp.uuid ?? "";
+    console.log("UUID: ", newUuid);
     if (!stockResp.success) return res.status(500).send({error: stockResp.error});
 
-    const checkoutResult = await checkout(cartState.items!, req, res, stockResp.uuid!);   // Stripe checkout
-
+    const checkoutResult = await checkout(cartState.newItemsArray!, req, res, stockResp.uuid!);   // Stripe checkout
+    if (checkoutResult.error) return res.status(500).send({error: checkoutResult.error, uuid:stockResp.uuid!});
     // return res.json(checkoutResult, stockResp.uuid!);
     return res.send({checkoutResult: checkoutResult, uuid: stockResp.uuid!})
   } catch(e) {
-    return res.status(500).send({error:e});
+    return res.status(500).send({error:e, uuid:newUuid});
   }
 });
 

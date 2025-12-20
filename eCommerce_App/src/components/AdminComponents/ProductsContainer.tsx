@@ -70,6 +70,9 @@ export function ProductsContainer({productCatalog, getProductData}:{productCatal
               <h3>Product Price</h3>
               <h3>Product Quantity</h3>
               <h3>Product Weight</h3>
+              <h3>Product Length</h3>
+              <h3>Product Height</h3>
+              <h3>Product Width</h3>
               <h3>Product Description</h3>
             </div>
           )}

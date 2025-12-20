@@ -141,13 +141,35 @@ async function validateShippingDetails(shippingDetails:ShippoShippingDetails): P
   return { success: true };
 }
 
-function packParcelItems() {
+function packItemsIntoOneParcel() {
   
 }
 
 
+type SessionLineItems = {
+  weight:string | undefined;
+  length:string | undefined;
+  height:string | undefined;
+  width:string | undefined;
+  quantity:number | null;
+}
 // Return an array of the updated shipping options or the original options if no update is needed.
 async function calculateShippingOptions(addressTo:ShippoShippingDetails, session:Stripe.Checkout.Session):Promise<ShippingRateWrapper[] | false> {
+  if (!session.line_items?.data) return false;
+
+  const products:SessionLineItems[] = session.line_items?.data.map(item => {
+    const product = item.price?.product as Stripe.Product;
+    console.log("Shipping Session Details: ", product.metadata);
+    return {
+      weight: product.metadata.weight,
+      length: product.metadata.length,
+      height: product.metadata.height,
+      width: product.metadata.width,
+      quantity: item.quantity,
+    };
+  });
+  console.log("Products for shipping: ", products);
+
   const parcel:ParcelCreateRequest = {
     length: "10",
     width: "5",
@@ -156,7 +178,7 @@ async function calculateShippingOptions(addressTo:ShippoShippingDetails, session
     weight: "20",
     massUnit: "lb"
   };
-  const parcel2 = packParcelItems();
+  const parcel2 = packItemsIntoOneParcel();
   const shipment = await shippo.shipments.create({
     addressFrom: addressFrom,
     addressTo: addressTo,
@@ -167,7 +189,7 @@ async function calculateShippingOptions(addressTo:ShippoShippingDetails, session
   // console.log( process.env.SENDER_ADDRESS);
 
   const rates = getFilteredRates(shipment.rates);
-  console.log(rates);
+  // console.log(rates);
   const shipping_options:ShippingRateWrapper[] = rates.map(rate => ({
       shipping_rate_data: {
         display_name: `${rate.provider} - ${rate.servicelevel.name}`,
@@ -213,7 +235,9 @@ router.post('/', async (req:Request, res:Response) => {
       ...(phone ? { phone: phone } : {})
     };
     // 1. Retrieve the Checkout Session
-    const session = await stripe.checkout.sessions.retrieve(checkout_session_id);
+    const session = await stripe.checkout.sessions.retrieve(checkout_session_id, {expand: ['line_items', 'line_items.data.price.product']});
+    // console.log("Shipping session retrieved: ", session.line_items?.data);
+    if (!session) return res.json({type:'error', message: "Checkout session not found."});
 
     // 2. Validate the shipping details
     const validateAddress = await validateShippingDetails(addressTo)!;
