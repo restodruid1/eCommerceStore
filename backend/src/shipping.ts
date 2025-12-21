@@ -141,17 +141,66 @@ async function validateShippingDetails(shippingDetails:ShippoShippingDetails): P
   return { success: true };
 }
 
-function packItemsIntoOneParcel() {
+// TODO: Fix the parcel packaging algorithm
+function packItemsIntoOneParcel(products: SessionLineItems[]): ParcelCreateRequest | null {
+  if (!products || products.length === 0) return null;
+
+  function combineByDimension(a:{length:number, height:number, width:number}, b:{length:number, height:number, width:number}, dim:string) {
+    const dims: Array<keyof typeof a> = ["length", "width", "height"];
   
+    const result: { length: number; width: number; height: number } = { length: 0, width: 0, height: 0 };
+    for (const d of dims) {
+      if (d === dim) {
+        result[d] = a[d] + b[d];       // stacked
+      } else {
+        result[d] = Math.max(a[d], b[d]); // aligned
+      }
+    }
+  
+    return result;
+  }
+  function combineSmallest(a: SessionLineItems, b: SessionLineItems): SessionLineItems {
+      const dimensions = ["length", "width", "height"];
+    
+      const combinations = dimensions.map(dim =>
+        combineByDimension(a, b, dim)
+      );
+    
+      // choose the one with the smallest total size
+      const bestCombination = combinations.reduce((best, current) => {
+        const bestTotal =
+          best.length + best.width + best.height;
+        const currentTotal =
+          current.length + current.width + current.height;
+    
+        return currentTotal < bestTotal ? current : best;
+      });
+  
+      return {
+        ...bestCombination,
+        weight: a.weight + b.weight // Combine weights
+      };
+    }
+  const finalBox = products.reduce(combineSmallest);
+  console.log("FINAL BOX", finalBox);
+  // TODO: Need to known box size tiers in case the next package size is bigger than the parcel size
+  return {
+    length: finalBox.length.toString(),
+    width: finalBox.width.toString(),
+    height: finalBox.height.toString(),
+    distanceUnit: "in",
+    weight: finalBox.weight.toString(),
+    massUnit: "oz"
+  };
 }
 
 
 type SessionLineItems = {
-  weight:string | undefined;
-  length:string | undefined;
-  height:string | undefined;
-  width:string | undefined;
-  quantity:number | null;
+  weight:number;
+  length:number;
+  height:number;
+  width:number;
+  // quantity:number | null;
 }
 // Return an array of the updated shipping options or the original options if no update is needed.
 async function calculateShippingOptions(addressTo:ShippoShippingDetails, session:Stripe.Checkout.Session):Promise<ShippingRateWrapper[] | false> {
@@ -161,11 +210,10 @@ async function calculateShippingOptions(addressTo:ShippoShippingDetails, session
     const product = item.price?.product as Stripe.Product;
     console.log("Shipping Session Details: ", product.metadata);
     return {
-      weight: product.metadata.weight,
-      length: product.metadata.length,
-      height: product.metadata.height,
-      width: product.metadata.width,
-      quantity: item.quantity,
+      weight: Number(product.metadata.weight) * (item.quantity ?? 0),   // TODO: Stack on smallest dimension
+      length: Number(product.metadata.length),
+      height: Number(product.metadata.height),
+      width: Number(product.metadata.width)   * (item.quantity ?? 0),
     };
   });
   console.log("Products for shipping: ", products);
@@ -178,11 +226,13 @@ async function calculateShippingOptions(addressTo:ShippoShippingDetails, session
     weight: "20",
     massUnit: "lb"
   };
-  const parcel2 = packItemsIntoOneParcel();
+  const parcel2 = packItemsIntoOneParcel(products);
+  if (!parcel2) return false;
+
   const shipment = await shippo.shipments.create({
     addressFrom: addressFrom,
     addressTo: addressTo,
-    parcels: [parcel],
+    parcels: [parcel2],
     async: false
   });
   // console.log( typeof(process.env.SENDER_PHONE));
@@ -263,3 +313,114 @@ router.post('/', async (req:Request, res:Response) => {
 });
 
 export default router;
+
+// const dims = ["length", "width", "height"];
+// const products = [
+//   // {length: 11,height: 8,width: 2},
+//   {length: 11,height: 9,width: 3},
+//   // {length: 13,height: 2,width: 4},
+// ]
+
+// const totalPackageDimensions = {
+//   // totalWeight: products[0].totalWeight,
+//   height: 8 || products[0].height,
+//   length: 4 || products[0].length,
+//   width: 6 || products[0].width,
+// }
+
+
+
+// products.forEach((product) => {
+//   const smallestDimensionKeyValue = Object.entries(product).reduce(
+//   (min, current) => current[1] < min[1] ? current : min
+// );
+//   // console.log(smallestDimensionKeyValue);
+//   // delete product[smallestDimensionKeyValue[0]];
+
+//   const smallestDimensionKeyValueFromTotal = Object.entries(totalPackageDimensions).reduce(
+//   (min, current) => current[1] < min[1] ? current : min
+// );
+//   // console.log(smallestDimensionKeyValueFromTotal);
+//   const keyFromTotalProductMin = smallestDimensionKeyValueFromTotal[0];
+//   const keyFromCurProductMin = smallestDimensionKeyValue[0];
+//   const valueFromCurProductMin = smallestDimensionKeyValue[1];
+//   const valueFromTotalProductMin = smallestDimensionKeyValueFromTotal[1];
+
+//   totalPackageDimensions[keyFromTotalProductMin] = valueFromTotalProductMin + valueFromCurProductMin;
+
+  
+//   product[keyFromCurProductMin] = product[keyFromTotalProductMin];
+//   // console.log("AFTER", product);
+
+//   delete product[keyFromTotalProductMin];
+
+//   console.log("AFTER", product);
+//   console.log("AFTER", totalPackageDimensions);
+
+
+
+//   // FIND LAST TWO <DIMENSIONS>
+//   const largestDimensionProductRemaining = Object.entries(product).reduce(
+//   (max, current) => current[1] > max[1] ? current : max
+//   );
+
+//   // const tmpObj = totalPackageDimensions;
+//   // delete tmpObj[keyFromTotalProductMin];
+//   const deletedKey = keyFromTotalProductMin
+//   // const filteredArray = Object.entries(totalPackageDimensions).filter((val)=> val !== )
+//   const largestDimensionTotalRemaining = Object.entries(totalPackageDimensions).reduce(
+//   (max, current) => current[1] > max[1] ? current : max
+//   );
+
+//   const largestProductRemainingKey = largestDimensionProductRemaining[0];
+//   const largestProductRemainingValue = largestDimensionProductRemaining[1];
+//   const largestTotalRemainingKey = largestDimensionTotalRemaining[0];
+//   const largestTotalRemainingValue = largestDimensionTotalRemaining[1];
+
+
+//   // Find the smallest difference (optimal packaging)
+//   let smallestDifference = 100;
+//   let tmpObjKeyFound = ""
+//   let valueOfDimension = 0;
+
+//   if (largestProductRemainingValue > largestTotalRemainingValue) {  // product will determine the size
+//     for (const key of Object.keys(tmpObj)) {
+//       if (largestProductRemainingValue - tmpObj[key] < smallestDifference) {
+//         tmpObjKeyFound = key;
+//         valueOfDimension = largestProductRemainingValue;
+//         smallestDifference = largestProductRemainingValue - tmpObj[key];
+//       }
+
+
+//     }
+//     // console.log(tmpObjKeyFound)
+//     // console.log(totalPackageDimensions);
+//     totalPackageDimensions[tmpObjKeyFound] = valueOfDimension;
+//     // console.log(totalPackageDimensions);
+//   } else {  // Total will determine the size
+//     for (const key of Object.keys(totalPackageDimensions)) {
+//       if (key in Object.keys(product)) {
+//         const productKey = key;
+//         console.log("here")
+//         if (totalPackageDimensions[key] - smallestDimensionProductRemaining[1]  < smallestDifference) {
+//           newObj = {"hello": totalPackageDimensions[key]}
+//         }
+//       }
+//       else {
+//         console.log("hi")
+//       }
+//     }
+//   }
+//   // console.log(product);
+//   // console.log(tmpObj);
+//   // console.log(newObj);
+//   // const newObjKey = newObj;
+//   // const newObjValue = Object.values(newObj);
+//   // tmpObj[newObjKey] = newObjValue;
+//   // if (smallestDimensionProductRemaining[1] > totalPackageDimensions[maxObjKey]) {
+//   //   const dif1 = smallestDimensionProductRemaining[1] -
+//   //   const dif2 =
+//   // }
+
+//   const maxRemainingDimensions = smallestDimensionProductRemaining[1] > largestDimensionTotalRemaining[1] ? smallestDimensionProductRemaining : largestDimensionTotalRemaining;
+// })
