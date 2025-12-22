@@ -218,21 +218,21 @@ async function calculateShippingOptions(addressTo:ShippoShippingDetails, session
   });
   console.log("Products for shipping: ", products);
 
-  const parcel:ParcelCreateRequest = {
-    length: "10",
-    width: "5",
-    height: "2",
-    distanceUnit: "in",
-    weight: "20",
-    massUnit: "lb"
-  };
-  const parcel2 = packItemsIntoOneParcel(products);
-  if (!parcel2) return false;
+  // const parcel:ParcelCreateRequest = {
+  //   length: "10",
+  //   width: "5",
+  //   height: "2",
+  //   distanceUnit: "in",
+  //   weight: "1",
+  //   massUnit: "oz"
+  // };
+  const parcel = packItemsIntoOneParcel(products);
+  if (!parcel) return false;
 
   const shipment = await shippo.shipments.create({
     addressFrom: addressFrom,
     addressTo: addressTo,
-    parcels: [parcel2],
+    parcels: [parcel],
     async: false
   });
   // console.log( typeof(process.env.SENDER_PHONE));
