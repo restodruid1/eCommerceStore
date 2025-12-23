@@ -184,9 +184,9 @@ const checkout = async(items:DataInterface[], req:Request, res:Response, uuid:st
               update_shipping_details: 'server_only',
             },
             expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // 30 minutes
-            invoice_creation:{
-              enabled: true
-            },
+            // invoice_creation:{
+            //   enabled: true
+            // },
             // automatic_tax: {
             //   enabled: true
             // },
