@@ -123,6 +123,19 @@ export interface SimplifiedShippoRate {
   estimatedDays: number;
 }
 
+type SessionLineItems = {
+  weight?:number;
+  length:number;
+  height:number;
+  width:number;
+  // quantity:number | null;
+}
+
+type ValidationResponse = {
+  success: boolean;
+  error?: string;
+}
+
 const addressFrom: AddressCreateRequest = {
     name: process.env.SENDER_NAME!,
     company: process.env.SENDER_COMPANY!,
@@ -151,10 +164,7 @@ function getFilteredRates(rates:Rate[]): SimplifiedShippoRate[] {
   .slice(0, 5); 
 }
 
-type ValidationResponse = {
-  success: boolean;
-  error?: string;
-}
+
 async function validateShippingDetails(shippingDetails:ShippoShippingDetails): Promise<ValidationResponse> {
   const addressData = await shippo.addresses.create({...shippingDetails, validate:true});   // Shippo validates address & provides message
   const results = addressData.validationResults;
@@ -174,6 +184,34 @@ async function validateShippingDetails(shippingDetails:ShippoShippingDetails): P
   return { success: true };
 }
 
+function createPackage(session:Stripe.Checkout.Session): ParcelCreateRequest | false {
+  if (!session.line_items?.data) return false;
+
+  const normalizedProducts:SessionLineItems[] = session.line_items?.data.map(item => {
+    const product = item.price?.product as Stripe.Product;
+    console.log("Shipping Session Details: ", product.metadata);
+    const length = Number(product.metadata.length);
+    const width = Number(product.metadata.width);
+    const height = Number(product.metadata.height);
+    const { l:newLength, w:newWidth, h:newHeight } = normalizeProductDimensions({length, width, height});
+    
+    return {
+      weight: Number(product.metadata.weight) * (item.quantity ?? 0), 
+      length: newLength ?? 0,
+      width:  newWidth ?? 0,
+      height: (newHeight ?? 0) * (item.quantity ?? 0),
+    };
+  });
+
+  console.log("Products for shipping: ", normalizedProducts);
+  if (!normalizedProducts) return false;
+
+  const packageReadyForShip = packItemsIntoOneParcel(normalizedProducts);
+  if (!packageReadyForShip) return false;
+  console.log("PARCEL ", packageReadyForShip);
+
+  return packageReadyForShip;
+}
 
 function packItemsIntoOneParcel(products: SessionLineItems[]): ParcelCreateRequest | null {
   if (!products || products.length === 0) return null;
@@ -260,45 +298,12 @@ function selectFinalPackageSize(packageDimensions:SessionLineItems) {
   return finalPackageDimensions.package;
 }
 
-type SessionLineItems = {
-  weight?:number;
-  length:number;
-  height:number;
-  width:number;
-  // quantity:number | null;
-}
-
 // Return an array of the updated shipping options or the original options if no update is needed.
-async function calculateShippingOptions(addressTo:ShippoShippingDetails, session:Stripe.Checkout.Session):Promise<ShippingRateWrapper[] | false> {
-  if (!session.line_items?.data) return false;
-
-  const normalizedProducts:SessionLineItems[] = session.line_items?.data.map(item => {
-    const product = item.price?.product as Stripe.Product;
-    console.log("Shipping Session Details: ", product.metadata);
-    const length = Number(product.metadata.length);
-    const width = Number(product.metadata.width);
-    const height = Number(product.metadata.height);
-    const { l:newLength, w:newWidth, h:newHeight } = normalizeProductDimensions({length, width, height});
-    
-    return {
-      weight: Number(product.metadata.weight) * (item.quantity ?? 0), 
-      length: newLength ?? 0,
-      width:  newWidth ?? 0,
-      height: (newHeight ?? 0) * (item.quantity ?? 0),
-    };
-  });
-
-  console.log("Products for shipping: ", normalizedProducts);
-  if (!normalizedProducts) return false;
-
-  const packageReadyForShip = packItemsIntoOneParcel(normalizedProducts);
-  if (!packageReadyForShip) return false;
-  console.log("PARCEL ", packageReadyForShip);
-  
+async function calculateShippingOptions(addressTo:ShippoShippingDetails, packageToBeShipped:ParcelCreateRequest):Promise<ShippingRateWrapper[] | false> {
   const shipment = await shippo.shipments.create({
     addressFrom: addressFrom,
     addressTo: addressTo,
-    parcels: [packageReadyForShip],
+    parcels: [packageToBeShipped],
     async: false
   });
   // console.log( typeof(process.env.SENDER_PHONE));
@@ -362,8 +367,11 @@ router.post('/', async (req:Request, res:Response) => {
           return res.json({type:'error', message: validateAddress.error || "NOT SURE"});
       }
 
+      const packageToBeShipped = createPackage(session);
+      if (!packageToBeShipped) return res.json({type:'error', message: "Could not find packaging options. Please try again."});
+
       // 3. Calculate the shipping options
-      const shippingOptions: ShippingRateWrapper[] | false = await calculateShippingOptions(addressTo, session);
+      const shippingOptions: ShippingRateWrapper[] | false = await calculateShippingOptions(addressTo, packageToBeShipped);
 
       // 4. Update the Checkout Session with the customer's shipping details and shipping options
       if (shippingOptions) {
@@ -371,6 +379,12 @@ router.post('/', async (req:Request, res:Response) => {
           await stripe.checkout.sessions.update(checkout_session_id, {
           collected_information: {shipping_details},
           shipping_options: shippingOptions,
+          metadata: {
+            "packageLength":  packageToBeShipped.length,
+            "packageWidth":   packageToBeShipped.width,
+            "packageHeight":  packageToBeShipped.height,
+            "packageWeight":  packageToBeShipped.weight
+          }
           });
 
           return res.json({type:'object', value: {succeeded: true}});

@@ -214,6 +214,7 @@ const checkout = async(items:DataInterface[], req:Request, res:Response, uuid:st
                               length: item.length.toString(),
                               height: item.height.toString(),
                               width: item.width.toString(),
+                              productId: item.id
                             },
                           },
                           unit_amount: Math.round(item.price * 100),

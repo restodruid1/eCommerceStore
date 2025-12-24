@@ -37,6 +37,7 @@ app.use('/calculate-shipping-options', handleshipping);
 app.use('/session_status', checkoutreturn);
 app.use('/api', admin);
 app.use('/api/admin/AwsS3', awsS3);
+app.use('/session_status/webhooks', checkoutreturn);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
