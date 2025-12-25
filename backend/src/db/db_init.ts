@@ -39,7 +39,7 @@ async function initDB() {
         DROP TABLE IF EXISTS products CASCADE;
         DROP TABLE IF EXISTS product_images CASCADE;
         DROP TABLE IF EXISTS orders CASCADE;
-        DROP TABLE IF EXISTS order_items CASCADE;
+        DROP TABLE IF EXISTS ordered_items CASCADE;
         DROP TABLE IF EXISTS cart_reservations CASCADE;
         DROP TABLE IF EXISTS youtube_videos CASCADE;
         
@@ -59,27 +59,33 @@ async function initDB() {
 
         CREATE TABLE product_images (
             id SERIAL PRIMARY KEY,
-            product_id INT,
-            url VARCHAR(1000),
-            aws_imagekey VARCHAR(100),
+            product_id INT NOT NULL,
+            url VARCHAR(1000) NOT NULL,
+            aws_imagekey VARCHAR(100) NOT NULL,
             main_image BOOLEAN DEFAULT FALSE,
             FOREIGN KEY (product_id) REFERENCES products(id)
         );
         
         CREATE TABLE orders (
             id SERIAL PRIMARY KEY,
-            total_price DECIMAL(12,2) NOT NULL,
-            order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            shipping_address VARCHAR(100) NOT NULL,
-            status VARCHAR(30) DEFAULT 'PENDING',
-            total_weight Decimal(5,2) NOT NULL
+            status VARCHAR(30) NOT NULL,
+            checkout_session_id TEXT NOT NULL,
+            customer_email VARCHAR(80),
+            package_length DECIMAL(5,2) NOT NULL,
+            package_width DECIMAL(5,2) NOT NULL,
+            package_height DECIMAL(5,2) NOT NULL,
+            package_weight DECIMAL(5,2) NOT NULL,
+            shipping_cost DECIMAL(5,2) NOT NULL,
+            total_cost DECIMAL(7,2) NOT NULL,
+            order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
-        CREATE TABLE order_items (
+        CREATE TABLE ordered_items (
             id SERIAL PRIMARY KEY,
-            product_id INT,
-            order_id INT,
-            quantity SMALLINT DEFAULT 0,
+            order_id INT NOT NULL,
+            product_id INT NOT NULL,
+            product_name VARCHAR(50) NOT NULL,
+            quantity SMALLINT NOT NULL DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (product_id) REFERENCES products(id),
             FOREIGN KEY (order_id) REFERENCES orders(id)

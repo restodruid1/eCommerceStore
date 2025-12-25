@@ -136,6 +136,12 @@ type ValidationResponse = {
   error?: string;
 }
 
+type StripeLineItem = {
+  productId: number;
+  productName: string;
+  quantity: number;
+}
+
 const addressFrom: AddressCreateRequest = {
     name: process.env.SENDER_NAME!,
     company: process.env.SENDER_COMPANY!,
@@ -298,6 +304,18 @@ function selectFinalPackageSize(packageDimensions:SessionLineItems) {
   return finalPackageDimensions.package;
 }
 
+function getItemsMetaData(items:Stripe.LineItem[] | undefined):StripeLineItem[] | null{
+  if (!items) return null;
+  return items.map((item) => {
+    console.log("IN LOOP: ", item);
+    return {
+      productId: typeof item.price?.product === 'object' && 'metadata' in item.price.product ? Number(item.price.product.metadata.productId) : 1,
+      productName: typeof item.price?.product === 'object' && 'name' in item.price.product ? item.price.product.name : "Unknown Product",
+      quantity: item.quantity ?? 1
+    } 
+  })
+}
+
 // Return an array of the updated shipping options or the original options if no update is needed.
 async function calculateShippingOptions(addressTo:ShippoShippingDetails, packageToBeShipped:ParcelCreateRequest):Promise<ShippingRateWrapper[] | false> {
   const shipment = await shippo.shipments.create({
@@ -358,7 +376,9 @@ router.post('/', async (req:Request, res:Response) => {
       };
       // 1. Retrieve the Checkout Session
       const session = await stripe.checkout.sessions.retrieve(checkout_session_id, {expand: ['line_items', 'line_items.data.price.product']});
-      // console.log("Shipping session retrieved: ", session.line_items?.data);
+      console.log("Shipping session retrieved: ", session.line_items?.data[0]?.price?.product);
+      // console.log("Shipping session retrieved : ", session.line_items?.data[0]?.price);
+      console.log("Shipping session retrieved ITEM: ", session.line_items?.data[0]);
       if (!session) return res.json({type:'error', message: "Checkout session not found."});
 
       // 2. Validate the shipping details
@@ -375,17 +395,20 @@ router.post('/', async (req:Request, res:Response) => {
 
       // 4. Update the Checkout Session with the customer's shipping details and shipping options
       if (shippingOptions) {
-          console.log("HERE " + shippingOptions);
-          await stripe.checkout.sessions.update(checkout_session_id, {
-          collected_information: {shipping_details},
-          shipping_options: shippingOptions,
-          metadata: {
-            "packageLength":  packageToBeShipped.length,
-            "packageWidth":   packageToBeShipped.width,
-            "packageHeight":  packageToBeShipped.height,
-            "packageWeight":  packageToBeShipped.weight
-          }
-          });
+        const itemsInPackageMetaData = getItemsMetaData(session.line_items?.data);
+        // console.log("HERE " + shippingOptions);
+        // console.log("ITEMS IN PACKAGE ", itemsInPackageMetaData);
+        await stripe.checkout.sessions.update(checkout_session_id, {
+        collected_information: {shipping_details},
+        shipping_options: shippingOptions,
+        metadata: {
+          // "itemsInPackage": ["hello"],
+          "packageLength":  packageToBeShipped.length,
+          "packageWidth":   packageToBeShipped.width,
+          "packageHeight":  packageToBeShipped.height,
+          "packageWeight":  packageToBeShipped.weight
+        }
+        });
 
           return res.json({type:'object', value: {succeeded: true}});
       } else {
