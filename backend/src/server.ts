@@ -9,8 +9,6 @@ import webhook from "./webhook.js";
 import awsS3 from "./awsS3.js";
 import admin from "./admin.js";
 import Stripe from "stripe";
-import multer from "multer";
-import * as db from "./db/index.js";
 import { Request, Response } from 'express';
 
 export interface Item {

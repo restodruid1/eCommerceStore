@@ -21,11 +21,6 @@ router.post('/admin/login', (req: Request ,res:Response) => {
 
 router.post('/admin/page', requireAdmin, (req,res)=>{
     res.json({message: "valid"});
-})
-// router.post('/admin/AwsS3', requireAdmin, (req,res)=>{
-//     console.log(req.body);
-//     console.log("S$#");
-//     res.json({message:"hello"});
-// })
+});
 
 export default router;

@@ -8,13 +8,12 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const jwtFromHeader = req.headers.authorization?.split(" ")[1];   // e.g. "Bearer jwtToken"
   const token:string | undefined | null = jwtFromHeader ?? req.body.jwt;
   
-  // const jwtToken = req.headers.authorization!.split(" ")[1];
-  console.log(token);
+
   if (!token) return res.status(401).json({ message: "Unauthorized" });
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
-    console.log(decoded);
+    
     if (decoded.role !== "admin") {
       return res.status(401).json({ message: "Unauthorized" });
     }

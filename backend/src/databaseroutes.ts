@@ -83,8 +83,7 @@ router.get('/YouTubeVideoId', async (req, res) =>{
                 SELECT * FROM youtube_videos;
                 `
                   ,[]);
-
-        // console.log(result);          
+        
         if (result && result.rowCount && result.rowCount > 0 ) {
             return res.status(200).json({result: result.rows[0]})
         } else {
@@ -99,7 +98,7 @@ router.get('/YouTubeVideoId', async (req, res) =>{
 router.get("/:id", async (req, res)=>{
   try {
       const { id } = req.params;
-      console.log(id);
+     
       const result = await db.query(
         `SELECT 
             p.*, 

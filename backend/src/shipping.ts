@@ -175,7 +175,7 @@ async function validateShippingDetails(shippingDetails:ShippoShippingDetails): P
   const addressData = await shippo.addresses.create({...shippingDetails, validate:true});   // Shippo validates address & provides message
   const results = addressData.validationResults;
   const firstMessage = results?.messages?.[0];
-  console.log(results?.messages);
+ 
   // Address is invalid
   if (!results?.isValid) {
     return { success: false, error: firstMessage?.text! };
@@ -195,7 +195,6 @@ function createPackage(session:Stripe.Checkout.Session): ParcelCreateRequest | f
 
   const normalizedProducts:SessionLineItems[] = session.line_items?.data.map(item => {
     const product = item.price?.product as Stripe.Product;
-    console.log("Shipping Session Details: ", product.metadata);
     const length = Number(product.metadata.length);
     const width = Number(product.metadata.width);
     const height = Number(product.metadata.height);
@@ -209,12 +208,10 @@ function createPackage(session:Stripe.Checkout.Session): ParcelCreateRequest | f
     };
   });
 
-  console.log("Products for shipping: ", normalizedProducts);
   if (!normalizedProducts) return false;
 
   const packageReadyForShip = packItemsIntoOneParcel(normalizedProducts);
   if (!packageReadyForShip) return false;
-  console.log("PARCEL ", packageReadyForShip);
 
   return packageReadyForShip;
 }
@@ -222,14 +219,13 @@ function createPackage(session:Stripe.Checkout.Session): ParcelCreateRequest | f
 function packItemsIntoOneParcel(products: SessionLineItems[]): ParcelCreateRequest | null {
   if (!products || products.length === 0) return null;
 
-  
   const optimzedPackage = optimalPackingAlgo(products);
   if (!optimzedPackage) return null;
   console.log("OPTIMIZED BOX", optimzedPackage);
 
   const finalBox = selectFinalPackageSize({length: optimzedPackage.packageLength, width: optimzedPackage.packageWidth, height: optimzedPackage.packageHeight, weight: optimzedPackage.packageWeight});
   console.log("FINAL BOX", finalBox);
-  // TODO: Need to known box size tiers in case the next package size is bigger than the parcel size
+  
   return {
     length: finalBox.l.toString(),
     width: finalBox.w.toString(),
@@ -304,17 +300,6 @@ function selectFinalPackageSize(packageDimensions:SessionLineItems) {
   return finalPackageDimensions.package;
 }
 
-function getItemsMetaData(items:Stripe.LineItem[] | undefined):StripeLineItem[] | null{
-  if (!items) return null;
-  return items.map((item) => {
-    console.log("IN LOOP: ", item);
-    return {
-      productId: typeof item.price?.product === 'object' && 'metadata' in item.price.product ? Number(item.price.product.metadata.productId) : 1,
-      productName: typeof item.price?.product === 'object' && 'name' in item.price.product ? item.price.product.name : "Unknown Product",
-      quantity: item.quantity ?? 1
-    } 
-  })
-}
 
 // Return an array of the updated shipping options or the original options if no update is needed.
 async function calculateShippingOptions(addressTo:ShippoShippingDetails, packageToBeShipped:ParcelCreateRequest):Promise<ShippingRateWrapper[] | false> {
@@ -324,11 +309,9 @@ async function calculateShippingOptions(addressTo:ShippoShippingDetails, package
     parcels: [packageToBeShipped],
     async: false
   });
-  // console.log( typeof(process.env.SENDER_PHONE));
-  // console.log( process.env.SENDER_ADDRESS);
 
   const rates = getFilteredRates(shipment.rates);
-  // console.log(rates);
+  
   const shipping_options:ShippingRateWrapper[] = rates.map(rate => ({
       shipping_rate_data: {
         display_name: `${rate.provider} - ${rate.servicelevel.name}`,
@@ -374,11 +357,9 @@ router.post('/', async (req:Request, res:Response) => {
         country: address.country,
         ...(phone ? { phone: phone } : {})
       };
+
       // 1. Retrieve the Checkout Session
       const session = await stripe.checkout.sessions.retrieve(checkout_session_id, {expand: ['line_items', 'line_items.data.price.product']});
-      console.log("Shipping session retrieved: ", session.line_items?.data[0]?.price?.product);
-      // console.log("Shipping session retrieved : ", session.line_items?.data[0]?.price);
-      console.log("Shipping session retrieved ITEM: ", session.line_items?.data[0]);
       if (!session) return res.json({type:'error', message: "Checkout session not found."});
 
       // 2. Validate the shipping details
@@ -395,14 +376,10 @@ router.post('/', async (req:Request, res:Response) => {
 
       // 4. Update the Checkout Session with the customer's shipping details and shipping options
       if (shippingOptions) {
-        const itemsInPackageMetaData = getItemsMetaData(session.line_items?.data);
-        // console.log("HERE " + shippingOptions);
-        // console.log("ITEMS IN PACKAGE ", itemsInPackageMetaData);
         await stripe.checkout.sessions.update(checkout_session_id, {
         collected_information: {shipping_details},
         shipping_options: shippingOptions,
         metadata: {
-          // "itemsInPackage": ["hello"],
           "packageLength":  packageToBeShipped.length,
           "packageWidth":   packageToBeShipped.width,
           "packageHeight":  packageToBeShipped.height,

@@ -17,7 +17,6 @@ type DataInterface = {
   height: number,
   width: number,
   price: number,
-  // description: string,
   url: string,
 };
 
@@ -40,19 +39,17 @@ async function validateUserCart(cartItems:Item[]){
     var newItemsArray:DataInterface[] = [];
     for (const item of items) {
       const product = result.rows.find(p => p.id === item.id);
-      // console.log("ITEM QUANTITY: " + item.quantity);
       if (!product) {
         return { success:false, error: "ITEM NOT FOUND" };
       }
     
       if (item.quantity > product.quantity || item.quantity === 0) {
-        // console.log("QUANTITY:", item.quantity);
         return { 
           success:false, 
           error: product.quantity === 0 ? `${item.name} is out of stock` : `Only ${product.quantity} ${item.name} available`, 
         };
       }
-      // console.log("ITEM QUANTITY2: " + item.quantity);
+      
       // Ensure proper data, not client data
       const object = new Object({
         id: product.id,
@@ -77,8 +74,6 @@ async function validateUserCart(cartItems:Item[]){
 }
 export async function terminateReserveUpdateStock(user_id:string){
   try{
-    // console.log("begin");
-    console.log("terminating old cart");
     await db.query("BEGIN");
     const resp = await db.query(`
       SELECT * FROM cart_reservations
@@ -133,7 +128,6 @@ async function reserveStock(cartItems:DataInterface[], user_id:string|null) {
       );
       productRows.push(productRes.rows[0]);
     }
-    console.log(productRows);
     
     items.forEach((item, index) => {
       const stock = productRows[index]?.quantity;
@@ -229,10 +223,8 @@ const checkout = async(items:DataInterface[], req:Request, res:Response, uuid:st
           // success_url: `http://localhost:5173/Cart?success=true`,
           // cancel_url: `http://localhost:5173/Cart?canceled=true`,
         });
-        console.log("session: " + session.id);
-        // return session;
+        
         return { clientSecret: session.client_secret, sessionId: session.id };
-        // res.json({url:session.url!});
       } catch (e) {
         console.error("STRIPE ERROR:", e);
         return {error:"STRIP CALL ERROR"};
@@ -256,12 +248,13 @@ router.post('/', async (req, res) => {
     const stockResp = await reserveStock(cartState.newItemsArray!, userId);   // Validate stock & reserve cart on db for 30 minutes
     console.log(stockResp);
     newUuid = stockResp.uuid ?? "";
-    console.log("UUID: ", newUuid);
+    
     if (!stockResp.success) return res.status(500).send({error: stockResp.error});
 
     const checkoutResult = await checkout(cartState.newItemsArray!, req, res, stockResp.uuid!);   // Stripe checkout
     if (checkoutResult.error) return res.status(500).send({error: checkoutResult.error, uuid:stockResp.uuid!});
-    // return res.json(checkoutResult, stockResp.uuid!);
+    
+
     return res.send({checkoutResult: checkoutResult, uuid: stockResp.uuid!})
   } catch(e) {
     return res.status(500).send({error:e, uuid:newUuid});

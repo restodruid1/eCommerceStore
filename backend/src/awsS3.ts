@@ -1,24 +1,15 @@
 import { Router } from 'express';
-import { Request, Response } from "express";
-import { stripe } from './server.js';  
+import { Request, Response } from "express";  
 import * as db from "./db/index.js";
 import { requireAdmin } from './Middleware.js';
-
 import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
-import { readFileSync, readdirSync } from "fs";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { upload } from './Middleware.js';
 
 
 const router = Router();
 
-router.post('/', upload.array("images"), requireAdmin, async (req,res)=>{
-    console.log("AWS");
-    console.log(req.body);
-    console.log(req.files);
-    // console.log(req.file!.buffer);
-    
+router.post('/', upload.array("images"), requireAdmin, async (req,res)=>{  
     const files = req.files as Express.Multer.File[];
 
     try {
@@ -81,7 +72,6 @@ router.post('/', upload.array("images"), requireAdmin, async (req,res)=>{
                     return `https://${process.env.AWS_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${file.originalname}`;
                 }));
             
-            // console.log("UPLOAD SUCCESSFUL?: ", results);
             if (!results) return {success: false, error: "Failed to upload to AWS"};
 
 
@@ -99,7 +89,7 @@ router.post('/', upload.array("images"), requireAdmin, async (req,res)=>{
                     [category, productName, quantity, weight, height, length, width, price, description]
                 );
                 const newProductId = result.rows[0].id;     // ID of new DB entry
-                console.log("PRODUCT ID: " + newProductId);
+               
                 for (let index = 0; index < files.length; index++) {
                     const imageUrl = results[index];
                     const mainImage = index === 0;      // Main display image is first image only
@@ -133,13 +123,6 @@ router.post('/', upload.array("images"), requireAdmin, async (req,res)=>{
 router.post('/productData', requireAdmin, async (req,res)=>{
     try{
         const result = await db.query(
-                //   `SELECT 
-                //       p.*, 
-                //       pi.url
-                //   FROM products p
-                //   JOIN product_images pi 
-                //       ON pi.product_id = p.id
-                //   ;`
                 `
                 SELECT
                     p.*,
@@ -158,7 +141,7 @@ router.post('/productData', requireAdmin, async (req,res)=>{
                     ORDER BY p.id;
                 `
                   ,[]);
-        // console.log(result);
+        
         return res.status(200).json({result: result.rows})
     } catch (err) {
         console.error(err);
@@ -168,7 +151,7 @@ router.post('/productData', requireAdmin, async (req,res)=>{
 
 router.post('/deleteProductData', requireAdmin, async (req: Request<{}, {}, {itemId:number, itemCategory:number}>,res:Response)=>{
     const { itemId, itemCategory } = req.body;
-    // console.log(itemId ,"", itemCategory);
+    
     try{
         var results;
         try{
@@ -199,11 +182,10 @@ router.post('/deleteProductData', requireAdmin, async (req: Request<{}, {}, {ite
                     } 
                 });
 
-            // console.log(results.rows) 
+            
             const awsImageKeys = results.rows as {aws_imagekey:string}[];
             await Promise.all(
                 awsImageKeys.map(async (imageKey) => {
-                    // console.log(imageKey);
                     await s3Client.send(
                         new DeleteObjectCommand({
                             Bucket: process.env.AWS_BUCKET,
@@ -234,7 +216,6 @@ type Product = {
   };
 router.post('/updateProductData', requireAdmin, async (req: Request<{}, {}, {jwt:string, product:Product}>,res:Response)=>{
     const productData = req.body.product;
-    // console.log(req.body);
 
     try{
         await db.query("BEGIN");
