@@ -24,26 +24,27 @@ export function CartDropDown (){
             onMouseLeave={() => setIsOpen(false)}
         >    
         
-        <div className={styles.cartIcon}>
-            <Link to={"/Cart"}><CartIcon aria-label="Toggle cart dropdown" size={40}/></Link>
-        </div>
-
-        <p className={styles.cartQuantityIcon}>{totalItemsInCart}</p>
-        <p className={styles.cartPriceIcon}>${totalItemsInCart < 1 ? "0.00" : totalPriceOfCart.toFixed(2)}</p>
-        
-        {isOpen && (
-            <div className={styles.cartDropdown}>
-                <h4>Your Cart</h4>
-                <div style={{display:"flex", flexDirection:"column"}}>
-                    {cartItems.map(item => (
-                            <div style={{display:"flex", alignContent:"center", justifyContent:"space-evenly"}} key={item.id}>
-                                <strong>{item.name}</strong> — ${item.price} × {item.quantity}
-                            </div>
-                        ))}
-                    </div>
-                    <Link to={"/Cart"}>View Cart</Link>
+            <div className={styles.cartIcon}>
+                <Link to={"/Cart"}><CartIcon aria-label="Toggle cart dropdown" size={40}/></Link>
             </div>
-            )}
+
+            <p className={styles.cartQuantityIcon}>{totalItemsInCart}</p>
+            <p className={styles.cartPriceIcon}>${totalItemsInCart < 1 ? "0.00" : totalPriceOfCart.toFixed(2)}</p>
+            
+            {isOpen && (
+                <div className={styles.cartDropdown}>
+                    <h4>Your Cart</h4>
+                    
+                    {cartItems.map(item => (
+                            <p className={`${styles.dropDownContainer}`} key={item.id}>
+                                <span className={`${styles.dropDownItem}`}><strong>{item.name}</strong></span>
+                                <span className={`${styles.dropDownPrice}`}>${item.price} × {item.quantity}</span>
+                            </p>
+                        ))}
+                        
+                    <p className={`${styles.toCart}`}><Link to={"/Cart"}>View Cart</Link></p>
+                </div>
+                )}
         </div>
     );
 };

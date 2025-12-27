@@ -3,6 +3,7 @@
     position: sticky;
     z-index: 1000;
     top: 0;
+    height: 100px;
     margin-bottom: 10px;
     flex-direction: row;
     align-items: center;
@@ -10,22 +11,26 @@
     background-color: #fff;
   }
 
-/* .navBar.open {
-  margin-left: 250px;
-} */
 
 @media (min-width: 769px) {
   .navBar.open {
-    margin-left: 250px;
+    margin-left: 245px;
+    justify-content: right;
+  }
+  
+  .center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    text-align: center;
+    font-size: clamp(1rem, 5vh, 4rem); 
   }
 }
 @media (max-width: 768px) {
   .navBar h1:nth-of-type(1) {
-    font-size: large;
-    text-align: left;
+    font-size:2rem;
     margin: 10px;
+    text-align: center;
   }
-  /* .navBar {
-    margin-left: 0;
-  } */
 }
