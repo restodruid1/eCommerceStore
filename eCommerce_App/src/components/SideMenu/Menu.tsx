@@ -30,38 +30,45 @@ export function Menu({toggleMenu, isMenuClicked, isDesktopOpen}: MenuProps){
 
     return (
         <aside className={`${styles.sideMenu} ${isMenuClicked && !isDesktopOpen ? `${styles.mobile}`:''} `}>
-          <div className={styles.menuHead}>
-            <button onClick={toggleMenu}><HamburgerIcon size={40} /></button>
-            <Link to={"/"} className={styles.homeLink}>Anne Elizabeth</Link>
-          </div>
+          <header className={styles.menuHead}>
+            <button onClick={toggleMenu} className={styles.menuButton}>
+              <HamburgerIcon size={33} />
+            </button>
 
-          <div style={{display:"flex"}}>
-            <Link to={"/Cart"} onClick={handleClick}><CartIcon size={40}/></Link>
-            <p>{cart.totalItemsInCart} {cart.totalItemsInCart === 1  ? 'item' : 'items'} : ${cart.totalPriceOfCart.toFixed(2)}</p>
-          </div>
+            <Link to="/" className={styles.homeLink}>
+              <span>Anne Elizabeth</span>
+            </Link>
+          </header>
 
-          <div>
-            {Array(3).fill(0).map((_, i) => <HeartIcon key={i} />)}
-          </div>
+          <div className={`${styles.sidebarContent}`}>
+            <div className={`${styles.sidebarContent}`}style={{display:"flex"}}>
+              <Link to={"/Cart"} onClick={handleClick}><CartIcon size={40}/></Link>
+              <p>{cart.totalItemsInCart} {cart.totalItemsInCart === 1  ? 'item' : 'items'} : ${cart.totalPriceOfCart.toFixed(2)}</p>
+            </div>
 
-          <h2>Products</h2>
-          <h4><Link to={"/CustomNailProducts"} onClick={handleClick}>Custom Nail Products</Link></h4>
-          <h4><Link to={"/ArtPrintsandStickers"} onClick={handleClick}>Art Prints & Stickers</Link></h4>
-          <h4><Link to={"/OtherHandmadeCrafts"} onClick={handleClick}>Other Handmade Crafts</Link></h4>
-          <h4><Link to={"/ChannelMerch"} onClick={handleClick}>YouTube Channel Merch</Link></h4>
-          
-          <div>
-            {Array(3).fill(0).map((_, i) => <HeartIcon key={i} />)}
+            <div>
+              {Array(3).fill(0).map((_, i) => <HeartIcon key={i} />)}
+            </div>
+
+            <h2>Products</h2>
+            <h4><Link to={"/CustomNailProducts"} onClick={handleClick}>Custom Nail Products</Link></h4>
+            <h4><Link to={"/ArtPrintsandStickers"} onClick={handleClick}>Art Prints & Stickers</Link></h4>
+            <h4><Link to={"/OtherHandmadeCrafts"} onClick={handleClick}>Other Handmade Crafts</Link></h4>
+            <h4><Link to={"/ChannelMerch"} onClick={handleClick}>YouTube Channel Merch</Link></h4>
+            
+            <div>
+              {Array(3).fill(0).map((_, i) => <HeartIcon key={i} />)}
+            </div>
+            
+            <h4><Link to={"/Faq"} onClick={handleClick}>FAQ</Link></h4>
+            <h4><Link to={"/ContactMe"} onClick={handleClick}>Contact Me</Link></h4>
+            
+            <div>
+              {Array(3).fill(0).map((_, i) => <HeartIcon key={i} />)}
+            </div>
+            
+            <h4><a href='https://www.youtube.com/@TheAnneElizabeth' target='_blank'>YouTube Channel</a></h4>
           </div>
-          
-          <h4><Link to={"/Faq"} onClick={handleClick}>FAQ</Link></h4>
-          <h4><Link to={"/ContactMe"} onClick={handleClick}>Contact Me</Link></h4>
-          
-          <div>
-            {Array(3).fill(0).map((_, i) => <HeartIcon key={i} />)}
-          </div>
-          
-          <h4><a href='https://www.youtube.com/@TheAnneElizabeth' target='_blank'>YouTube Channel</a></h4>
         </aside>
     )
 }

@@ -163,7 +163,7 @@ export function StripeCheckout() {
     onShippingDetailsChange
   };
 
-  if (!clientSecret) return <p style={{textAlign:"center", background:"blue"}}>Loading...</p>
+  if (!clientSecret) return <p style={{textAlign:"center"}}>Loading...</p>
   return (
     // id="checkout"
     <div style={{width:"100%", minHeight:"500px", overflow:"hidden", textAlign:"center"}}>

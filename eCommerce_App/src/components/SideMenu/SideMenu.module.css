@@ -7,62 +7,52 @@
     width: 250px;
     background-color: white;
     border-right: 2px solid black;
-    /* border-top: 2px solid black; */
     margin-left: 0px;
     top: 0;
     left: 0;
     z-index: 1001;
   }
-  .sideMenu h2:nth-of-type(1) {
-    text-align: center;
-  }
+  
+
   .menuHead {
+    height: 70px;
     display: flex;
-    /* width: 100%; */
     align-items: center;
-    margin-bottom: 50px;
-    /* justify-content: space-between; */
-  }
-  .menuHead :first-child {
-    flex: 0.5;
-  }
-  .menuHead :nth-child(2) {
-    flex: 1 1 auto;
-    text-align: center;
+    width: 100%;
   }
 
-  .sideMenu div {
-    text-align: center;
+  .menuButton {
+    position: absolute;
+    left: 0;
+    background-color: white;
   }
+
+ 
   .sideMenu.mobile {
     width: 100%;
     height: 100%;
-    /* overflow-y: hidden; */
   }
-  /* @media (max-width: 768px) {
-    .sideMenu {
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      width: 100%;
-    }
-  } */
-  /* .menuHead button:nth-of-type(1)  {
-    align-items: left;
-  }
-  .menuHead a:nth-of-type(1)  {
-    flex: 1 1 auto;
-  } */
 
   .homeLink {
     cursor: pointer;
-    color: black;
+    color: rgb(0, 0, 0);
     text-decoration: none;
     font-size: 1.5em;
+    margin: 0 auto;
   }
+  .homeLink :first-child {
+    color: black;
+  }
+  
   .homeLink:hover {
-    background-color: lightgray;
+    background-color: var(--color-secondary);
     color: black;
     border-radius: 10%;
+  }
+
+  .sidebarContent {
+    text-align: center;
+    width: 100%;
+    margin: 0 auto;
+    justify-content: center;
   }
