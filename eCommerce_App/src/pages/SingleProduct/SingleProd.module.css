@@ -54,4 +54,23 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    
 }
+.priceAndCart button {
+    margin-left: 10px;
+}
+
+.body h2 {
+    font-size: 2rem;
+    /* color: blue; */
+}
+
+.body.column {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    /* justify-content: flex-start; */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }

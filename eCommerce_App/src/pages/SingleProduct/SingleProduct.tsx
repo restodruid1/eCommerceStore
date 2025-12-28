@@ -28,7 +28,7 @@ export function SingleProduct() {
     const [selectedQuantity, setSelectedQuantity] = useState<number>(0);
     const [ errorMessage, setErrorMessage ] = useState("");
     const stockMinusCart = (productInformation?.stock ?? 0) - (cart.findItemCartQuantity(productInformation.id ?? -1));
-    console.log("rerender?");
+    // console.log("rerender?");
     useEffect(() => {
         if (!data) return;
 
@@ -80,8 +80,8 @@ export function SingleProduct() {
     }
 
     return (
-        <div className={`body column ${ isMenuClicked && isDesktopOpen ? 'open' : ''}`}>
-            <h2>Product Name =  {productInformation.name}</h2>
+        <div className={`${styles.body} ${styles.column} ${ isMenuClicked && isDesktopOpen ? 'open' : ''}`}>
+            <h2>{productInformation.name}</h2>
             <ProductImagesDisplay productData={data}/>
 
             <h2>${productInformation.price}</h2>
