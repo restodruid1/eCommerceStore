@@ -50,12 +50,12 @@ export function Menu({toggleMenu, isMenuClicked, isDesktopOpen}: MenuProps){
               {Array(3).fill(0).map((_, i) => <HeartIcon key={i} />)}
             </div>
 
-            <h2>Products</h2>
+            {/* <h2>Products</h2>
             <h4><Link to={"/CustomNailProducts"} onClick={handleClick}>Custom Nail Products</Link></h4>
             <h4><Link to={"/ArtPrintsandStickers"} onClick={handleClick}>Art Prints & Stickers</Link></h4>
             <h4><Link to={"/OtherHandmadeCrafts"} onClick={handleClick}>Other Handmade Crafts</Link></h4>
-            <h4><Link to={"/ChannelMerch"} onClick={handleClick}>YouTube Channel Merch</Link></h4>
-            
+            <h4><Link to={"/ChannelMerch"} onClick={handleClick}>YouTube Channel Merch</Link></h4> */}
+            <h4><Link to={"/Products"} onClick={handleClick}>Shop</Link></h4>
             <div>
               {Array(3).fill(0).map((_, i) => <HeartIcon key={i} />)}
             </div>

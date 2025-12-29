@@ -27,7 +27,7 @@ export function ComingSoon() {
 // };
     return (
             <>
-                <h1>Coming Soon</h1>
+                <h2 style={{fontWeight:"normal", fontStyle:"italic"}}>Coming Soon...</h2>
                 <div>
                     {defaultImageState ? <img 
                         src="https://cdk-hnb659fds-assets-289931925246-us-east-1.s3.us-east-1.amazonaws.com/defaultImg.jpg"

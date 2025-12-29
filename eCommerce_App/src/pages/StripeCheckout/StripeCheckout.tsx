@@ -143,7 +143,7 @@ export function StripeCheckout() {
       } catch (error) {
         console.error('Error checking session status:', error);
       }
-    }, 30000);  //61000 * 5);  // little over 5 minutes per check so last check will happen at x > 30 minutes when cart expires
+    }, 61000 * 5);  // little over 5 minutes per check so last check will happen at x > 30 minutes when cart expires
   
     return () => clearInterval(intervalId);
   }, [sesh]); 
@@ -167,7 +167,7 @@ export function StripeCheckout() {
   return (
     // id="checkout"
     <div style={{width:"100%", minHeight:"500px", overflow:"hidden", textAlign:"center"}}>
-      <Link replace={true} to={"/Cart"}><h1>Anne Elizabeth Boutique</h1></Link>
+      <Link replace={true} to={"/Cart"}><h1>Anne Elizabeth</h1></Link>
       <EmbeddedCheckoutProvider
         stripe={stripePromise}
         options={options}

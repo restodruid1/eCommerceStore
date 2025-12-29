@@ -5,6 +5,7 @@ import { CheckoutButton } from "../../components/CheckoutButton/CheckoutButton";
 import { CartProductCard } from "../../components/CartProductCard/CartProductCard";
 import { useState, useEffect } from "react";
 import { deleteReservedCartOnDB } from "../../helper/helpers";
+import styles from './Cart.module.css'
 
 export function Cart(){
     const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
@@ -73,12 +74,7 @@ export function Cart(){
         <p >Loading...</p>
       </div>
     )
-    // if (error) return (
-    //     <div className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>
-    //       <h1>Cart</h1>
-    //       <p>{error ?? "Error. Please Try Again Later"}</p>
-    //     </div>
-    //   ) 
+    
     if (cartItems.length <= 0) 
         return (
             <div className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>
@@ -91,13 +87,13 @@ export function Cart(){
         <Message message={message} />
     ) : (
             <>
-                <h1 className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>
+                <h2 className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>
                   Cart ({cart.totalItemsInCart} {cart.totalItemsInCart === 1  ? 'item' : 'items'})
-                </h1>
+                </h2>
                 <div  className={`body column ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}>
                     {checkoutError && <div style={{color:"red"}}>{checkoutError}</div>}
 
-                    <div style={{display:"flex", flexDirection:"column",background:"darkgrey", borderRadius:"5px", borderColor:"black", minWidth:"300px"}}>
+                    <div className={`${styles.cartContainer}`}>
                       <p style={{textAlign:"center"}}>
                         ITEMS IN CART
                       </p>

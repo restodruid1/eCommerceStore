@@ -73,19 +73,19 @@ export function CartProductCard ({ cartItemInfo }: CartProductCardProps){
             <div style={{display:"flex",flex:"1 1 0", alignContent:"center", gap:"5px"}}>
                 <img src={`${cartItemInfo.image}`} style={{width:"100px", height:"100px",objectFit:"fill"}}/>
                 <div>
-                    <h2>${(cartItemInfo.price * cartItemInfo.quantity).toFixed(2)} <span style={{opacity:"50%"}}>({cartItemInfo.price} each)</span></h2>
+                    <h2>${(cartItemInfo.price * cartItemInfo.quantity).toFixed(2)} <span style={{opacity:"50%", fontSize:"smaller"}}>({cartItemInfo.price} each)</span></h2>
                     <h3>{cartItemInfo.name}</h3>
                 </div>
             </div>
             {errorMessage && <p style={{color:"red", textAlign:'center'}}>{errorMessage}</p>}
-            <p style={{textAlign:'center'}}>
+            <p style={{display:"flex", justifyContent:"center", alignItems:"center"}}>
                 <ItemQuantityCard 
                     stock={productStock ?? 0}
                     selectedCartQuantityFromCheckout={selectedQuantity}
                     setSelectedQuantity={setSelectedQuantity}
                     setErrorMessage={setErrorMessage}
                 />
-                <TrashIcon onClick={()=>handleDelete(productId)}/>
+                <TrashIcon style={{marginLeft:"5px"}} onClick={()=>handleDelete(productId)}/>
             </p>
         </div>
     )

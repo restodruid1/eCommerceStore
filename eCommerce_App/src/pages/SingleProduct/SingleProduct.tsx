@@ -84,7 +84,7 @@ export function SingleProduct() {
             <h2>{productInformation.name}</h2>
             <ProductImagesDisplay productData={data}/>
 
-            <h2>${productInformation.price}</h2>
+            <h2 style={{fontWeight:"normal"}}>${productInformation.price}</h2>
             <div className={styles.priceAndCart}>
                 <ItemQuantityCard
                     stock={stockMinusCart}
@@ -92,13 +92,13 @@ export function SingleProduct() {
                     setErrorMessage={setErrorMessage} 
                 />
                 
-                <button onClick={()=>handleAddToCart(selectedQuantity)} disabled={stockMinusCart <= 0 || selectedQuantity === 0}>
+                <button style={{color:"white"}} onClick={()=>handleAddToCart(selectedQuantity)} disabled={stockMinusCart <= 0 || selectedQuantity === 0}>
                     Add To Cart
                 </button>
             </div>
             {errorMessage && <p style={{color:"red"}}>{errorMessage}</p>}
             
-            <h2>DESCRIPTION</h2>
+            <h3>Description</h3>
             <p>{productInformation.description}</p>
         </div>
     );

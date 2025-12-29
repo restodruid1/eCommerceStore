@@ -14,11 +14,11 @@ export function NavBar({toggleMenu, isMenuClicked}: NavBarProps) {
     return (
         <nav className={`${styles.navBar} ${isMenuClicked ? styles.open : ''}`}>
             
-            <button className={`${styles.left}`} hidden={isMenuClicked ? true : false} onClick={toggleMenu} aria-label="Toggle menu">
+            <button style={{backgroundColor:"white", marginLeft:"10px"}} className={`${styles.left}`} hidden={isMenuClicked ? true : false} onClick={toggleMenu} aria-label="Toggle menu">
                 <HamburgerIcon size={40} />
             </button>
 
-            <h1 className={`${styles.center}`}>The Anne Elizabeth Boutique</h1>
+            <h1 className={`${styles.center}`}>Anne Elizabeth</h1>
             
             <CartDropDown />
         </nav>

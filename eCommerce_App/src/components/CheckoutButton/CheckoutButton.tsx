@@ -23,7 +23,7 @@ export function CheckoutButton ({disableButton}:{disableButton:boolean}){
                <h2 style={{color:"red"}}>{errorMessage}</h2> 
             )}
             
-            <Link to={"/Checkout"}><button disabled={disableButton}>Checkout</button></Link>
+            <Link to={"/Checkout"}><button style={{color:"white"}} disabled={disableButton}>Checkout</button></Link>
         </>
     )
 }

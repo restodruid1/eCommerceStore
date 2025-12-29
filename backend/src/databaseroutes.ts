@@ -2,6 +2,23 @@ import * as db from "./db/index.js";
 import { Router } from 'express';
 const router = Router();
 
+router.get("/AllProducts", async (req, res)=>{
+    try {
+        const result = await db.query(
+          `SELECT 
+              p.*, 
+              pi.url
+          FROM products p
+          JOIN product_images pi 
+              ON pi.product_id = p.id
+          `
+          ,[]);
+        res.json(result.rows);
+      } catch (err) {
+        console.error(err);
+        res.status(500).send("Database error");
+      }
+})
 router.get("/customnail", async (req, res)=>{
     try {
         const result = await db.query(

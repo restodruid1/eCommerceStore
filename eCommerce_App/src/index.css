@@ -1,5 +1,5 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'poppins';
   line-height: normal;
   font-weight: 400;
 
@@ -8,7 +8,7 @@
   color: black;
   background-color: white;
   --color-primary: purple;
-  --color-secondary: rgb(114, 201, 230);
+  --color-secondary: rgb(232, 134, 188);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -17,21 +17,23 @@
 }
 
 a {
-  font-weight: 500;
-  color: var(--color-primary);
+  font-weight:bold;
+  /* color: var(--color-primary); */
+  color: black;
   text-decoration: inherit;
 }
 a:visited {
-  color: var(--color-primary);
+  /* color: var(--color-primary); */
+  color: black;
 }
 
 a:hover {
   color: var(--color-secondary);
 }
 
-body{
-  /* background-color: blue; */
-}
+/* body{
+  background-color: blue;
+} */
 
 h1 {
   font-size: 3.2em;
@@ -46,6 +48,7 @@ button {
   font-weight: 500;
   font-family: inherit;
   background-color: var(--color-secondary);
+  /* color: white; */
   cursor: pointer;
   transition: border-color 0.25s;
 }

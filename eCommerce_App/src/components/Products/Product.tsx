@@ -23,8 +23,8 @@ export function Product ({ product, pageUrl }:ProductProps) {
                 </Link>
 
                 <div style={{display:"flex", flexDirection:"column", alignContent:"center", justifyContent:"center"}}>
-                    <h3 style={{textAlign:"center"}}>{product.name}</h3>
-                    <p style={{textAlign:"center"}}>${product.price}</p>
+                    <h3 style={{textAlign:"center", marginBottom:"0px"}}>{product.name}</h3>
+                    <p style={{textAlign:"center", marginTop:"0px"}}>${product.price}</p>
                     {product.quantity < 1 ? <p style={{color:"red",textAlign:"center"}}>Out of stock</p> : ""}
                 </div> 
             </article>

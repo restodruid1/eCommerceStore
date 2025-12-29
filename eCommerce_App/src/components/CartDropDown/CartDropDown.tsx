@@ -25,11 +25,11 @@ export function CartDropDown (){
         >    
         
             <div className={styles.cartIcon}>
-                <Link to={"/Cart"}><CartIcon aria-label="Toggle cart dropdown" size={40}/></Link>
+                <Link to={"/Cart"}><CartIcon aria-label="Toggle cart dropdown" size={35}/></Link>
             </div>
 
             <p className={styles.cartQuantityIcon}>{totalItemsInCart}</p>
-            <p className={styles.cartPriceIcon}>${totalItemsInCart < 1 ? "0.00" : totalPriceOfCart.toFixed(2)}</p>
+            {/* <p className={styles.cartPriceIcon}>${totalItemsInCart < 1 ? "0.00" : totalPriceOfCart.toFixed(2)}</p> */}
             
             {isOpen && (
                 <div className={styles.cartDropdown}>

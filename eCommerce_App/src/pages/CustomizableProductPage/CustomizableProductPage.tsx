@@ -25,6 +25,13 @@ type CustomProductPage = {
     urlNameSingleProductPage: string
 }
 
+const urlByCategory = [
+    "CustomNailProducts", 
+    "ArtPrintsandStickers",
+    "OtherHandmadeCrafts",
+    "ChannelMerch"
+]
+
 export function CustomizableProductPage(props:CustomProductPage){
     const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
     const { dbProductRouteName, pageName, urlNameSingleProductPage } = props;
@@ -67,9 +74,9 @@ export function CustomizableProductPage(props:CustomProductPage){
 
     return (
         <>
-            <h1 className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center"}}>{pageName}</h1>
+            <h2 className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center", fontWeight:"normal"}}>{pageName}</h2>
             <div className={`body row ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}>
-                {data.map((product, index) => <Product key={index} pageUrl={urlNameSingleProductPage} product={product}/>)}
+                {data.map((product, index) => <Product key={index} pageUrl={urlByCategory[product.category] ?? urlNameSingleProductPage} product={product}/>)}
             </div>
         </>
     );
