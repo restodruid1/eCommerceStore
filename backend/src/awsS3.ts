@@ -213,6 +213,7 @@ type Product = {
     width:number;
     description: string;
     urls: {imageId?:number, url:string}[];
+    featured: boolean;
   };
 router.post('/updateProductData', requireAdmin, async (req: Request<{}, {}, {jwt:string, product:Product}>,res:Response)=>{
     const productData = req.body.product;
@@ -229,7 +230,8 @@ router.post('/updateProductData', requireAdmin, async (req: Request<{}, {}, {jwt
                     length,
                     height,
                     width,
-                    description
+                    description,
+                    featured
                 FROM products
                 WHERE id = $1;`
                 ,[productData.id]);
@@ -245,7 +247,7 @@ router.post('/updateProductData', requireAdmin, async (req: Request<{}, {}, {jwt
             }
         }
 
-        for (const field of ['category', 'name', 'price', 'quantity', 'weight', 'length', 'height', 'width', 'description'] as const) {
+        for (const field of ['category', 'name', 'price', 'quantity', 'weight', 'length', 'height', 'width', 'description', 'featured'] as const) {
             if (resultsFromDatabase[field] !== productData[field]) {
                 console.log("Change from ", resultsFromDatabase[field], "to ", productData[field])
                 await db.query(

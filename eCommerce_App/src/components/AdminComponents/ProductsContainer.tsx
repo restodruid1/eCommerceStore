@@ -30,8 +30,7 @@ export function ProductsContainer({productCatalog, getProductData}:{productCatal
     }
 
     async function updateProductInDB(product:Product){
-        console.log("here homy");
-        console.log(product);
+        // console.log(product);
         try {
           const response = await fetch("http://localhost:5000/api/admin/AwsS3/updateProductData", {
             method: "POST",
@@ -75,13 +74,14 @@ export function ProductsContainer({productCatalog, getProductData}:{productCatal
                   <th>Product Height</th>
                   <th>Product Width</th>
                   <th>Product Description</th>
+                  <th>Featured</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
                 {productCatalog.map((item:DataInterface, index)=>{
                     return (
-                      <tr>
+                      <tr key={index}>
                         <EditableProductCard
                             key={index}
                             product={item}

@@ -18,23 +18,34 @@ export function InlineEditableField({
         return <p>{value}</p>;
     }
 
-    return (type === "text-area" ? 
-      <textarea
-        value={value}
-        maxLength={8000}
-        autoFocus
-        onChange={(e) => onChange(e.target.value)}
-        className="inline-input"
-      />
-      : 
-      <input
-        type={type}
-        value={value}
-        autoFocus
-        onChange={(e) => onChange(e.target.value)}
-        className="inline-input"
-      />   
-    );
+
+    switch (type) {
+      case "text-area":
+        return (
+          <textarea
+            value={value}
+            maxLength={8000}
+            autoFocus
+            onChange={(e) => onChange(e.target.value)}
+            className="inline-input"
+          />
+        )
+        break;
+      case "number":
+      case "text":    
+      default:
+        return (
+          <input
+            type={type}
+            value={value}
+            autoFocus
+            onChange={(e) => onChange(e.target.value)}
+            className="inline-input"
+          />
+      )
+        break;
+    }
+    
 }
 
 
@@ -62,7 +73,7 @@ export type Product = {
   export function EditableProductCard({ product, updateProductInDB, handleDeleteProductFromDB, }: EditableProductCardProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [draftProduct, setDraftProduct] = useState<Product>(product);
-
+    // console.log("FEATURED DATA: ", draftProduct);
 
     useEffect(()=>{
       setDraftProduct(product);
@@ -187,16 +198,15 @@ export type Product = {
           />
         </td>
         
-        {/* <td>
-          <InlineEditableField
-            value={draftProduct.featured}
-            type="text-area"
-            editing={isEditing}
-            onChange={(val) =>
-              setDraftProduct((p) => ({ ...p, description: val }))
-            }
-          />
-        </td> */}
+        <td>
+          <input
+              type="checkbox"
+              checked={draftProduct.featured}
+              disabled={isEditing ? false : true}
+              onChange={e => setDraftProduct((p) => ({ ...p, featured: e.target.checked }))}
+              className="inline-input"
+            />
+        </td>
   
         {!isEditing ? (
           <td>
