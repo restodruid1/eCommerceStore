@@ -1,27 +1,10 @@
-.mainBody {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 2%;
-    margin-top: 2%;
-    align-items: flex-start;
-    /* margin-left: 10%; */
-    /* margin-right: 10%; */
-  }
-  
-.mainBody.open {
-  transform: translateX(250px);
-  margin-right: 250px;
-}
-
 .imageContainer {
   display: flex;
   justify-content: center; 
   align-items: center;
+  margin-top: 50px;
 }
-.imageContainer.open {
-  margin-left: 250px;
-}
+
 .image {
   width: 300px;
   max-width: calc(100vw - 250px);
@@ -36,4 +19,19 @@
   .image {
     width: 500px;
   }
+}
+
+.defaultImage {
+  width:100px; 
+  height:200px; 
+  flex:auto;
+  margin: 5%; 
+  cursor:pointer; 
+  background-color:lightgray; 
+  max-width:100px;
+}
+
+.containerHeader {
+  text-align: center;
+  font-size: 2rem;
 }

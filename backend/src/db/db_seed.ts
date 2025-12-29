@@ -17,14 +17,14 @@ async function seedDB() {
         console.log(`Connected to '${DB_NAME}'.`);
         const queryResult = await appClient.query(`
             INSERT INTO products
-            (category, name, quantity, weight,height, length, width, price, description)
+            (category, name, quantity, weight,height, length, width, price, description, featured)
             VALUES
-            (1,'placeholder', 10, 13.2, 5, 4, 6 ,8, 'This is a placeholder item');
+            (1,'placeholder', 10, 13.2, 5, 4, 6 ,8, 'This is a placeholder item', true);
             
             INSERT INTO products
-            (category, name, quantity, weight,height, length, width, price, description)
+            (category, name, quantity, weight,height, length, width, price, description, featured)
             VALUES
-            (2,'placeholder2', 10, 2.4, 11, 8, 2 ,22.99, 'testing this out');
+            (2,'placeholder2', 10, 2.4, 11, 8, 2 ,22.99, 'testing this out', false);
 
             INSERT INTO product_images
             (product_id, url, aws_imagekey, main_image)

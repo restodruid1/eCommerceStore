@@ -83,7 +83,7 @@ router.post('/', upload.array("images"), requireAdmin, async (req,res)=>{
                 const result = await db.query(
                     `
                     INSERT INTO products (category, name, quantity, weight, height, length, width, price, description)
-                    VALUES ($1, $2, $3, $4, $5, $6)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                     RETURNING id
                     `,
                     [category, productName, quantity, weight, height, length, width, price, description]

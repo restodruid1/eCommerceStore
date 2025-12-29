@@ -95,6 +95,33 @@ router.get('/YouTubeVideoId', async (req, res) =>{
     }
 })
 
+router.get('/FeaturedProducts', async (req, res) =>{
+    try{
+        const result = await db.query(
+                `
+                SELECT  
+                  p.*,
+                  pi.url 
+                FROM products p
+                JOIN product_images pi
+                  ON pi.product_id = p.id
+                WHERE 
+                  p.featured = true
+                  AND pi.main_image = true;
+                `
+                  ,[]);
+        
+        if (result && result.rowCount && result.rowCount > 0 ) {
+            return res.status(200).json({result: result.rows})
+        } else {
+            return res.status(404).json({ message: "No Featured Products Found"});
+        }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+})
+
 router.get("/:id", async (req, res)=>{
   try {
       const { id } = req.params;

@@ -54,6 +54,7 @@ async function initDB() {
             width DECIMAL(5,2) DEFAULT 0,
             price DECIMAL(12,2) DEFAULT 0,
             description VARCHAR(8000) DEFAULT 'COMING SOON',
+            featured BOOLEAN DEFAULT FALSE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 

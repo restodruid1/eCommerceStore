@@ -15,7 +15,8 @@ export interface DataInterface {
     created_at: string,
     url: string,
     product_id?: number,
-    main_image?: boolean
+    main_image?: boolean,
+    category: number
 };
 
 type CustomProductPage = {
