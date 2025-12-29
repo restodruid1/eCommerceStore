@@ -78,3 +78,17 @@
 .open {
   margin-left: 250px;
 }
+
+table th, table td {
+  padding: 8px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+.adminProductContainer {
+  overflow-x: auto; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center; 
+  align-content: center;
+}

@@ -50,6 +50,7 @@ export type Product = {
     width: number;
     description: string;
     urls: {imageId?:number, url:string}[];
+    featured: boolean;
   };
   
   type EditableProductCardProps = {
@@ -84,89 +85,121 @@ export type Product = {
   
 
     return (
-      <div className="row" style={{display:"flex", justifyContent:"space-between", maxHeight:"100px",border:"2px solid black"}}>
+      <>
             
-        {draftProduct.urls.map((urlObj, index) => <img key={index} src={urlObj.url}/>)}
+        <td>{draftProduct.urls.map((urlObj, index) => <img key={index} src={urlObj.url}/>)}</td>
 
-        <InlineEditableField
-          value={draftProduct.name}
-          editing={isEditing}
-          onChange={(val) =>
-            setDraftProduct((p) => ({ ...p, name: val }))
-          }
+        <td>
+          <InlineEditableField
+            value={draftProduct.name}
+            editing={isEditing}
+            onChange={(val) =>
+              setDraftProduct((p) => ({ ...p, name: val }))
+            }
         />
+        </td>
   
-        <InlineEditableField
-          value={draftProduct.category}
-          type="number"
-          editing={isEditing}
-          onChange={(val) =>
-            setDraftProduct((p) => ({ ...p, category: Number(val) }))
-          }
-        />
+        <td>
+          <InlineEditableField
+            value={draftProduct.category}
+            type="number"
+            editing={isEditing}
+            onChange={(val) =>
+              setDraftProduct((p) => ({ ...p, category: Number(val) }))
+            }
+          />
+        </td>
   
-        <InlineEditableField
-          value={draftProduct.price}
-          type="number"
-          editing={isEditing}
-          onChange={(val) =>
-            setDraftProduct((p) => ({ ...p, price: Number(val) }))
-          }
-        />
+        <td>
+          <InlineEditableField
+            value={draftProduct.price}
+            type="number"
+            editing={isEditing}
+            onChange={(val) =>
+              setDraftProduct((p) => ({ ...p, price: Number(val) }))
+            }
+          />
+        </td>
   
-        <InlineEditableField
-          value={draftProduct.quantity}
-          type="number"
-          editing={isEditing}
-          onChange={(val) =>
-            setDraftProduct((p) => ({ ...p, quantity: Number(val) }))
-          }
-        />
+        <td>
+          <InlineEditableField
+            value={draftProduct.quantity}
+            type="number"
+            editing={isEditing}
+            onChange={(val) =>
+              setDraftProduct((p) => ({ ...p, quantity: Number(val) }))
+            }
+          />
+        </td>
   
-        <InlineEditableField
-          value={draftProduct.weight}
-          type="number"
-          editing={isEditing}
-          onChange={(val) =>
-            setDraftProduct((p) => ({ ...p, weight: Number(val) }))
-          }
-        />
-        <InlineEditableField
-          value={draftProduct.length}
-          type="number"
-          editing={isEditing}
-          onChange={(val) =>
-            setDraftProduct((p) => ({ ...p, length: Number(val) }))
-          }
-        />
-        <InlineEditableField
-          value={draftProduct.height}
-          type="number"
-          editing={isEditing}
-          onChange={(val) =>
-            setDraftProduct((p) => ({ ...p, height: Number(val) }))
-          }
-        />
-        <InlineEditableField
-          value={draftProduct.width}
-          type="number"
-          editing={isEditing}
-          onChange={(val) =>
-            setDraftProduct((p) => ({ ...p, width: Number(val) }))
-          }
-        />
+        <td>
+          <InlineEditableField
+            value={draftProduct.weight}
+            type="number"
+            editing={isEditing}
+            onChange={(val) =>
+              setDraftProduct((p) => ({ ...p, weight: Number(val) }))
+            }
+          />
+        </td>
 
-        <InlineEditableField
-          value={draftProduct.description}
-          type="text-area"
-          editing={isEditing}
-          onChange={(val) =>
-            setDraftProduct((p) => ({ ...p, description: val }))
-          }
-        />
+        <td>
+          <InlineEditableField
+            value={draftProduct.length}
+            type="number"
+            editing={isEditing}
+            onChange={(val) =>
+              setDraftProduct((p) => ({ ...p, length: Number(val) }))
+            }
+          />
+        </td>
+
+        <td>
+          <InlineEditableField
+            value={draftProduct.height}
+            type="number"
+            editing={isEditing}
+            onChange={(val) =>
+              setDraftProduct((p) => ({ ...p, height: Number(val) }))
+            }
+          />
+        </td>
+
+        <td>
+          <InlineEditableField
+            value={draftProduct.width}
+            type="number"
+            editing={isEditing}
+            onChange={(val) =>
+              setDraftProduct((p) => ({ ...p, width: Number(val) }))
+            }
+          />
+        </td>
+
+        <td>
+          <InlineEditableField
+            value={draftProduct.description}
+            type="text-area"
+            editing={isEditing}
+            onChange={(val) =>
+              setDraftProduct((p) => ({ ...p, description: val }))
+            }
+          />
+        </td>
+        
+        {/* <td>
+          <InlineEditableField
+            value={draftProduct.featured}
+            type="text-area"
+            editing={isEditing}
+            onChange={(val) =>
+              setDraftProduct((p) => ({ ...p, description: val }))
+            }
+          />
+        </td> */}
   
         {!isEditing ? (
-          <>
+          <td>
             <button onClick={startEditing}>
               <FaPencilAlt />
             </button>
@@ -178,14 +211,14 @@ export type Product = {
             >
               X
             </button>
-          </>
+          </td>
         ) : (
-          <>
+          <td>
             <button onClick={submit}>Save</button>
             <button onClick={cancel}>Cancel</button>
-          </>
+          </td>
         )}
   
-      </div>
+      </>
     );
   }

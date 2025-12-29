@@ -58,34 +58,43 @@ export function ProductsContainer({productCatalog, getProductData}:{productCatal
         }
     }
     
-
     return (
-        <div style={{display:"flex", flexDirection:"column", justifyContent:"center", alignContent:"center"}}>
+        <div className="adminProductContainer">
           <p>{error}</p>
           {productCatalog.length > 0 && (
-            <div style={{display:"flex", justifyContent:"space-between", borderBottom:"2px solid black", maxHeight:"100px"}}>
-              <h3>Images</h3>
-              <h3>Product Name</h3>
-              <h3>Product Category Id</h3>
-              <h3>Product Price</h3>
-              <h3>Product Quantity</h3>
-              <h3>Product Weight</h3>
-              <h3>Product Length</h3>
-              <h3>Product Height</h3>
-              <h3>Product Width</h3>
-              <h3>Product Description</h3>
-            </div>
+            <table >
+              <thead>
+                <tr>
+                  <th>Images</th>
+                  <th>Product Name</th>
+                  <th>Product Category Id</th>
+                  <th>Product Price</th>
+                  <th>Product Quantity</th>
+                  <th>Product Weight</th>
+                  <th>Product Length</th>
+                  <th>Product Height</th>
+                  <th>Product Width</th>
+                  <th>Product Description</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {productCatalog.map((item:DataInterface, index)=>{
+                    return (
+                      <tr>
+                        <EditableProductCard
+                            key={index}
+                            product={item}
+                            updateProductInDB={updateProductInDB}
+                            handleDeleteProductFromDB={handleDeleteProductFromDB}
+                        />
+                        </tr>
+                    )
+                })}
+              </tbody>
+            </table>
+            
           )}
-          {productCatalog.length > 0 && productCatalog.map((item:DataInterface, index)=>{
-              return (
-                  <EditableProductCard
-                      key={index}
-                      product={item}
-                      updateProductInDB={updateProductInDB}
-                      handleDeleteProductFromDB={handleDeleteProductFromDB}
-                  />
-              )
-          })}
       </div>
     )
 }

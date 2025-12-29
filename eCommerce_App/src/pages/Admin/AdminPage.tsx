@@ -18,7 +18,8 @@ export interface DataInterface {
   description: string,
   urls: urlObj[],
   product_id?: number,
-  main_image?: boolean
+  main_image?: boolean,
+  featured: boolean,
 };
 type urlObj = {
   imageId: number,
