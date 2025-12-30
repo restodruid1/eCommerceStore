@@ -1,0 +1,31 @@
+.checkout-container {
+    width: 100%;
+    min-height: 300px;
+    /* Important for fixing blurry issues */
+    transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-align: center;
+    height: "700px";         
+    margin: "0 auto"; 
+    max-width: '500px';
+    padding: 0 16px;
+    box-sizing: border-box;
+  }
+
+  @media screen and (max-width: 767px) {
+    .checkout-wrapper {
+      padding: 10px;
+    }
+    
+    .checkout-card {
+      box-shadow: none;
+      border-radius: 8px;
+    }
+    
+    .checkout-container {
+      /* Ensure no sub-pixel rendering */
+      will-change: transform;
+      backface-visibility: hidden;
+    }
+  }

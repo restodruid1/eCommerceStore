@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
 import { useNavigate } from "react-router-dom";
+import './stripCheckout.css'
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
@@ -160,20 +161,25 @@ export function StripeCheckout() {
   const options: any = {
     // fetchClientSecret,
     clientSecret,
-    onShippingDetailsChange
+    onShippingDetailsChange,
   };
 
   if (!clientSecret) return <p style={{textAlign:"center"}}>Loading...</p>
+
   return (
-    // id="checkout"
-    <div style={{width:"100%", minHeight:"500px", overflow:"hidden", textAlign:"center"}}>
+    <div style={{textAlign:"center"}}>
       <Link replace={true} to={"/Cart"}><h1>Anne Elizabeth</h1></Link>
-      <EmbeddedCheckoutProvider
-        stripe={stripePromise}
-        options={options}
-      >
-        <EmbeddedCheckout />
-      </EmbeddedCheckoutProvider>
+      <Link replace={true} to={"/Cart"}>
+        <button style={{margin:"20px", color:"white"}}>Back</button>
+      </Link>
+      <div className='checkout-container'>
+        <EmbeddedCheckoutProvider 
+          stripe={stripePromise}
+          options={options}
+        >
+          <EmbeddedCheckout />
+        </EmbeddedCheckoutProvider>
+      </div>
     </div>
   );
 };
