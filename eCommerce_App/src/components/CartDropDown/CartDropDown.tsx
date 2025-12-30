@@ -25,7 +25,7 @@ export function CartDropDown (){
         >    
         
             <div className={styles.cartIcon}>
-                <Link to={"/Cart"}><CartIcon aria-label="Toggle cart dropdown" size={35}/></Link>
+                <Link to={"/Cart"}><CartIcon aria-label="Toggle cart dropdown" size="100%"/></Link>
             </div>
 
             <p className={styles.cartQuantityIcon}>{totalItemsInCart}</p>

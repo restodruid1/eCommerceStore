@@ -2,6 +2,7 @@ import { BsList } from 'react-icons/bs';
 import type { IconType } from 'react-icons';
 import styles from './NavBar.module.css';
 import { CartDropDown } from '../CartDropDown/CartDropDown';
+import { Link } from 'react-router-dom';
 
 type NavBarProps = {
     toggleMenu: () => void;
@@ -13,14 +14,19 @@ export function NavBar({toggleMenu, isMenuClicked}: NavBarProps) {
 
     return (
         <nav className={`${styles.navBar} ${isMenuClicked ? styles.open : ''}`}>
-            
-            <button style={{backgroundColor:"white", marginLeft:"10px"}} className={`${styles.left}`} hidden={isMenuClicked ? true : false} onClick={toggleMenu} aria-label="Toggle menu">
-                <HamburgerIcon size={40} />
-            </button>
 
-            <h1 className={`${styles.center}`}>Anne Elizabeth</h1>
+            <div className={`${styles.left}`} hidden={isMenuClicked ? true : false} onClick={toggleMenu} aria-label="Toggle menu">
+                <HamburgerIcon style={{flexShrink:"1",maxWidth:"34px", cursor:"pointer"}} size="100%" />
+            </div>
+
+            <div className={`${styles.center}`}>
+                <Link to={"/"}><img src='/src/assets/website_header.png'/></Link>
+            </div>
             
-            <CartDropDown />
+            <div className={`${styles.right}`}>
+                <CartDropDown />
+            </div>
         </nav>
     )
+    
 }

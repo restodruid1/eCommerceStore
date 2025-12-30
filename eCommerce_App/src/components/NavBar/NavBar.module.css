@@ -9,9 +9,33 @@
     align-items: center;
     justify-content:space-between;
     background-color: #fff;
+    font-size: 24;
   }
 
+.left {
+  flex: 1 1 1; 
+  min-width: 0px;
+}
+.left :hover {
+  color: var(--color-secondary);
+}
+.center {
+  flex: 2 1 1;
+  max-height: 100px;
+}
+.center img {
+  height: 100px; 
+  width: 100%; 
+  object-fit: contain; 
+  image-rendering: auto;
+}
+.right {
+  flex: 1 1 1; 
+  text-align: right;
+  min-width: 0px;
+}
 
+/* DESKTOP */
 @media (min-width: 769px) {
   .navBar.open {
     margin-left: 245px;
@@ -28,8 +52,15 @@
     font-size: 3rem;
   }
 }
+
+/* MOBILE */
 @media (max-width: 768px) {
   .navBar h1:nth-of-type(1) {
+    font-size:2rem;
+    margin: 10px;
+    text-align: center;
+  }
+  .navBar div:nth-of-type(2) {
     font-size:2rem;
     margin: 10px;
     text-align: center;

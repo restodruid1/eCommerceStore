@@ -68,7 +68,7 @@ export function Home(){
 
     return (
         <>
-            <h2 className={`${styles.containerHeader} ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}>FEATURED ITEMS</h2>
+            <h2 className={`${styles.containerHeader} ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}>Featured Items</h2>
             <div className={`body row ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}>
                 {featuredProducts.length > 0 ? 
                 featuredProducts.map((product, index) => <Product key={index} pageUrl={urlByCategory[product.category]} product={product}/>)

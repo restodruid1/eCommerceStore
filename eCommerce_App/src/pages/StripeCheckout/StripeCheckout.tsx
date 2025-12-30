@@ -149,17 +149,8 @@ export function StripeCheckout() {
     return () => clearInterval(intervalId);
   }, [sesh]); 
 
-  // className={`body column ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}
-
-  // if (checkoutErrorMessage) return (
-  //   <div style={{textAlign:"center"}}>
-  //     <Link replace={true} to={"/cart"}><h1>Anne Elizabeth Boutique</h1></Link>
-  //     <h1 >{checkoutErrorMessage}</h1>
-  //   </div>
-  // )
 
   const options: any = {
-    // fetchClientSecret,
     clientSecret,
     onShippingDetailsChange,
   };
@@ -168,10 +159,17 @@ export function StripeCheckout() {
 
   return (
     <div style={{textAlign:"center"}}>
-      <Link replace={true} to={"/Cart"}><h1>Anne Elizabeth</h1></Link>
+  
+      <div>
+        <Link replace={true} to={"/Cart"}>
+          <img style={{objectFit:"contain", width:"60%", height:"100px"}} src='/src/assets/website_header.png'/>
+        </Link>
+      </div>
+
       <Link replace={true} to={"/Cart"}>
         <button style={{margin:"20px", color:"white"}}>Back</button>
       </Link>
+
       <div className='checkout-container'>
         <EmbeddedCheckoutProvider 
           stripe={stripePromise}

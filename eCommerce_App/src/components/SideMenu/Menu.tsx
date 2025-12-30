@@ -24,19 +24,17 @@ export function Menu({toggleMenu, isMenuClicked, isDesktopOpen}: MenuProps){
       }
     }
 
-    // useEffect(() => {
-    //   document.body.style.overflow = clicked && !desktop ? "hidden" : "auto";
-    // }, [clicked]);
 
     return (
         <aside className={`${styles.sideMenu} ${isMenuClicked && !isDesktopOpen ? `${styles.mobile}`:''} `}>
           <header className={styles.menuHead}>
-            <button onClick={toggleMenu} className={styles.menuButton}>
+            <div onClick={toggleMenu} className={styles.menuButton}>
               <HamburgerIcon size={33} />
-            </button>
+            </div>
 
             <Link to="/" className={styles.homeLink}>
-              <span>Anne Elizabeth</span>
+              {/* <span>Anne Elizabeth</span> */}
+             <img  style={{objectFit:"contain", width:"100%"}} src='/src/assets/website_header.png'/>
             </Link>
           </header>
 

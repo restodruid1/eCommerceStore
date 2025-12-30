@@ -24,8 +24,11 @@
     position: absolute;
     left: 0;
     background-color: white;
+    cursor: pointer;
   }
-  
+  .menuButton :hover {
+    color: var(--color-secondary);
+  }
   
   .sideMenu.mobile {
     width: 100%;
@@ -38,6 +41,7 @@
     text-decoration: none;
     font-size: 1.5em;
     margin: 0 auto;
+    margin-right: 5px;
   }
   @media (min-width: 769px) {
     .homeLink{
@@ -48,11 +52,11 @@
     color: black;
   }
   
-  .homeLink:hover {
+  /* .homeLink:hover {
     background-color: var(--color-secondary);
     color: black;
     border-radius: 10%;
-  }
+  } */
 
   .sidebarContent {
     text-align: center;

@@ -12,6 +12,7 @@ export function ItemQuantityCard({stock, selectedCartQuantityFromCheckout, setSe
 
     return (
         <select
+            style={{cursor:"pointer"}}
             value={selectedCartQuantityFromCheckout ?? selectedValue}
             disabled={stock <= 0}
             onChange={(e)=>{

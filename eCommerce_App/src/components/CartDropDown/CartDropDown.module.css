@@ -8,6 +8,7 @@
 .cartIcon {
 font-size: 1.8rem;
 cursor: pointer;
+max-width:34px;
 }
 
 .cartDropdown {
@@ -35,6 +36,9 @@ z-index: 10;
 .dropDownContainer {
   display: flex;
   justify-content: space-between;
+}
+.dropDownContainer span {
+  color: black;
 }
 
 .toCart {

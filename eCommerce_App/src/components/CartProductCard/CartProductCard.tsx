@@ -85,7 +85,7 @@ export function CartProductCard ({ cartItemInfo }: CartProductCardProps){
                     setSelectedQuantity={setSelectedQuantity}
                     setErrorMessage={setErrorMessage}
                 />
-                <TrashIcon style={{marginLeft:"5px"}} onClick={()=>handleDelete(productId)}/>
+                <TrashIcon style={{marginLeft:"5px", cursor:"pointer" }} onClick={()=>handleDelete(productId)}/>
             </p>
         </div>
     )
