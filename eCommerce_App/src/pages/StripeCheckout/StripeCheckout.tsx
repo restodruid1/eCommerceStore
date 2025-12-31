@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js';
 import { useNavigate } from "react-router-dom";
 import './stripCheckout.css'
+import headerImage from "../../assets/website_header.png";
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
@@ -162,7 +163,7 @@ export function StripeCheckout() {
   
       <div>
         <Link replace={true} to={"/Cart"}>
-          <img style={{objectFit:"contain", width:"60%", height:"100px"}} src='/src/assets/website_header.png'/>
+          <img style={{objectFit:"contain", width:"60%", height:"100px"}} src={headerImage}/>
         </Link>
       </div>
 

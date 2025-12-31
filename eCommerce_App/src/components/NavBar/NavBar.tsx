@@ -3,6 +3,7 @@ import type { IconType } from 'react-icons';
 import styles from './NavBar.module.css';
 import { CartDropDown } from '../CartDropDown/CartDropDown';
 import { Link } from 'react-router-dom';
+import headerImage from "../../assets/website_header.png";
 
 type NavBarProps = {
     toggleMenu: () => void;
@@ -20,7 +21,7 @@ export function NavBar({toggleMenu, isMenuClicked}: NavBarProps) {
             </div>
 
             <div className={`${styles.center}`}>
-                <Link to={"/"}><img src='/src/assets/website_header.png'/></Link>
+                <Link to={"/"}><img src={headerImage}/></Link>
             </div>
             
             <div className={`${styles.right}`}>

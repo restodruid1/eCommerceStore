@@ -5,6 +5,8 @@ import type { IconType } from 'react-icons';
 import styles from './SideMenu.module.css';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../CartContext';
+import headerImage from "../../assets/website_header.png";
+
 
 type MenuProps = {
     toggleMenu: () => void;
@@ -34,7 +36,7 @@ export function Menu({toggleMenu, isMenuClicked, isDesktopOpen}: MenuProps){
 
             <Link to="/" className={styles.homeLink}>
               {/* <span>Anne Elizabeth</span> */}
-             <img  style={{objectFit:"contain", width:"100%"}} src='/src/assets/website_header.png'/>
+             <img  style={{objectFit:"contain", width:"100%"}} src={headerImage}/>
             </Link>
           </header>
 
