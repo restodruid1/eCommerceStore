@@ -1,17 +1,17 @@
 import pkg from 'pg';
 import dotenv from 'dotenv';
-dotenv.config();
-
-const { Client } = pkg;
-const {DB_HOST, DB_PORT, DB_USER, DB_PASS} = process.env;
-
-const defaultClient = new Client({
-  connectionString: process.env.DB_URL || process.env.DATABASE_URL_DEFAULT || `postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/postgres`,
-});
-
-const appDbName = process.env.DB_NAME || 'ecommerce_db'; 
 
 export async function initDB() {
+  dotenv.config();
+  
+  const { Client } = pkg;
+  const {DB_HOST, DB_PORT, DB_USER, DB_PASS} = process.env;
+  
+  const defaultClient = new Client({
+    connectionString: process.env.DB_URL || process.env.DATABASE_URL_DEFAULT || `postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/postgres`,
+  });
+  
+  const appDbName = process.env.DB_NAME || 'ecommerce_db'; 
   try {
     await defaultClient.connect();
     console.log('Connected to default Postgres instance.');

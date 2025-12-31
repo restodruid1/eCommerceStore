@@ -1,6 +1,6 @@
 import pg from 'pg';
 import dotenv from "dotenv";
-import { initDB } from './db_init';
+import { initDB } from './db_init.js';
 
 dotenv.config();
 const { Pool } = pg;
@@ -20,7 +20,7 @@ const pool = new Pool({
 // USE THE PG CLIENT FOR TRANSACTIONS. POOL IS MORE EFFICIENT IS OTHER CASES
 export const client = await pool.connect();
 
-initDB();
+await initDB();
 try {
   await client.query("SELECT 1"); // test connection
 } catch (err) {
