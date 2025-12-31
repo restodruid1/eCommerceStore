@@ -71,6 +71,7 @@ setInterval(async () => {
     // console.log(data);
   } catch (e) {
     console.error(e);
+    await client.query("ROLLBACK");
   }
 }, 5000);
 
