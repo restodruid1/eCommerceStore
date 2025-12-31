@@ -4,18 +4,18 @@ import type { IconType } from 'react-icons';
 import styles from './CartDropDown.module.css';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../CartContext';
-import { FaTrashAlt } from 'react-icons/fa';
+// import { FaTrashAlt } from 'react-icons/fa';
 
 export function CartDropDown (){
     const CartIcon: IconType = BsCart3;
-    const TrashIcon: IconType = FaTrashAlt;
+    // const TrashIcon: IconType = FaTrashAlt;
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const cart = useCart();
-    const { cartItems, totalPriceOfCart, totalItemsInCart } = cart;
+    const { cartItems, totalItemsInCart } = cart;
 
-    function handleDelete(itemId:number){
-        cart.deleteItem(itemId);
-    }
+    // function handleDelete(itemId:number){
+    //     cart.deleteItem(itemId);
+    // }
 
     return (
         <div 
