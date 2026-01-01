@@ -4,6 +4,7 @@ import styles from './Admin.module.css'
 import { FormInputTypeText } from "../../components/AdminComponents/FormInputTypeText";
 import { ProductsContainer } from "../../components/AdminComponents/ProductsContainer";
 import { EditYouTubeVideoId } from "../../components/AdminComponents/EditYouTubeVideoId";
+import { serverUrl } from "../Home/Home";
 
 export interface DataInterface {
   id: number,
@@ -51,7 +52,7 @@ export function AdminPage(){
     // Validate clients hitting this page
     useEffect(()=>{
         async function validate(){
-            const response = await fetch(`http://localhost:5000/api/admin/page`,{
+            const response = await fetch(serverUrl ? serverUrl + `/api/admin/page` : `http://localhost:5000/api/admin/page`,{
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
@@ -76,7 +77,7 @@ export function AdminPage(){
 
       async function getYouTubeVideoId(){
         try {
-            const response = await fetch(`http://localhost:5000/api/admin/AwsS3/YouTubeVideoId`,{
+            const response = await fetch(serverUrl ? serverUrl + `/api/admin/AwsS3/YouTubeVideoId` : `http://localhost:5000/api/admin/AwsS3/YouTubeVideoId`,{
                 method: "GET",
                 headers: {
                 "Authorization": "Bearer " + localStorage.getItem("jwt"),
@@ -97,7 +98,7 @@ export function AdminPage(){
 
       async function getProductData(){
           try {
-              const response = await fetch(`http://localhost:5000/api/admin/AwsS3/productData`,{
+              const response = await fetch(serverUrl ? serverUrl + `/api/admin/AwsS3/productData` : `http://localhost:5000/api/admin/AwsS3/productData`,{
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
@@ -155,7 +156,7 @@ export function AdminPage(){
 
       // console.log(formData);
       try {
-        const response = await fetch("http://localhost:5000/api/admin/AwsS3", {
+        const response = await fetch(serverUrl ? serverUrl + `/api/admin/AwsS3` : "http://localhost:5000/api/admin/AwsS3", {
           method: "POST",
           body: formData,
         });

@@ -6,7 +6,7 @@ import { FaTrashAlt } from 'react-icons/fa';
 import type { IconType } from 'react-icons';
 import { useFetch } from "../../helper/helpers";
 import { ItemQuantityCard } from "../ItemQuantityCard/ItemQuantityCard";
-
+import { serverUrl } from "../../pages/Home/Home";
 
 interface CartProductCardProps {
     cartItemInfo: CartItem;
@@ -16,7 +16,7 @@ export function CartProductCard ({ cartItemInfo }: CartProductCardProps){
     const cart = useCart();
     const TrashIcon: IconType = FaTrashAlt;
     const [ outOfStockMessage, setOutOfStockMessage] = useState<string>("");
-    const { data } = useFetch<DataInterface[]>(`http://localhost:5000/products/${cartItemInfo.id}`);
+    const { data } = useFetch<DataInterface[]>(serverUrl ? serverUrl + `/products/${cartItemInfo.id}` : `http://localhost:5000/products/${cartItemInfo.id}`);
     const [selectedQuantity, setSelectedQuantity] = useState<number>(cart.findItemCartQuantity(cartItemInfo.id));
     const [ errorMessage, setErrorMessage ] = useState("");
     const productStock = data?.[0].quantity;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaPencilAlt } from "react-icons/fa";
 import { InlineEditableField } from "./EditableProductCard"; 
+import { serverUrl } from "../../pages/Home/Home";
 
 type EditYouTubeVideoIdProps = {
     initialVideoId: string;
@@ -20,7 +21,7 @@ export function EditYouTubeVideoId({initialVideoId, setYouTubeVideoId, youTubeEr
 
     async function handleSubmit(){
         try {
-            const response = await fetch(`http://localhost:5000/api/admin/AwsS3/UpdateYouTubeVideoId`,{
+            const response = await fetch(serverUrl ? serverUrl + `/api/admin/AwsS3/UpdateYouTubeVideoId` : `http://localhost:5000/api/admin/AwsS3/UpdateYouTubeVideoId`,{
                 method: "POST",
                 headers: {
                 "Authorization": "Bearer " + localStorage.getItem("jwt"),

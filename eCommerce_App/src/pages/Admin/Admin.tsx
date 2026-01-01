@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { serverUrl } from '../Home/Home';
 
 export function Admin(){
     const [username, setUsername] = useState("");
@@ -10,7 +11,7 @@ export function Admin(){
         e.preventDefault();
         setError("");
         try {
-            const res = await fetch("http://localhost:5000/api/admin/login", {
+            const res = await fetch(serverUrl ? serverUrl + `/api/admin/login` : "http://localhost:5000/api/admin/login", {
             method: "POST",
             headers: {
             "Content-Type": "application/json",

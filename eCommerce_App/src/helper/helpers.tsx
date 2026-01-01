@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { serverUrl } from "../pages/Home/Home";
 
 export function useFetch<T>(url: string) {
     const [data, setData] = useState<T | null>(null);
@@ -35,7 +36,7 @@ export function useFetch<T>(url: string) {
   export const deleteReservedCartOnDB = async () => {
     try {
       const userId = localStorage.getItem("uuid");
-      const response = await fetch("http://localhost:5000/session_status/deleteCartReservation", {
+      const response = await fetch(serverUrl ? serverUrl + `/session_status/deleteCartReservation` : "http://localhost:5000/session_status/deleteCartReservation", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

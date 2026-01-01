@@ -9,6 +9,7 @@ import { useOutletContext } from "react-router-dom";
 import { ProductImagesDisplay } from "../../components/Products/ProductImagesDisplay";
 import { ItemQuantityCard } from "../../components/ItemQuantityCard/ItemQuantityCard";
 import styles from "./SingleProd.module.css"; 
+import { serverUrl } from "../Home/Home";
 
 interface ProductInformation {
     id:number;
@@ -22,7 +23,7 @@ interface ProductInformation {
 export function SingleProduct() {
     const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
     const { productId } = useParams();
-    const { data, loading, error } = useFetch<DataInterface[]>(`http://localhost:5000/products/${productId}`);
+    const { data, loading, error } = useFetch<DataInterface[]>(serverUrl ? serverUrl + `/products/${productId}`: `http://localhost:5000/products/${productId}`);
     const cart = useCart();
     const [productInformation, setProductInformation] = useState<Partial<ProductInformation>>({});
     const [selectedQuantity, setSelectedQuantity] = useState<number>(0);

@@ -5,13 +5,17 @@ export async function initDB() {
   dotenv.config();
   
   const { Client } = pkg;
-  const {DB_HOST, DB_PORT, DB_USER, DB_PASS} = process.env;
+  // const {DB_HOST, DB_PORT, DB_USER, DB_PASS} = process.env;
   
+  // const defaultClient = new Client({
+  //   connectionString: process.env.DB_LOCAL_URL,
+  // });
   const defaultClient = new Client({
-    connectionString: process.env.DB_URL || process.env.DATABASE_URL_DEFAULT || `postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/postgres`,
+    connectionString: process.env.DB_URL,
   });
   
-  const appDbName = process.env.DB_NAME || 'ecommerce_db'; 
+  // const appDbName = process.env.DB_NAME;
+  const appDbName =  'ecommerce_db';
   try {
     await defaultClient.connect();
     console.log('Connected to default Postgres instance.');
@@ -28,8 +32,11 @@ export async function initDB() {
     await defaultClient.end();
 
     // Connect to db
+    // const appClient = new Client({
+    //   connectionString: process.env.DB_LOCAL_URL,
+    // });
     const appClient = new Client({
-      connectionString: `postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${appDbName}`,
+      connectionString: process.env.DB_URL,
     });
     await appClient.connect();
     console.log(`Connected to ${appDbName}.`);

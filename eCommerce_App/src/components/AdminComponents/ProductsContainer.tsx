@@ -2,14 +2,14 @@ import { useState} from "react";
 import type { DataInterface } from "../../pages/Admin/AdminPage";
 import { EditableProductCard } from "./EditableProductCard";
 import type { Product } from "./EditableProductCard";
-
+import { serverUrl } from "../../pages/Home/Home";
 
 export function ProductsContainer({productCatalog, getProductData}:{productCatalog:DataInterface[], getProductData:()=>void}){ 
     const [error, setError] = useState("");
 
 
     async function handleDeleteProductFromDB(itemId:number, itemCategory:number){
-        const response = await fetch(`http://localhost:5000/api/admin/AwsS3/deleteProductData`,{
+        const response = await fetch(serverUrl ? serverUrl + `/api/admin/AwsS3/deleteProductData` : `http://localhost:5000/api/admin/AwsS3/deleteProductData`,{
             method: "POST",
             headers: {
             "Content-Type": "application/json",
@@ -32,7 +32,7 @@ export function ProductsContainer({productCatalog, getProductData}:{productCatal
     async function updateProductInDB(product:Product){
         // console.log(product);
         try {
-          const response = await fetch("http://localhost:5000/api/admin/AwsS3/updateProductData", {
+          const response = await fetch(serverUrl ? serverUrl + `/api/admin/AwsS3/updateProductData` : "http://localhost:5000/api/admin/AwsS3/updateProductData", {
             method: "POST",
             headers: {
             "Content-Type": "application/json",

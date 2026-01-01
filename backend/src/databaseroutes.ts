@@ -11,6 +11,7 @@ router.get("/AllProducts", async (req, res)=>{
           FROM products p
           JOIN product_images pi 
               ON pi.product_id = p.id
+          WHERE pi.main_image = TRUE;
           `
           ,[]);
         res.json(result.rows);

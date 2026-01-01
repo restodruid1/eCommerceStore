@@ -6,10 +6,12 @@ import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe
 import { useNavigate } from "react-router-dom";
 import './stripCheckout.css'
 import headerImage from "../../assets/website_header.png";
+import { serverUrl } from '../Home/Home';
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
 const stripePromise = loadStripe('pk_test_51SPrSR5UVkCvvwZTK49SKzVqU0o1Kbc9q1jQ7XWQNWm8cKkRLk0JOEzxSQj1fYiJSuVehCrokM7tHCKR14xMZH4900eFAVK3uZ');
+// export const serverUrl = import.meta.env.VITE_SERVER_URL;
 
 interface ShippingDetailsChangeEvent {
   checkoutSessionId: string;  // ID of the Checkout Session
@@ -42,7 +44,7 @@ export function StripeCheckout() {
       const userId = localStorage.getItem("uuid");
   
       // Create a Checkout Session
-      const response = await fetch("http://localhost:5000/create-checkout-session", {
+      const response = await fetch(serverUrl ? serverUrl + "/create-checkout-session" : "http://localhost:5000/create-checkout-session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -79,7 +81,7 @@ export function StripeCheckout() {
     const {checkoutSessionId, shippingDetails} = shippingDetailsChangeEvent;
     
     try {
-      const response = await fetch("http://localhost:5000/calculate-shipping-options", {
+      const response = await fetch(serverUrl ? serverUrl + "/calculate-shipping-options" : "http://localhost:5000/calculate-shipping-options", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json" 
@@ -122,7 +124,7 @@ export function StripeCheckout() {
     const intervalId = setInterval(async () => {
       try {
         // const param = localStorage.getItem("sessionId");
-        const response = await fetch(`http://localhost:5000/session_status/check`,{
+        const response = await fetch(serverUrl ? serverUrl + `/session_status/check` : `http://localhost:5000/session_status/check`,{
           method: "POST",
           headers: {
             "Content-Type": "application/json",

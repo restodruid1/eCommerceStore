@@ -33,9 +33,14 @@ const PORT = process.env.PORT || 5000;
 const app = express();
 export const stripe = new Stripe(`${process.env.TEST_STRIPE_API}`);
 
-// app.use(express.json());
+
+// app.use(cors({
+//     origin: process.env.LOCAL_CLIENT_URL,
+//     credentials: true,
+//     methods: ["GET", "POST"]
+//   }));
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: process.env.CLIENT_URL,
     credentials: true,
     methods: ["GET", "POST"]
   }));

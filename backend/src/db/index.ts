@@ -1,26 +1,22 @@
 import pg from 'pg';
 import dotenv from "dotenv";
-import { initDB } from './db_init.js';
+// import { initDB } from './db_init.js';
 
 dotenv.config();
 const { Pool } = pg;
  
 const pool = new Pool({
-  connectionString: process.env.DB_URL,
+  connectionString:  process.env.DB_URL,
   });
 // const pool = new Pool({
-//     user: process.env.DB_USER,
-//     host: process.env.DB_HOST,
-//     database: process.env.DB_NAME,
-//     password: process.env.DB_PASS,
-//     port: Number(process.env.DB_PORT) || 5432,
+//   connectionString:  process.env.DB_LOCAL_URL,
 //   });
 
 // DO NOT USE POOL IF A TRANSACTION IS NEEDED i.e. A SERIES OF QUERIES WHERE ALL MUST BE SUCCESSFUL OR NONE ARE
 // USE THE PG CLIENT FOR TRANSACTIONS. POOL IS MORE EFFICIENT IS OTHER CASES
 export const client = await pool.connect();
 
-await initDB();
+// await initDB();
 try {
   await client.query("SELECT 1"); // test connection
 } catch (err) {

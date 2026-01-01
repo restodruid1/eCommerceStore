@@ -4,6 +4,8 @@ import { Item } from './server.js';
 import * as db from "./db/index.js";
 import { stripe } from './server.js';
 import { QueryResult } from 'pg';
+import dotenv from "dotenv";
+dotenv.config();
 
 const router = Router();
 
@@ -219,7 +221,8 @@ const checkout = async(items:DataInterface[], req:Request, res:Response, uuid:st
             uuid: uuid
           },
           mode: 'payment',
-          return_url: `http://localhost:5173/CheckoutReturn?session_id={CHECKOUT_SESSION_ID}`,
+          // return_url: `http://localhost:5173/CheckoutReturn?session_id={CHECKOUT_SESSION_ID}`,
+          return_url: process.env.CLIENT_URL + `/CheckoutReturn?session_id={CHECKOUT_SESSION_ID}`,
           // success_url: `http://localhost:5173/Cart?success=true`,
           // cancel_url: `http://localhost:5173/Cart?canceled=true`,
         });
