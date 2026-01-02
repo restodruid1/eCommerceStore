@@ -98,7 +98,11 @@ export type Product = {
     return (
       <>
             
-        <td>{draftProduct.urls.map((urlObj, index) => <img style={{maxHeight:"20%", maxWidth:"20%", objectFit:"contain", margin:"5px"}} key={index} src={urlObj.url}/>)}</td>
+        <td>
+          <div style={{display:"flex", flexDirection:"column"}}>
+            {draftProduct.urls.map((urlObj, index) => <img style={{maxHeight:"100%", maxWidth:"100%", objectFit:"contain", margin:"5px"}} key={index} src={urlObj.url}/>)}
+          </div>
+        </td>
 
         <td>
           <InlineEditableField
