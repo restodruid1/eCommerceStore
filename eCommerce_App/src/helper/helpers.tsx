@@ -48,6 +48,7 @@ export function useFetch<T>(url: string) {
       if (!response.ok) throw new Error("Failure to delete cart reservation");
       
       const data = await response.json();
+      if (!data) return;
       // console.log("RESERVE STOCK DELETED? " + data.success);
     } catch (err) {
       console.error(err);
