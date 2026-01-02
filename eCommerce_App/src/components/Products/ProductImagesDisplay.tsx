@@ -22,7 +22,7 @@ export function ProductImagesDisplay ({productData}: {productData: DataInterface
         <div>
             {/* Main image */}
             {imagesArray[mainImageUrlIndex] && (
-                <img src={imagesArray[mainImageUrlIndex]} alt="Main product" style={{ width: '300px', height: '300px' }} />
+                <img src={imagesArray[mainImageUrlIndex]} alt="Main product" style={{ maxWidth:"100%", height:"auto", display:"block"}} />
             )}
 
             {/* Thumbnails */}
