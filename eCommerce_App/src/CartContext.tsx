@@ -52,7 +52,7 @@ export function CartProvider ({ children }: { children: React.ReactNode }) {
         });
         if (!foundId) {
             setCartData((prevItems) => [...prevItems, itemToBeAddedToCart]);
-            alert(`added ${itemToBeAddedToCart.quantity} to cart`);
+            // alert(`added ${itemToBeAddedToCart.quantity} to cart`);
         }
     }
 

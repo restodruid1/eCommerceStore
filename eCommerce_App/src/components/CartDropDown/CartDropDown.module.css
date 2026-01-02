@@ -9,6 +9,7 @@
 font-size: 1.8rem;
 cursor: pointer;
 max-width:34px;
+min-width: 20px;
 }
 
 .cartDropdown {

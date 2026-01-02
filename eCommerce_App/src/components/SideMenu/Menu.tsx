@@ -36,7 +36,7 @@ export function Menu({toggleMenu, isMenuClicked, isDesktopOpen}: MenuProps){
 
             <Link to="/" className={styles.homeLink}>
               {/* <span>Anne Elizabeth</span> */}
-             <img  style={{objectFit:"contain", width:"100%"}} src={headerImage}/>
+             <img  style={{objectFit:"contain", width:"100%", height:"70px"}} src={headerImage}/>
             </Link>
           </header>
 

@@ -87,7 +87,7 @@ export function Home(){
                         `https://youtube.com/embed/${youTubeVideoId}`
                         : 
                         "https://youtube.com/embed/0expGa_qGGM"}
-                    allow="autoplay; encrypted-media"
+                    // allow="autoplay; encrypted-media"
                 />
             </div>
         </>

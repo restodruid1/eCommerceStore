@@ -45,7 +45,7 @@ export function SingleProduct() {
 
 
     function handleAddToCart(quantityToAddToCart:number){
-        console.log("AADEDD TO CART: ", quantityToAddToCart);
+        // console.log("AADEDD TO CART: ", quantityToAddToCart);
         const { id,name,price,imageUrl } = productInformation;
 
         if (id != null && name && price != null && quantityToAddToCart != null && imageUrl) {

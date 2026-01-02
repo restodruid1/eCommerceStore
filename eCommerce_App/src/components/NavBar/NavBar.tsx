@@ -17,7 +17,7 @@ export function NavBar({toggleMenu, isMenuClicked}: NavBarProps) {
         <nav className={`${styles.navBar} ${isMenuClicked ? styles.open : ''}`}>
 
             <div className={`${styles.left}`} hidden={isMenuClicked ? true : false} onClick={toggleMenu} aria-label="Toggle menu">
-                <HamburgerIcon style={{flexShrink:"1",maxWidth:"34px", cursor:"pointer"}} size="100%" />
+                <HamburgerIcon style={{flexShrink:"1",maxWidth:"34px", cursor:"pointer",minWidth:"20px"}} size="100%" />
             </div>
 
             <div className={`${styles.center}`}>
