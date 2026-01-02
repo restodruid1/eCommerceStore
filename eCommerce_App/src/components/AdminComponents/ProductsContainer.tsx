@@ -61,7 +61,7 @@ export function ProductsContainer({productCatalog, getProductData}:{productCatal
         <div className="adminProductContainer">
           <p>{error}</p>
           {productCatalog.length > 0 && (
-            <table >
+            <table style={{width:"100%"}}>
               <thead>
                 <tr>
                   <th>Images</th>

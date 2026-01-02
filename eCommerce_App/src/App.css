@@ -88,8 +88,9 @@ table th, table td {
 }
 
 .adminProductContainer {
-  overflow-x: auto;
-  flex-wrap: wrap; 
+  width: 100%;
+  /* overflow-x: auto; */
+  /* flex-wrap: wrap;  */
   display: flex; 
   flex-direction: column; 
   justify-content: center; 
