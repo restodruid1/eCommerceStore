@@ -26,7 +26,7 @@ export function ProductImagesDisplay ({productData}: {productData: DataInterface
             )}
 
             {/* Thumbnails */}
-            <div style={{ display: 'flex', marginTop: '10px' }}>
+            <div style={{ display: 'flex', marginTop: '10px', justifyContent:"center" }}>
                 {imagesArray.map((url, index) => (
                     <img
                         key={index}
