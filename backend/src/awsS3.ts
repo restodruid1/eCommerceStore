@@ -29,16 +29,17 @@ router.post('/', upload.array("images"), requireAdmin, async (req,res)=>{
         }
 
         try {
-            for (const file of files) {
-                const result = await db.query(
-                  `
-                  SELECT * FROM product_images WHERE aws_imagekey = $1;
-                  `,
-                  [file.originalname]
-                );
-                if (result.rowCount! > 0) {
-                    return res.status(500).json({success: false, error: `image ${file.originalname} already exists`})
-                }
+            const fileNames = files.map(f => f.originalname);
+
+            const result = await db.query(
+                `SELECT aws_imagekey FROM product_images WHERE aws_imagekey = ANY($1)`,
+                [fileNames]
+            );
+
+            if (result.rowCount! > 0) {
+                // Find which files already exist
+                const existingFiles = result.rows.map(r => r.aws_imagekey);
+                return res.status(500).json({success: false, error: `image(s) already exist: ${existingFiles.join(', ')}`});
             }
         } 
         catch (err) {

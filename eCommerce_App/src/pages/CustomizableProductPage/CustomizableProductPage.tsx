@@ -77,7 +77,7 @@ export function CustomizableProductPage(props:CustomProductPage){
         <>
             <h2 className={`${isMenuClicked && isDesktopOpen? 'open' : ''}`} style={{textAlign:"center", fontWeight:"normal"}}>{pageName}</h2>
             <div className={`body row ${isMenuClicked && isDesktopOpen ? 'open' : ''}`}>
-                {data.map((product, index) => <Product key={index} pageUrl={urlByCategory[product.category] ?? urlNameSingleProductPage} product={product}/>)}
+                {data.map((product, index) => <Product key={index} pageUrl={urlByCategory[product.category-1] ?? urlNameSingleProductPage} product={product}/>)}
             </div>
         </>
     );

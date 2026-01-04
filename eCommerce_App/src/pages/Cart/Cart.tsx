@@ -97,10 +97,10 @@ export function Cart(){
                       <p style={{textAlign:"center"}}>
                         ITEMS IN CART
                       </p>
-                      {true && (<div style={{flex:"1 1 0"}}>
-                          {cartItems.map((item, index) => (
+                      {cart && (<div style={{flex:"1 1 0"}}>
+                          {cartItems.map((item) => (
                               <CartProductCard
-                              key={index}
+                              key={item.id}
                               cartItemInfo={item}
                               />
                           ))}

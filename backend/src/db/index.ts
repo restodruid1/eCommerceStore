@@ -41,23 +41,18 @@ export const query = async (text:string, params: any[] = []) => {
 setInterval(async () => {
   try {
     await client.query("BEGIN");
-
-    // Find the expired carts
-    const data = await client.query(`
-      SELECT * FROM cart_reservations
-      WHERE expires_at < NOW();
-    `);
     
     // Add products back to db
-    data.rows.forEach(async (product)=>{
-      console.log("UPDATE QUERY");
-      await client.query(`
-        UPDATE products
-        SET quantity = quantity + $1
-        WHERE id = $2
-        `, [product.quantity, product.product_id])
-    })
-    // console.log(data.rows);
+    console.log("Checking cart_reservations");
+    await client.query(
+      `
+        UPDATE products p
+        SET quantity = p.quantity + c.quantity
+        FROM cart_reservations c
+        WHERE c.expires_at < NOW()
+        AND p.id = c.product_id;
+      `);
+    
     // Delete expired carts
     await client.query(`
       DELETE FROM cart_reservations
@@ -69,7 +64,7 @@ setInterval(async () => {
     console.error(e);
     await client.query("ROLLBACK");
   }
-}, 5000);
+}, 1000 * 60);
 
 
 export default pool;

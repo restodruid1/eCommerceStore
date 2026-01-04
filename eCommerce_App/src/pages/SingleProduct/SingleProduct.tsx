@@ -51,6 +51,7 @@ export function SingleProduct() {
         if (id != null && name && price != null && quantityToAddToCart != null && imageUrl) {
               const cartItem: CartItem = {id, name, price, quantity:quantityToAddToCart, image:imageUrl};
               cart.addToCart(cartItem);
+              alert("added to cart");
         } else {
             setErrorMessage("Something went wrong. Try again later");
         }

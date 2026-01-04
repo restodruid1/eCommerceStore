@@ -22,6 +22,7 @@ export function CartProductCard ({ cartItemInfo }: CartProductCardProps){
     const productStock = data?.[0].quantity;
     const productId = data?.[0].id;
     
+    
     useEffect(() => {
         function showItemQuantityInCheckout(){
             if (!data) return;
@@ -35,6 +36,8 @@ export function CartProductCard ({ cartItemInfo }: CartProductCardProps){
                 setSelectedQuantity(productStock);
             } else if ((cartItemQuantity === 0) && (productStock > 0)) {
                 setSelectedQuantity(0);
+            } else {
+                console.log("THIS IS BEING HIT");
             }
         }
         showItemQuantityInCheckout();

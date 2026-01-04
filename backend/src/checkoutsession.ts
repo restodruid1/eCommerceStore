@@ -77,27 +77,25 @@ async function validateUserCart(cartItems:Item[]){
 export async function terminateReserveUpdateStock(user_id:string){
   try{
     await db.query("BEGIN");
-    const resp = await db.query(`
-      SELECT * FROM cart_reservations
+
+    await db.query(
+      `
+      UPDATE products p
+      SET quantity = p.quantity + c.quantity
+      FROM cart_reservations c
+      WHERE c.user_id = $1
+        AND p.id = c.product_id
+      `,
+      [user_id]
+    );
+
+    await db.query(`
+      DELETE FROM cart_reservations
       WHERE user_id = $1
       `,[user_id]);
-
-    for (const row of resp.rows) {
-      await db.query(`
-        UPDATE products
-        SET quantity = quantity + $1
-        WHERE id = $2
-      `, [row.quantity, row.product_id]);
-    }
-
-    if (resp.rows.length > 0) {
-      await db.query(`
-        DELETE FROM cart_reservations
-        WHERE user_id = $1
-        `,[user_id]);
-    }
-    // console.log("end");
+    
     await db.query("COMMIT");
+
     return { success: true };
   }catch (err){
     await db.query("ROLLBACK");
@@ -107,58 +105,38 @@ export async function terminateReserveUpdateStock(user_id:string){
 
 async function reserveStock(cartItems:DataInterface[], user_id:string|null) {
   const items = cartItems;
-  // console.log(user_id);
-  // if (user_id != null) {
-  //   terminateReserveUpdateStock(user_id);
-  // }
-
+  
   try {
     await db.query("BEGIN");    // All or nothing
 
-    var productRows:{id:number, quantity:number}[] = [];
-    for (const item of items){
+    const ids = items.map((item)=>item.id);
+    const qtys = items.map(i => i.quantity);
 
-      // Lock row FOR UPDATE so no one else can modify stock meanwhile
-      const productRes:QueryResult = await db.query(
-        `
-        SELECT id, quantity
-        FROM products
-        WHERE id = $1
-        FOR UPDATE
-        `,
-        [item.id]
-      );
-      productRows.push(productRes.rows[0]);
-    }
-    
-    items.forEach((item, index) => {
-      const stock = productRows[index]?.quantity;
-      if (stock! < items[index]?.quantity!) throw new Error(`Not enough stock available of ${item.name}`);
-    })
-
-    for (const item of items){
-      // Decrement stock
-      await db.query(
-        `
-        UPDATE products
-        SET quantity = quantity - $1
-        WHERE id = $2
-        `,
-        [item.quantity, item.id]
-      );
-    }
+    const result = await db.query(
+      `
+      UPDATE products
+      SET quantity = products.quantity - x.qty
+      FROM (
+        SELECT UNNEST($1::int[]) AS id,
+               UNNEST($2::int[]) AS qty
+      ) x
+      WHERE products.id = x.id
+      AND products.quantity >= x.qty
+      RETURNING products.id;
+      `,
+      [ids, qtys]
+    );
+    if (!result.rowCount || result.rowCount < items.length) throw new Error("Bad Cart Data");
 
     const userId = crypto.randomUUID();
-    for (const item of items){
-      // Create reservation (expires later if user abandons cart)
-      await db.query(
-        `
-        INSERT INTO cart_reservations (user_id, product_id, quantity, expires_at)
-        VALUES ($1, $2, $3, NOW() + INTERVAL '30 minutes')
-        `,
-        [userId, item.id, item.quantity]
-      );
-    }
+    await db.query(
+      `
+      INSERT INTO cart_reservations (user_id, product_id, quantity, expires_at)
+      SELECT $1, x.id, x.qty, NOW() + INTERVAL '30 minutes'
+      FROM UNNEST($2::int[], $3::int[]) AS x(id, qty)
+      `,
+      [userId, ids, qtys]
+    );
 
     await db.query("COMMIT");
     return { success: true, uuid:userId };
