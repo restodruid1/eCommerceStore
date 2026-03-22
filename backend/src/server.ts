@@ -34,13 +34,8 @@ const app = express();
 export const stripe = new Stripe(`${process.env.TEST_STRIPE_API}`);
 
 
-// app.use(cors({
-//     origin: process.env.LOCAL_CLIENT_URL,
-//     credentials: true,
-//     methods: ["GET", "POST"]
-//   }));
 app.use(cors({
-    origin: process.env.CLIENT_URL,
+    origin: process.env.PROD ? process.env.PROD : process.env.CLIENT_URL,
     credentials: true,
     methods: ["GET", "POST"]
   }));
