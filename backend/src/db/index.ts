@@ -8,9 +8,7 @@ const { Pool } = pg;
 const pool = new Pool({
   connectionString:  process.env.DB_URL,
   });
-// const pool = new Pool({
-//   connectionString:  process.env.DB_LOCAL_URL,
-//   });
+
 
 // DO NOT USE POOL IF A TRANSACTION IS NEEDED i.e. A SERIES OF QUERIES WHERE ALL MUST BE SUCCESSFUL OR NONE ARE
 // USE THE PG CLIENT FOR TRANSACTIONS. POOL IS MORE EFFICIENT IS OTHER CASES

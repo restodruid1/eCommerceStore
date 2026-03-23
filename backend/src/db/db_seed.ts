@@ -3,10 +3,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const { Client } = pkg;
-const {DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME} = process.env;
-
+const DB_NAME = process.env.DB_NAME 
 const appClient = new Client({
-  connectionString: process.env.DATABASE_URL_DEFAULT || `postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}`,
+  connectionString: process.env.DB_URL,
 });
 
 

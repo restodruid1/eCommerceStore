@@ -35,7 +35,7 @@ export const stripe = new Stripe(`${process.env.TEST_STRIPE_API}`);
 
 
 app.use(cors({
-    origin: process.env.PROD ? process.env.PROD : process.env.CLIENT_URL,
+    origin: process.env.CLIENT_URL,
     credentials: true,
     methods: ["GET", "POST"]
   }));

@@ -11,7 +11,7 @@ export async function initDB() {
   //   connectionString: process.env.DB_LOCAL_URL,
   // });
   const defaultClient = new Client({
-    connectionString: process.env.DB_URL,
+    connectionString: process.env.INIT_DB_URL,
   });
   
   // const appDbName = process.env.DB_NAME;
