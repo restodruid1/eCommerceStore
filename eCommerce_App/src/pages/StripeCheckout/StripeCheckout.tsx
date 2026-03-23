@@ -10,7 +10,7 @@ import { serverUrl } from '../Home/Home';
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
-const stripePromise = loadStripe('pk_test_51SPrSR5UVkCvvwZTK49SKzVqU0o1Kbc9q1jQ7XWQNWm8cKkRLk0JOEzxSQj1fYiJSuVehCrokM7tHCKR14xMZH4900eFAVK3uZ');
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_KEY);
 // export const serverUrl = import.meta.env.VITE_SERVER_URL;
 
 interface ShippingDetailsChangeEvent {
