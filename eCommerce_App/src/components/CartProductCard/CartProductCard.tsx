@@ -24,23 +24,18 @@ export function CartProductCard ({ cartItemInfo }: CartProductCardProps){
     
     
     useEffect(() => {
-        function showItemQuantityInCheckout(){
-            if (!data) return;
-            if (productId === undefined) return;
-            if (productStock === undefined) return;
+        if (!data) return;
+        if (productId === undefined) return;
+        if (productStock === undefined) return;
 
-            const cartItemQuantity = cart.findItemCartQuantity(productId);
+        const cartItemQuantity = cart.findItemCartQuantity(productId);
 
-            if (cartItemQuantity > productStock) {
-                cart.decrementProductQuantity(productId, cartItemQuantity - productStock);
-                setSelectedQuantity(productStock);
-            } else if ((cartItemQuantity === 0) && (productStock > 0)) {
-                setSelectedQuantity(0);
-            } else {
-                console.log("THIS IS BEING HIT");
-            }
+        if (cartItemQuantity > productStock) {
+            cart.decrementProductQuantity(productId, cartItemQuantity - productStock);
+            setSelectedQuantity(productStock);
+        } else if ((cartItemQuantity === 0) && (productStock > 0)) {
+            setSelectedQuantity(0);
         }
-        showItemQuantityInCheckout();
     },[productStock]);
 
     useEffect(()=>{
