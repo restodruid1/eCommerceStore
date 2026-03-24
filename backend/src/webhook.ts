@@ -1,46 +1,33 @@
 import { Router } from 'express';
-import { Request, Response } from "express";
-import { stripe } from './server.js';  
+import { stripe } from './server.js';
 import * as db from "./db/index.js";
-import express from 'express';
+import pool from "./db/index.js";
 
 
 const router = Router();
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-// TODO: Populate items_ordered and orders tables with checkout session data
 router.post('/', async (req, res) => {
     const signature = req.headers['stripe-signature'];
-    if (!signature) throw new Error("No Stripe signature found");
-    if (!endpointSecret) throw new Error("No endpoint secret found");
 
-    try{
+    try {
+        if (!signature) throw new Error("No Stripe signature found");
+        if (!endpointSecret) throw new Error("No endpoint secret found");
 
         const event = stripe.webhooks.constructEvent(
-            req.rawBody!, // This is already raw because of express.raw middleware
+            req.rawBody!,
             signature,
             endpointSecret
         );
 
-        // Return 200 to prevent Stripe from resending
-        res.status(200).send({message:"event received"});
-
-
         // Handle the event
         switch (event.type) {
             case 'checkout.session.completed':
-                // console.log('Payment succeeded!');
-                // // console.log(event);
                 console.log("WEBHOOK SESSION EVENT: ", event);
-                // console.log("CUSTOMER DETAILS ", event.data.object.customer_details);
-                // console.log("STATUS ", event.data.object.status);
-                // console.log("PACKAGE DETAILS ", event.data.object.metadata);
-                // console.log("SHIPPING COST ", event.data.object.shipping_cost);
-                // console.log("TOTALS ",  event.data.object.total_details);
-                
+
                 const session = event.data.object;
                 const sessionId = session.id;
-                
+
                 const doesEventExist = await db.query('SELECT event_id FROM orders WHERE event_id = $1', [event.id]);
                 if ((doesEventExist.rowCount ?? 0) > 0) {
                     console.log("EVENT ID ALREADY BEING USED");
@@ -50,16 +37,10 @@ router.post('/', async (req, res) => {
                 // Retrieve the complete session with line items
                 const sessionWithLineItems = await stripe.checkout.sessions.retrieve(
                     sessionId,
-                    {
-                        expand : ["line_items", "line_items.data.price.product"],
-                    }
-                    );
+                    { expand: ["line_items", "line_items.data.price.product"] }
+                );
 
-                // console.log("LINE ITEMS: ", sessionWithLineItems.line_items);
-                // console.log("LINE ITEMS NAME: ", sessionWithLineItems.line_items?.data[0]?.description);
-                // console.log("LINE ITEMS PRICE: ", sessionWithLineItems.line_items?.data[0]?.price);
-                // console.log("WEBHOOK SESSION RETRIVE: ", sessionWithLineItems);
-                const order:OrderTable = {
+                const order: OrderTable = {
                     status: session.status ?? "",
                     eventId: event.id,
                     checkoutSessionId: session.id,
@@ -68,30 +49,33 @@ router.post('/', async (req, res) => {
                     packageWidth: Number(session.metadata?.packageWidth),
                     packageHeight: Number(session.metadata?.packageHeight),
                     packageWeight: Number(session.metadata?.packageWeight),
-                    shippingCost: Number(session.shipping_cost?.amount_total) / 100,        // Convert from cents to dollars
+                    shippingCost: Number(session.shipping_cost?.amount_total) / 100,
                     totalCost: Number(session.amount_total) / 100,
                 };
-                const orderedItems = sessionWithLineItems.line_items?.data.map((item)=>{
-                    const metadata = (item.price?.product && typeof item.price.product !== 'string' && 'metadata' in item.price.product) 
-                        ? item.price.product.metadata 
+
+                const orderedItems = sessionWithLineItems.line_items?.data.map((item) => {
+                    const metadata = (item.price?.product && typeof item.price.product !== 'string' && 'metadata' in item.price.product)
+                        ? item.price.product.metadata
                         : undefined;
+                    const productId = Number(metadata?.productId);
+                    if (!productId) throw new Error(`Missing productId in metadata for item: ${item.description}`);
                     return {
-                        productId: Number(metadata?.productId ?? 0),
+                        productId,
                         productName: item.description ?? "No Product Name",
-                        quantity: item.quantity ?? 0,       
-                    }
+                        quantity: item.quantity ?? 0,
+                    };
                 });
 
                 if (!orderedItems) return;
-                // console.log("ORDER ", order);
-                // console.log("ORDERED ITEMS ", orderedItems);
-                writeOrderToDB(orderedItems, order);
-        break;
-        default:
-        console.log(`Unhandled event type ${event.type}`);
+                await writeOrderToDB(orderedItems, order);
+                break;
+            default:
+                console.log(`Unhandled event type ${event.type}`);
         }
+        res.status(200).send({ message: "event received" });
     } catch(err){
         console.error("WEBHOOK ERROR: ", err);
+        res.status(500).send({ error: "Webhook processing failed" });
     }
 });
 
@@ -113,10 +97,11 @@ type OrderTable = {
     totalCost: number;
 }
 
-async function writeOrderToDB(orderedItems:ItemsOrderedTable[], orderPlaced:OrderTable){
+async function writeOrderToDB(orderedItems: ItemsOrderedTable[], orderPlaced: OrderTable) {
+    const client = await pool.connect();
     try {
-        await db.query("BEGIN");
-        const result = await db.query(
+        await client.query("BEGIN");
+        const result = await client.query(
             `
                 INSERT INTO orders
                 (status, event_id, checkout_session_id, customer_email, package_length, package_width, package_height, package_weight, shipping_cost, total_cost)
@@ -126,9 +111,9 @@ async function writeOrderToDB(orderedItems:ItemsOrderedTable[], orderPlaced:Orde
             `, [
                 orderPlaced.status,
                 orderPlaced.eventId,
-                orderPlaced.checkoutSessionId, 
-                orderPlaced.customerEmail, 
-                orderPlaced.packageLength, 
+                orderPlaced.checkoutSessionId,
+                orderPlaced.customerEmail,
+                orderPlaced.packageLength,
                 orderPlaced.packageWidth,
                 orderPlaced.packageHeight,
                 orderPlaced.packageWeight,
@@ -136,29 +121,31 @@ async function writeOrderToDB(orderedItems:ItemsOrderedTable[], orderPlaced:Orde
                 orderPlaced.totalCost
             ]
         );
-        
+
         const orderId = result.rows[0].id;
 
         for (let i = 0; i < orderedItems.length; i++) {
-            await db.query(
+            await client.query(
                 `
                     INSERT INTO ordered_items
                     (order_id, product_id, product_name, quantity)
                     VALUES
                     ($1, $2, $3, $4)
                 `, [
-                    orderId, 
-                    orderedItems[i]?.productId, 
-                    orderedItems[i]?.productName, 
+                    orderId,
+                    orderedItems[i]?.productId,
+                    orderedItems[i]?.productName,
                     orderedItems[i]?.quantity
                 ]
-            )
+            );
         }
-        await db.query("COMMIT");
+        await client.query("COMMIT");
     } catch (err) {
-        await db.query("ROLLBACK");
+        await client.query("ROLLBACK");
         console.error(err);
-    }   
+    } finally {
+        client.release();
+    }
 }
 
 export default router;
