@@ -4,7 +4,7 @@ import '../../App.css';
 import { ComingSoon } from "../../components/ComingSoon/ComingSoon";
 import type { LayoutProps } from "../Layout";
 import { useFetch } from "../../helper/helpers";
-import { serverUrl } from "../Home/Home";
+import { buildUrl } from "../../helper/helpers";
 
 export interface DataInterface {
     id: number,
@@ -36,7 +36,7 @@ const urlByCategory = [
 export function CustomizableProductPage(props:CustomProductPage){
     const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
     const { dbProductRouteName, pageName, urlNameSingleProductPage } = props;
-    const { data, loading, error } = useFetch<DataInterface[]>(serverUrl ? serverUrl + `/products/${dbProductRouteName}` : `http://localhost:5000/products/${dbProductRouteName}`);
+    const { data, loading, error } = useFetch<DataInterface[]>(buildUrl(`/products/${dbProductRouteName}`));
     console.log(data);
 
     function getPageHeaderHtml() {

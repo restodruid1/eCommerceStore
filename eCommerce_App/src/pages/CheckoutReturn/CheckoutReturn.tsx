@@ -3,7 +3,7 @@ import type { LayoutProps } from "../Layout";
 import { useOutletContext, Link } from "react-router-dom";
 import { useCart } from '../../CartContext';
 import { deleteReservedCartOnDB } from '../../helper/helpers';
-import { serverUrl } from '../Home/Home';
+import { buildUrl } from '../../helper/helpers';
 
 interface SessionResponse {
     status?: 'open' | 'complete' | 'expired';
@@ -29,7 +29,7 @@ export function CheckoutReturn() {
         }
         async function fetchSessionStatus(){
           try {
-            const response = await fetch(serverUrl ? serverUrl + `/session_status?session_id=${session_id}` : `http://localhost:5000/session_status?session_id=${session_id}`);
+            const response = await fetch(buildUrl(`/session_status?session_id=${session_id}`));
             if (!response.ok) throw new Error("Could not find session");
   
             const data = await response.json();

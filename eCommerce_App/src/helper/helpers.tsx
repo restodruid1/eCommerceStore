@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { serverUrl } from "../pages/Home/Home";
+
+export const serverUrl = import.meta.env.VITE_SERVER_URL;
+
+export function buildUrl(path: string): string {
+  return serverUrl ? serverUrl + path : `http://localhost:5000${path}`;
+}
 
 export function useFetch<T>(url: string) {
     const [data, setData] = useState<T | null>(null);
@@ -36,7 +41,7 @@ export function useFetch<T>(url: string) {
   export const deleteReservedCartOnDB = async () => {
     try {
       const userId = localStorage.getItem("uuid");
-      const response = await fetch(serverUrl ? serverUrl + `/session_status/deleteCartReservation` : "http://localhost:5000/session_status/deleteCartReservation", {
+      const response = await fetch(buildUrl(`/session_status/deleteCartReservation`), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

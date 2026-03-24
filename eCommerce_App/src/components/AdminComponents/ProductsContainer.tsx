@@ -2,7 +2,7 @@ import { useState} from "react";
 import type { DataInterface } from "../../pages/Admin/AdminPage";
 import { EditableProductCard } from "./EditableProductCard";
 import type { Product } from "./EditableProductCard";
-import { serverUrl } from "../../pages/Home/Home";
+import { buildUrl } from "../../helper/helpers";
 import styles from "../../pages/Admin/Admin.module.css";
 
 export function ProductsContainer({productCatalog, getProductData}:{productCatalog:DataInterface[], getProductData:()=>void}){ 
@@ -10,7 +10,7 @@ export function ProductsContainer({productCatalog, getProductData}:{productCatal
 
 
     async function handleDeleteProductFromDB(itemId:number, itemCategory:number){
-        const response = await fetch(serverUrl ? serverUrl + `/api/admin/AwsS3/deleteProductData` : `http://localhost:5000/api/admin/AwsS3/deleteProductData`,{
+        const response = await fetch(buildUrl(`/api/admin/AwsS3/deleteProductData`),{
             method: "POST",
             headers: {
             "Content-Type": "application/json",
@@ -36,7 +36,7 @@ export function ProductsContainer({productCatalog, getProductData}:{productCatal
             formData.append("image", file);
             formData.append("productId", String(productId));
             formData.append("jwt", String(localStorage.getItem("jwt")));
-            const response = await fetch(serverUrl ? serverUrl + `/api/admin/AwsS3/addProductImage` : `http://localhost:5000/api/admin/AwsS3/addProductImage`, {
+            const response = await fetch(buildUrl(`/api/admin/AwsS3/addProductImage`), {
                 method: "POST",
                 body: formData,
             });
@@ -50,7 +50,7 @@ export function ProductsContainer({productCatalog, getProductData}:{productCatal
 
     async function deleteProductImage(imageId: number) {
         try {
-            const response = await fetch(serverUrl ? serverUrl + `/api/admin/AwsS3/deleteProductImage` : `http://localhost:5000/api/admin/AwsS3/deleteProductImage`, {
+            const response = await fetch(buildUrl(`/api/admin/AwsS3/deleteProductImage`), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ jwt: localStorage.getItem("jwt"), imageId }),
@@ -65,7 +65,7 @@ export function ProductsContainer({productCatalog, getProductData}:{productCatal
 
     async function setMainImage(imageId: number, productId: number) {
         try {
-            const response = await fetch(serverUrl ? serverUrl + `/api/admin/AwsS3/setMainImage` : `http://localhost:5000/api/admin/AwsS3/setMainImage`, {
+            const response = await fetch(buildUrl(`/api/admin/AwsS3/setMainImage`), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ jwt: localStorage.getItem("jwt"), imageId, productId }),
@@ -81,7 +81,7 @@ export function ProductsContainer({productCatalog, getProductData}:{productCatal
     async function updateProductInDB(product:Product){
         // console.log(product);
         try {
-          const response = await fetch(serverUrl ? serverUrl + `/api/admin/AwsS3/updateProductData` : "http://localhost:5000/api/admin/AwsS3/updateProductData", {
+          const response = await fetch(buildUrl(`/api/admin/AwsS3/updateProductData`), {
             method: "POST",
             headers: {
             "Content-Type": "application/json",

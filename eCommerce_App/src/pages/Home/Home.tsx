@@ -6,8 +6,7 @@ import styles from './Home.module.css';
 import { FaSackDollar } from 'react-icons/fa6';
 import type { DataInterface } from "../CustomizableProductPage/CustomizableProductPage";
 import { Product } from "../../components/Products/Product";
-
-export const serverUrl = import.meta.env.VITE_SERVER_URL;
+import { buildUrl } from "../../helper/helpers";
 
 export function Home(){
     const { isMenuClicked, isDesktopOpen } = useOutletContext<LayoutProps>();
@@ -18,7 +17,7 @@ export function Home(){
     useEffect(()=>{
         async function fetchYouTubeVideoId(){
             try {
-                const response = await fetch(serverUrl ? serverUrl + `/products/YouTubeVideoId`: `http://localhost:5000/products/YouTubeVideoId`,{
+                const response = await fetch(buildUrl(`/products/YouTubeVideoId`),{
                     method: "GET",
                     headers: {
                     "Content-Type": "application/json"
@@ -37,7 +36,7 @@ export function Home(){
         }
         async function fetchFeaturedProducts(){
             try {
-                const response = await fetch(serverUrl ? serverUrl + `/products/FeaturedProducts` :`http://localhost:5000/products/FeaturedProducts`,{
+                const response = await fetch(buildUrl(`/products/FeaturedProducts`),{
                     method: "GET",
                     headers: {
                     "Content-Type": "application/json"
