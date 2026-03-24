@@ -132,7 +132,7 @@ async function reserveStock(cartItems:DataInterface[], user_id:string|null) {
     await db.query(
       `
       INSERT INTO cart_reservations (user_id, product_id, quantity, expires_at)
-      SELECT $1, x.id, x.qty, NOW() + INTERVAL '30 minutes'
+      SELECT $1, x.id, x.qty, NOW() + INTERVAL '32 minutes'
       FROM UNNEST($2::int[], $3::int[]) AS x(id, qty)
       `,
       [userId, ids, qtys]

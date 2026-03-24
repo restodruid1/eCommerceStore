@@ -77,7 +77,7 @@ export async function initDB() {
         CREATE TABLE orders (
             id SERIAL PRIMARY KEY,
             status VARCHAR(30) NOT NULL,
-            event_id TEXT NOT NULL,
+            event_id TEXT NOT NULL UNIQUE,
             checkout_session_id TEXT NOT NULL,
             customer_email VARCHAR(80),
             package_length DECIMAL(5,2) NOT NULL,
