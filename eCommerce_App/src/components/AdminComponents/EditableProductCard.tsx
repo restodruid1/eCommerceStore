@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { FaPencilAlt } from "react-icons/fa";
+import styles from "../../pages/Admin/Admin.module.css";
 
 export type InlineEditableFieldProps = {
     value: string | number;
@@ -29,10 +30,9 @@ export function InlineEditableField({
             onChange={(e) => onChange(e.target.value)}
             className="inline-input"
           />
-        )
-        break;
+        );
       case "number":
-      case "text":    
+      case "text":
       default:
         return (
           <input
@@ -42,8 +42,7 @@ export function InlineEditableField({
             onChange={(e) => onChange(e.target.value)}
             className="inline-input"
           />
-      )
-        break;
+        );
     }
     
 }
@@ -60,7 +59,7 @@ export type Product = {
     height: number;
     width: number;
     description: string;
-    urls: {imageId?:number, url:string}[];
+    urls: {imageId?:number, url:string, main_image?:boolean}[];
     featured: boolean;
   };
   
@@ -68,9 +67,12 @@ export type Product = {
     product: Product;
     updateProductInDB: (product: Product) => void;
     handleDeleteProductFromDB: (id: number, category: number) => void;
+    addProductImage: (productId: number, file: File) => Promise<void>;
+    deleteProductImage: (imageId: number) => Promise<void>;
+    setMainImage: (imageId: number, productId: number) => Promise<void>;
   };
-  
-  export function EditableProductCard({ product, updateProductInDB, handleDeleteProductFromDB, }: EditableProductCardProps) {
+
+  export function EditableProductCard({ product, updateProductInDB, handleDeleteProductFromDB, addProductImage, deleteProductImage, setMainImage }: EditableProductCardProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [draftProduct, setDraftProduct] = useState<Product>(product);
     // console.log("FEATURED DATA: ", draftProduct);
@@ -99,8 +101,38 @@ export type Product = {
       <>
             
         <td>
-          <div style={{display:"flex", flexDirection:"column"}}>
-            {draftProduct.urls.map((urlObj, index) => <img style={{maxHeight:"100%", maxWidth:"100%", objectFit:"contain", margin:"5px"}} key={index} src={urlObj.url}/>)}
+          <div className={styles.imageContainer}>
+            {draftProduct.urls.map((urlObj, index) => (
+              <div key={index} className={styles.imageCard}>
+                <div className={styles.imageWrapper}>
+                  <img
+                    src={urlObj.url}
+                    style={{width:"80px", height:"80px", objectFit:"cover", borderRadius:"4px", border: urlObj.main_image ? "2px solid gold" : "2px solid transparent"}}
+                  />
+                  {urlObj.main_image && <span className={styles.mainStar}>⭐</span>}
+                </div>
+                {isEditing && urlObj.imageId && (
+                  <div className={styles.imageButtons}>
+                    <button type="button" onClick={() => deleteProductImage(urlObj.imageId!)}>Delete</button>
+                    {!urlObj.main_image && (
+                      <button type="button" onClick={() => setMainImage(urlObj.imageId!, draftProduct.id)}>Main</button>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+            {isEditing && (
+              <input
+                type="file"
+                accept="image/*"
+                style={{fontSize:"0.75em"}}
+                onChange={(e) => {
+                  if (!e.target.files?.[0]) return;
+                  addProductImage(draftProduct.id, e.target.files[0]);
+                  e.target.value = "";
+                }}
+              />
+            )}
           </div>
         </td>
 

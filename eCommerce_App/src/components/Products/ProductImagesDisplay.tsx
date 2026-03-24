@@ -15,7 +15,8 @@ export function ProductImagesDisplay ({productData}: {productData: DataInterface
             }
             return image.url;
         });
-        setImagesArray(urls);
+        if (urls.length < 1) setImagesArray(["https://cdk-hnb659fds-assets-289931925246-us-east-1.s3.us-east-1.amazonaws.com/defaultImg.jpg"]); 
+        else setImagesArray(urls);
     }, [productData]); 
     
     return (

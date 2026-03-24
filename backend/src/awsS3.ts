@@ -97,6 +97,41 @@ async function saveProductToDB(body: Record<string, string>, files: Express.Mult
     }
 }
 
+async function addImageToDB(productId: number, url: string, awsKey: string) {
+    await db.query(
+        `INSERT INTO product_images (product_id, url, aws_imagekey, main_image)
+         VALUES ($1, $2, $3, false)`,
+        [productId, url, awsKey]
+    );
+}
+
+async function setMainImageInDB(imageId: number, productId: number) {
+    try {
+        await db.query("BEGIN");
+        await db.query(
+            `UPDATE product_images SET main_image = false WHERE product_id = $1`,
+            [productId]
+        );
+        await db.query(
+            `UPDATE product_images SET main_image = true WHERE id = $1`,
+            [imageId]
+        );
+        await db.query("COMMIT");
+    } catch (e) {
+        await db.query("ROLLBACK");
+        throw e;
+    }
+}
+
+async function deleteImageFromDB(imageId: number): Promise<string> {
+    const result = await db.query(
+        `DELETE FROM product_images WHERE id = $1 RETURNING aws_imagekey;`,
+        [imageId]
+    );
+    if ((result.rowCount ?? 0) === 0) throw new Error("Image not found");
+    return result.rows[0].aws_imagekey;
+}
+
 async function deleteProductFromDB(itemId: number): Promise<string[]> {
     try {
         await db.query("BEGIN");
@@ -180,7 +215,8 @@ router.post('/productData', requireAdmin, async (_req, res) => {
                 p.*,
                 COALESCE(
                     JSONB_AGG(
-                        JSONB_BUILD_OBJECT('imageId', pi.id, 'url', pi.url)
+                        JSONB_BUILD_OBJECT('imageId', pi.id, 'url', pi.url, 'main_image', pi.main_image)
+                    ORDER BY pi.id
                     ) FILTER (WHERE pi.id IS NOT NULL),
                     '[]'
                 ) AS urls
@@ -211,6 +247,44 @@ router.post('/deleteProductData', requireAdmin, async (req: Request<{}, {}, {ite
 router.post('/updateProductData', requireAdmin, async (req: Request<{}, {}, {jwt: string, product: Product}>, res: Response) => {
     try {
         await updateProductInDB(req.body.product);
+        return res.status(200).json({ success: true });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, error: err instanceof Error ? err.message : "Something went wrong" });
+    }
+});
+
+router.post('/addProductImage', upload.single("image"), requireAdmin, async (req, res) => {
+    const file = req.file as Express.Multer.File;
+    const productId = Number(req.body.productId);
+    try {
+        await checkImageKeysUnique([file]);
+        const urls = await uploadToS3([file]);
+        if (!urls[0]) throw new Error("Failed to get URL from S3 upload");
+        await addImageToDB(productId, urls[0], file.originalname);
+        return res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, error: err instanceof Error ? err.message : "Something went wrong" });
+    }
+});
+
+router.post('/deleteProductImage', requireAdmin, async (req: Request<{}, {}, {imageId: number}>, res: Response) => {
+    const { imageId } = req.body;
+    try {
+        const awsKey = await deleteImageFromDB(imageId);
+        await deleteFromS3([awsKey]);
+        return res.status(200).json({ success: true });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, error: err instanceof Error ? err.message : "Something went wrong" });
+    }
+});
+
+router.post('/setMainImage', requireAdmin, async (req: Request<{}, {}, {imageId: number, productId: number}>, res: Response) => {
+    const { imageId, productId } = req.body;
+    try {
+        await setMainImageInDB(imageId, productId);
         return res.status(200).json({ success: true });
     } catch (err) {
         console.error(err);

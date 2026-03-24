@@ -3,6 +3,7 @@ import type { DataInterface } from "../../pages/Admin/AdminPage";
 import { EditableProductCard } from "./EditableProductCard";
 import type { Product } from "./EditableProductCard";
 import { serverUrl } from "../../pages/Home/Home";
+import styles from "../../pages/Admin/Admin.module.css";
 
 export function ProductsContainer({productCatalog, getProductData}:{productCatalog:DataInterface[], getProductData:()=>void}){ 
     const [error, setError] = useState("");
@@ -27,6 +28,54 @@ export function ProductsContainer({productCatalog, getProductData}:{productCatal
         if (!data.success) return;
         getProductData();
         // setProducts(data.result);
+    }
+
+    async function addProductImage(productId: number, file: File) {
+        try {
+            const formData = new FormData();
+            formData.append("image", file);
+            formData.append("productId", String(productId));
+            formData.append("jwt", String(localStorage.getItem("jwt")));
+            const response = await fetch(serverUrl ? serverUrl + `/api/admin/AwsS3/addProductImage` : `http://localhost:5000/api/admin/AwsS3/addProductImage`, {
+                method: "POST",
+                body: formData,
+            });
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+            getProductData();
+        } catch (err) {
+            if (err instanceof Error) setError(err.message);
+        }
+    }
+
+    async function deleteProductImage(imageId: number) {
+        try {
+            const response = await fetch(serverUrl ? serverUrl + `/api/admin/AwsS3/deleteProductImage` : `http://localhost:5000/api/admin/AwsS3/deleteProductImage`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ jwt: localStorage.getItem("jwt"), imageId }),
+            });
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+            getProductData();
+        } catch (err) {
+            if (err instanceof Error) setError(err.message);
+        }
+    }
+
+    async function setMainImage(imageId: number, productId: number) {
+        try {
+            const response = await fetch(serverUrl ? serverUrl + `/api/admin/AwsS3/setMainImage` : `http://localhost:5000/api/admin/AwsS3/setMainImage`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ jwt: localStorage.getItem("jwt"), imageId, productId }),
+            });
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+            getProductData();
+        } catch (err) {
+            if (err instanceof Error) setError(err.message);
+        }
     }
 
     async function updateProductInDB(product:Product){
@@ -61,19 +110,20 @@ export function ProductsContainer({productCatalog, getProductData}:{productCatal
         <div className="adminProductContainer">
           <p>{error}</p>
           {productCatalog.length > 0 && (
-            <table style={{width:"100%"}}>
+            <div className={styles.tableContainer}>
+            <table style={{width:"100%", borderCollapse:"collapse", whiteSpace:"nowrap"}}>
               <thead>
                 <tr>
                   <th>Images</th>
-                  <th>Product Name</th>
-                  <th>Product Category Id</th>
-                  <th>Product Price</th>
-                  <th>Product Quantity</th>
-                  <th>Product Weight</th>
-                  <th>Product Length</th>
-                  <th>Product Height</th>
-                  <th>Product Width</th>
-                  <th>Product Description</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Qty</th>
+                  <th>Weight (oz)</th>
+                  <th>Length (in)</th>
+                  <th>Height (in)</th>
+                  <th>Width (in)</th>
+                  <th style={{minWidth:"200px"}}>Description</th>
                   <th>Featured</th>
                   <th></th>
                 </tr>
@@ -87,13 +137,16 @@ export function ProductsContainer({productCatalog, getProductData}:{productCatal
                             product={item}
                             updateProductInDB={updateProductInDB}
                             handleDeleteProductFromDB={handleDeleteProductFromDB}
+                            addProductImage={addProductImage}
+                            deleteProductImage={deleteProductImage}
+                            setMainImage={setMainImage}
                         />
                         </tr>
                     )
                 })}
               </tbody>
             </table>
-            
+            </div>
           )}
       </div>
     )
