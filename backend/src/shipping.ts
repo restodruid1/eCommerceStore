@@ -48,6 +48,7 @@ interface ParcelCreateRequest {
   distanceUnit: "in" | "cm";
   weight: string;
   massUnit: "oz" | "lb" | "g" | "kg";
+  error?: string;
 }
 
 interface ShippingRateWrapper {
@@ -171,11 +172,18 @@ export function getFilteredRates(rates:Rate[]): SimplifiedShippoRate[] {
 }
 
 
-async function validateShippingDetails(shippingDetails:ShippoShippingDetails): Promise<ValidationResponse> {
-  const addressData = await shippo.addresses.create({...shippingDetails, validate:true});   // Shippo validates address & provides message
+export async function validateShippingDetails(shippingDetails:ShippoShippingDetails): Promise<ValidationResponse> {
+  // DOCS: https://docs.goshippo.com/docs/addresses/addressvalidation
+  let addressData;
+  try {
+    addressData = await shippo.addresses.create({...shippingDetails, validate:true});   // Shippo validates address & provides message
+  } catch {
+    return { success: false, error: "Unable to validate address. Please try again." };
+  }
+
   const results = addressData.validationResults;
   const firstMessage = results?.messages?.[0];
- 
+
   // Address is invalid
   if (!results?.isValid) {
     return { success: false, ...(firstMessage?.text ? { error: firstMessage.text } : {}) };
@@ -183,14 +191,15 @@ async function validateShippingDetails(shippingDetails:ShippoShippingDetails): P
 
   // Address valid but contains warnings (like missing apt number)
   if (firstMessage?.type === "address_warning") {
-    return { success: false, error: firstMessage.text! };
+    return { success: false, error: firstMessage.text ?? "Address warning" };
   }
 
   // Fully valid
-  return { success: true };
+  if (results.isValid) return { success: true };
+  else return { success: false };
 }
 
-function createPackage(session:Stripe.Checkout.Session): ParcelCreateRequest | false {
+export function createPackage(session:Stripe.Checkout.Session): ParcelCreateRequest | false {
   if (!session.line_items?.data) return false;
 
   const normalizedProducts:SessionLineItems[] = session.line_items?.data.map(item => {
@@ -200,6 +209,7 @@ function createPackage(session:Stripe.Checkout.Session): ParcelCreateRequest | f
     const height = Number(product.metadata.height);
     const { l:newLength, w:newWidth, h:newHeight } = normalizeProductDimensions({length, width, height});
     
+    // Quantities > 1 => stack on the smallest dimension(height)
     return {
       weight: Number(product.metadata.weight) * (item.quantity ?? 0), 
       length: newLength ?? 0,
@@ -229,7 +239,7 @@ export function packItemsIntoOneParcel(products: SessionLineItems[]): ParcelCrea
     width: finalBox.w.toString(),
     height: finalBox.h.toString(),
     distanceUnit: DistanceUnitEnum.In ?? "in",
-    weight: (optimzedPackage.packageWeight * 1.1).toString(), // 10% for packaging material
+    weight: (optimzedPackage.packageWeight * 1.1).toFixed(2), // 10% for packaging material
     massUnit: WeightUnitEnum.Oz ?? "oz"
   };
 }
@@ -240,10 +250,10 @@ export function optimalPackingAlgo( products:SessionLineItems[]){
   let { l, w, h } = normalizeProductDimensions(products[0]);
 
   if (!products[0]?.weight) return null;
-  // let weight = products[0]?.weight;
-  let weight = 0;
+  let weight = products[0]?.weight;
+  
 
-  for (let i = 0; i < products.length; i++) {
+  for (let i = 1; i < products.length; i++) {
     const product = products[i];
 
     if (!product) return null;
@@ -367,7 +377,7 @@ router.post('/', async (req:Request, res:Response) => {
       // 1. Retrieve the Checkout Session
       const session = await stripe.checkout.sessions.retrieve(checkout_session_id, {expand: ['line_items', 'line_items.data.price.product']});
       if (!session) return res.json({type:'error', message: "Checkout session not found."});
-
+      
       // 2. Validate the shipping details
       const validateAddress = await validateShippingDetails(addressTo);
       if (!validateAddress.success) {

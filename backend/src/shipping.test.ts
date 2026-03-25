@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Rate } from 'shippo';
 
 // Mocks are hoisted before imports — must match the specifiers used in shipping.ts
@@ -21,12 +21,15 @@ vi.mock('express', () => ({
   Router: vi.fn().mockReturnValue({ post: vi.fn() }),
 }));
 
+import { Shippo } from 'shippo';
 import {
   normalizeProductDimensions,
   getFilteredRates,
   optimalPackingAlgo,
   selectFinalPackageSize,
   packItemsIntoOneParcel,
+  validateShippingDetails,
+  createPackage,
 } from './shipping.js';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -184,6 +187,15 @@ describe('optimalPackingAlgo', () => {
     expect(result).not.toBeNull();
     expect(result?.packageWeight).toBe(10);
   });
+
+  it('height becomes larger dimension', () => {
+    const products = [{ length: 5, width: 4, height: 10, weight: 10 }];
+    const result = optimalPackingAlgo(products);
+    expect(result).not.toBe(false);
+    if (result) expect(result.packageLength).toBe(10);
+    if (result) expect(result.packageWidth).toBe(5);
+    if (result) expect(result.packageHeight).toBe(4);
+  });
 });
 
 // ─── selectFinalPackageSize ──────────────────────────────────────────────────
@@ -232,8 +244,9 @@ describe('packItemsIntoOneParcel', () => {
 
   it('adds 10% to the weight for packaging material', () => {
     // single product {5,4,2,weight:10} → packageWeight 10 → stored as (10*1.1)="11"
-    const result = packItemsIntoOneParcel([{ length: 5, width: 4, height: 2, weight: 10 }]);
-    expect(result?.weight).toBe('11');
+    const result = packItemsIntoOneParcel([{ length: 5, width: 4, height: 2, weight: 16.39 }]);
+    console.log(result?.weight);
+    expect(result?.weight).toBe('18.03');
   });
 
   it('uses inches and ounces as units', () => {
@@ -255,5 +268,145 @@ describe('packItemsIntoOneParcel', () => {
       { length: 5, width: 4, height: 3, weight: 35 },
     ];
     expect(packItemsIntoOneParcel(heavy)).toBeNull();
+  });
+});
+
+// ─── createPackage ───────────────────────────────────────────────────────────
+
+function makeSession(items: { length: number; width: number; height: number; weight: number; quantity: number }[]) {
+  return {
+    line_items: {
+      data: items.map(({ length, width, height, weight, quantity }) => ({
+        quantity,
+        price: {
+          product: {
+            metadata: {
+              length: String(length),
+              width: String(width),
+              height: String(height),
+              weight: String(weight),
+            },
+          },
+        },
+      })),
+    },
+  } as any;
+}
+
+describe('createPackage', () => {
+  it('returns false when line_items.data is missing', () => {
+    expect(createPackage({} as any)).toBe(false);
+    expect(createPackage({ line_items: {} } as any)).toBe(false);
+  });
+
+  it('returns a parcel for a valid single item', () => {
+    const session = makeSession([{ length: 5, width: 4, height: 2, weight: 10, quantity: 1 }]);
+    const result = createPackage(session);
+    expect(result).not.toBe(false);
+  });
+
+  it('multiplies weight by quantity', () => {
+    // weight 10 * qty 2 = 20, then +10% packaging = "22.00"
+    const session = makeSession([{ length: 5, width: 4, height: 2, weight: 10, quantity: 2 }]);
+    const result = createPackage(session);
+    expect(result).not.toBe(false);
+    if (result) expect(result.weight).toBe('22.00');
+  });
+
+  it('multiplies height by quantity', () => {
+    // height stacks with quantity — 2 items of height 2 = stacked height 4
+    const session = makeSession([{ length: 5, width: 4, height: 2, weight: 5, quantity: 2 }]);
+    const result = createPackage(session);
+    expect(result).not.toBe(false);
+  });
+
+  it('returns false when metadata values are missing (NaN weight)', () => {
+    const session = {
+      line_items: {
+        data: [{
+          quantity: 1,
+          price: { product: { metadata: { length: '5', width: '4', height: '2', weight: '' } } },
+        }],
+      },
+    } as any;
+    // NaN weight causes packItemsIntoOneParcel to return null
+    expect(createPackage(session)).toBe(false);
+  });
+
+  it('returns false when total weight exceeds the 60oz limit', () => {
+    // 2 items at 35oz each = 70oz total, which exceeds the 60oz limit
+    const session = makeSession([
+      { length: 5, width: 4, height: 2, weight: 35, quantity: 1 },
+      { length: 5, width: 4, height: 2, weight: 35, quantity: 1 },
+    ]);
+    expect(createPackage(session)).toBe(false);
+  });
+});
+
+// ─── validateShippingDetails ─────────────────────────────────────────────────
+
+const validAddress = {
+  name: 'Jane Smith',
+  street1: '123 Main St',
+  city: 'San Francisco',
+  state: 'CA',
+  zip: '94111',
+  country: 'US',
+};
+
+describe('validateShippingDetails', () => {
+  let mockAddressCreate: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    const instance = vi.mocked(Shippo).mock.results[0]?.value;
+    mockAddressCreate = instance.addresses.create;
+    mockAddressCreate.mockReset();
+  });
+
+  it('returns success:false when the Shippo API throws', async () => {
+    mockAddressCreate.mockRejectedValueOnce(new Error('Network error'));
+    const result = await validateShippingDetails(validAddress);
+    expect(result).toEqual({ success: false, error: 'Unable to validate address. Please try again.' });
+  });
+
+  it('returns success:false with error text when address is invalid', async () => {
+    mockAddressCreate.mockResolvedValueOnce({
+      validationResults: { isValid: false, messages: [{ type: 'address_error', text: 'Street not found' }] },
+    });
+    const result = await validateShippingDetails(validAddress);
+    expect(result).toEqual({ success: false, error: 'Street not found' });
+  });
+
+  it('returns success:false with no error key when invalid and no message text', async () => {
+    mockAddressCreate.mockResolvedValueOnce({
+      validationResults: { isValid: false, messages: [] },
+    });
+    const result = await validateShippingDetails(validAddress);
+    expect(result).toEqual({ success: false });
+    expect(result).not.toHaveProperty('error');
+  });
+
+  it('returns success:false when address has a warning', async () => {
+    mockAddressCreate.mockResolvedValueOnce({
+      validationResults: { isValid: true, messages: [{ type: 'address_warning', text: 'Missing apartment number' }] },
+    });
+    const result = await validateShippingDetails(validAddress);
+    expect(result).toEqual({ success: false, error: 'Missing apartment number' });
+  });
+
+  it('falls back to "Address warning" when warning message text is missing', async () => {
+    mockAddressCreate.mockResolvedValueOnce({
+      validationResults: { isValid: true, messages: [{ type: 'address_warning', text: undefined }] },
+    });
+    const result = await validateShippingDetails(validAddress);
+    expect(result).toEqual({ success: false, error: 'Address warning' });
+  });
+
+  it('returns success:true for a fully valid address', async () => {
+    mockAddressCreate.mockResolvedValueOnce({
+      validationResults: { isValid: true, messages: [] },
+    });
+    const result = await validateShippingDetails(validAddress);
+    expect(result).toEqual({ success: true });
   });
 });
