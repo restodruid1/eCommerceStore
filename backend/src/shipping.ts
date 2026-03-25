@@ -155,7 +155,7 @@ const addressFrom: AddressCreateRequest = {
 };
 
 const allowedCarriers = ["USPS", "UPS", "FedEx", "DHL Express"];
-function getFilteredRates(rates:Rate[]): SimplifiedShippoRate[] {
+export function getFilteredRates(rates:Rate[]): SimplifiedShippoRate[] {
   return rates
   .filter(rate => allowedCarriers.includes(rate.provider))
   .filter(rate => parseFloat(rate.amount) < 100)
@@ -178,7 +178,7 @@ async function validateShippingDetails(shippingDetails:ShippoShippingDetails): P
  
   // Address is invalid
   if (!results?.isValid) {
-    return { success: false, error: firstMessage?.text! };
+    return { success: false, ...(firstMessage?.text ? { error: firstMessage.text } : {}) };
   }
 
   // Address valid but contains warnings (like missing apt number)
@@ -208,15 +208,13 @@ function createPackage(session:Stripe.Checkout.Session): ParcelCreateRequest | f
     };
   });
 
-  if (!normalizedProducts) return false;
-
   const packageReadyForShip = packItemsIntoOneParcel(normalizedProducts);
   if (!packageReadyForShip) return false;
 
   return packageReadyForShip;
 }
 
-function packItemsIntoOneParcel(products: SessionLineItems[]): ParcelCreateRequest | null {
+export function packItemsIntoOneParcel(products: SessionLineItems[]): ParcelCreateRequest | null {
   if (!products || products.length === 0) return null;
 
   const optimzedPackage = optimalPackingAlgo(products);
@@ -237,39 +235,47 @@ function packItemsIntoOneParcel(products: SessionLineItems[]): ParcelCreateReque
 }
 
 // Combine on smallest dimension, then fit other 2 dimensions based on smallest difference
-function optimalPackingAlgo( products:SessionLineItems[]){
+export function optimalPackingAlgo( products:SessionLineItems[]){
   if (!products || products[0] === undefined) return null;
   let { l, w, h } = normalizeProductDimensions(products[0]);
 
   if (!products[0]?.weight) return null;
-  let weight = products[0]?.weight;
-  if (weight >= 60) return null;
+  // let weight = products[0]?.weight;
+  let weight = 0;
 
-  for (let i = 1; i < products.length; i++) {
+  for (let i = 0; i < products.length; i++) {
     const product = products[i];
 
-    if (!product || product === undefined) return null;
+    if (!product) return null;
 
-    const normalizeDimensions = normalizeProductDimensions(product);
-    h = h + normalizeDimensions.h;
+    try {
+      const normalizeDimensions = normalizeProductDimensions(product);
+      h = h + normalizeDimensions.h;
 
-    if (normalizeDimensions.l > l) {
-      l = normalizeDimensions.l;
-      w = Math.max(normalizeDimensions.w, w);
-    } else {
-      w = Math.max(normalizeDimensions.w, w);
+      if (normalizeDimensions.l > l) {
+        l = normalizeDimensions.l;
+        w = Math.max(normalizeDimensions.w, w);
+      } else {
+        w = Math.max(normalizeDimensions.w, w);
+      }
+      const normalizeTotalPackage = normalizeProductDimensions({length:l, width:w, height:h});
+      l = normalizeTotalPackage.l;
+      w = normalizeTotalPackage.w;
+      h = normalizeTotalPackage.h;
+    } catch {
+      return null;
     }
-    const normalizeTotalPackage = normalizeProductDimensions({length:l, width:w, height:h});
-    l = normalizeTotalPackage.l;
-    w = normalizeTotalPackage.w;
-    h = normalizeTotalPackage.h;
-    weight = weight + (product.weight ?? 0);
+    weight = weight + (products[i]?.weight ?? 0);
+    // console.log(weight);
   }
+
+  if (weight >= 60) return null;
+
  return {packageLength:l, packageWidth:w , packageHeight:h, packageWeight:weight};
 }
 
 // { height: 4, width: 12, length: 6} -> { length:12, width: 6, height: 4}
-function normalizeProductDimensions({ length, width, height }:SessionLineItems) {
+export function normalizeProductDimensions({ length, width, height }:SessionLineItems) {
   if (
     (length == null || length === 0) ||
     (width == null || width === 0) ||
@@ -291,7 +297,7 @@ function fits(item:SessionLineItems, packageClass:any) {
   );
 }
 
-function selectFinalPackageSize(packageDimensions:SessionLineItems) {
+export function selectFinalPackageSize(packageDimensions:SessionLineItems) {
   const { length, width, height } = packageDimensions;
   const norm = normalizeProductDimensions({length, width, height});
   const finalPackageDimensions = PACKAGE_SIZE_CLASSES.find(packageClass => fits({length:norm.l, width:norm.w, height:norm.h}, packageClass))
@@ -318,7 +324,7 @@ async function calculateShippingOptions(addressTo:ShippoShippingDetails, package
         type: "fixed_amount",
         fixed_amount: {
           amount: Math.round(Number(rate.amount) * 100),
-          currency: rate.currency,
+          currency: rate.currency.toLowerCase(),
         },
         delivery_estimate: {
           minimum: {
@@ -363,7 +369,7 @@ router.post('/', async (req:Request, res:Response) => {
       if (!session) return res.json({type:'error', message: "Checkout session not found."});
 
       // 2. Validate the shipping details
-      const validateAddress = await validateShippingDetails(addressTo)!;
+      const validateAddress = await validateShippingDetails(addressTo);
       if (!validateAddress.success) {
           return res.json({type:'error', message: validateAddress.error || "NOT SURE"});
       }
@@ -392,6 +398,7 @@ router.post('/', async (req:Request, res:Response) => {
           return res.json({type:'error', message: "We can't find shipping options. Please try again."});
       }
     } catch (err) {
+      console.error(err);
       return res.json({type:'error', message: "We can't find shipping options. Please try again."});
     }
 });
