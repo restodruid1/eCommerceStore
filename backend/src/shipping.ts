@@ -232,6 +232,7 @@ export function packItemsIntoOneParcel(products: SessionLineItems[]): ParcelCrea
   console.log("OPTIMIZED BOX", optimzedPackage);
 
   const finalBox = selectFinalPackageSize({length: optimzedPackage.packageLength, width: optimzedPackage.packageWidth, height: optimzedPackage.packageHeight, weight: optimzedPackage.packageWeight});
+  if (!finalBox) return null;
   console.log("FINAL BOX", finalBox);
   
   return {
@@ -310,10 +311,7 @@ function fits(item:SessionLineItems, packageClass:any) {
 export function selectFinalPackageSize(packageDimensions:SessionLineItems) {
   const { length, width, height } = packageDimensions;
   const norm = normalizeProductDimensions({length, width, height});
-  const finalPackageDimensions = PACKAGE_SIZE_CLASSES.find(packageClass => fits({length:norm.l, width:norm.w, height:norm.h}, packageClass))
-    ?? (() => { throw new Error("Oversize item"); })();
-
-  return finalPackageDimensions.package;
+  return PACKAGE_SIZE_CLASSES.find(packageClass => fits({length:norm.l, width:norm.w, height:norm.h}, packageClass))?.package ?? null;
 }
 
 
@@ -392,18 +390,23 @@ router.post('/', async (req:Request, res:Response) => {
 
       // 4. Update the Checkout Session with the customer's shipping details and shipping options
       if (shippingOptions) {
-        await stripe.checkout.sessions.update(checkout_session_id, {
-        collected_information: {shipping_details},
-        shipping_options: shippingOptions,
-        metadata: {
-          "packageLength":  packageToBeShipped.length,
-          "packageWidth":   packageToBeShipped.width,
-          "packageHeight":  packageToBeShipped.height,
-          "packageWeight":  packageToBeShipped.weight
+        try {
+          await stripe.checkout.sessions.update(checkout_session_id, {
+            collected_information: {shipping_details},
+            shipping_options: shippingOptions,
+            metadata: {
+              "packageLength":  packageToBeShipped.length,
+              "packageWidth":   packageToBeShipped.width,
+              "packageHeight":  packageToBeShipped.height,
+              "packageWeight":  packageToBeShipped.weight
+            }
+          });
+        } catch (err) {
+          console.error(err);
+          return res.json({type:'error', message: "Could not update your session. Please refresh and try again."});
         }
-        });
 
-          return res.json({type:'object', value: {succeeded: true}});
+        return res.json({type:'object', value: {succeeded: true}});
       } else {
           return res.json({type:'error', message: "We can't find shipping options. Please try again."});
       }

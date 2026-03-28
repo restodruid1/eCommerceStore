@@ -225,9 +225,20 @@ describe('selectFinalPackageSize', () => {
     expect(result).toEqual({ l: 20, w: 20, h: 15 });
   });
 
-  it('throws for an oversized item that exceeds all package classes', () => {
-    expect(() => selectFinalPackageSize({ length: 25, width: 20, height: 15 }))
-      .toThrow('Oversize item');
+  it('returns null for an oversized item that exceeds all package classes', () => {
+    expect(selectFinalPackageSize({ length: 25, width: 20, height: 15 })).toBeNull();
+  });
+
+  it('handles non-integer dimensions that fit a package class', () => {
+    // norm: {l:9.5, w:5.5, h:3.5} fits REGULAR_BUBBLE_MAILER max {l:10, w:6, h:4}
+    const result = selectFinalPackageSize({ length: 9.5, width: 5.5, height: 3.5 });
+    expect(result).toEqual({ l: 10, w: 6, h: 4 });
+  });
+
+  it('normalizes dimension order before comparing', () => {
+    // supplying dimensions out of order should still match correctly
+    const result = selectFinalPackageSize({ length: 4, width: 10, height: 6 });
+    expect(result).not.toBeNull();
   });
 });
 
@@ -268,6 +279,12 @@ describe('packItemsIntoOneParcel', () => {
       { length: 5, width: 4, height: 3, weight: 35 },
     ];
     expect(packItemsIntoOneParcel(heavy)).toBeNull();
+  });
+
+  it('returns null when the combined item dimensions exceed all package classes', () => {
+    // Each item is within limits, but stacked height pushes past EXTRA_LARGE_BOX max
+    const oversized = Array.from({ length: 10 }, () => ({ length: 18, width: 18, height: 2, weight: 1 }));
+    expect(packItemsIntoOneParcel(oversized)).toBeNull();
   });
 });
 
