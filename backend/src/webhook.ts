@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
                 const doesEventExist = await db.query('SELECT event_id FROM orders WHERE event_id = $1', [event.id]);
                 if ((doesEventExist.rowCount ?? 0) > 0) {
                     console.log("EVENT ID ALREADY BEING USED");
-                    return;
+                    return res.status(200).send({ message: "event received" });
                 }
 
                 // Retrieve the complete session with line items
