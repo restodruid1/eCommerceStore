@@ -168,7 +168,7 @@ export function getFilteredRates(rates:Rate[]): SimplifiedShippoRate[] {
     estimatedDays: rate.estimatedDays ?? 5
   }))
   .sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount)) 
-  .slice(0, 5); 
+  .slice(0, 4); 
 }
 
 
@@ -390,10 +390,22 @@ router.post('/', async (req:Request, res:Response) => {
 
       // 4. Update the Checkout Session with the customer's shipping details and shipping options
       if (shippingOptions) {
+        const freeShipping: ShippingRateWrapper = {
+          shipping_rate_data: {
+            display_name: "Free Shipping",
+            type: "fixed_amount",
+            fixed_amount: { amount: 0, currency: "usd" },
+            delivery_estimate: {
+              minimum: { unit: "business_day", value: 5 },
+              maximum: { unit: "business_day", value: 10 },
+            },
+          },
+        };
+
         try {
           await stripe.checkout.sessions.update(checkout_session_id, {
             collected_information: {shipping_details},
-            shipping_options: shippingOptions,
+            shipping_options: [freeShipping, ...shippingOptions],
             metadata: {
               "packageLength":  packageToBeShipped.length,
               "packageWidth":   packageToBeShipped.width,
