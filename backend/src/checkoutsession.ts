@@ -161,9 +161,9 @@ const checkout = async(items:DataInterface[], req:Request, res:Response, uuid:st
             // invoice_creation:{
             //   enabled: true
             // },
-            // automatic_tax: {
-            //   enabled: true
-            // },
+            automatic_tax: {
+              enabled: true
+            },
             shipping_address_collection: {
               allowed_countries: ['US'],
             },

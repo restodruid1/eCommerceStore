@@ -1,0 +1,8 @@
+The NodeJS/ExpressJS server matches the URL it receives to the matched 
+route on its server. If a matching route is found, the server executes
+the logic associated with that route, returning a response to the
+client (HTTP/1.1 200 OK
+        Content-Type: application/json
+        Content-Length: 42
+        Access-Control-Allow-Origin: https://yoursite.com
+        { "id": 1, "data": "some data" })  

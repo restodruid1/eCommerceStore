@@ -1,0 +1,24 @@
+HOW THE FRONTEND WORKS
+----------------------
+1) Browser hits your domain → server returns index.html
+2) index.html has a <script> tag pointing to the bundled JS → browser downloads that
+3) React boots up, React Router reads window.location, renders the right page
+4) Every link click after that — React Router handles it, no server involved
+
+The frontend can then make requests to the backend to retrieve data, etc.
+
+React uses JSX code that is compiled into JS code
+that turns this
+JSX:
+<div className="card">
+  <h1>{product.name}</h1>
+</div>
+
+into this
+JS:
+React.createElement("div", { className: "card" },
+  React.createElement("h1", null, product.name)
+)
+
+which allows the browser to run the js code which dynamically creates html
+for the browser to render. React uses js to create html pages. 
